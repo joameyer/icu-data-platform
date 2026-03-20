@@ -29,6 +29,7 @@ This repo produces harmonized dataset-level tables that can be consumed by downs
 No real patient-level data is committed to this repository.
 Only schemas, synthetic examples, and safe metadata/QC outputs may be stored here.
 
+```
 icu-data-platform/
 ├── src/
 │   └── icu_data_platform/
@@ -67,3 +68,4 @@ icu-data-platform/
 │           ├── build_asic_harmonized.py
 │           ├── build_mimic_harmonized.py
 │           └── build_eicu_harmonized.py
+```
