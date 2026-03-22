@@ -8,11 +8,19 @@ from pathlib import Path
 
 import pandas as pd
 
+from icu_data_platform.sources.asic.stay_ids import (
+    DERIVED_GLOBAL_STAY_ID_SOURCE,
+    build_stay_id_global_series,
+    normalize_stay_id_local_series,
+)
+
 
 DEFAULT_DYNAMIC_DATA_DIR = Path("/Users/joanameyer/data/asic/raw_sample10")
 DEFAULT_TRANSLATION_PATH = Path(__file__).resolve().parents[1] / "column_translation.json"
 
-NON_NUMERIC_CANONICAL_COLUMNS = frozenset({"hospital_id", "stay_id", "time"})
+NON_NUMERIC_CANONICAL_COLUMNS = frozenset(
+    {"hospital_id", "stay_id_local", "stay_id_global", "time"}
+)
 UK04_SPECIAL_STRING_HOSPITAL = "asic_UK04"
 IE_RATIO_PATTERN = re.compile(
     r"^\s*([0-9]+(?:\.[0-9]+)?)\s*/\s*([0-9]+(?:\.[0-9]+)?)\s*$"
@@ -184,7 +192,8 @@ def build_canonical_to_raw(
 ) -> dict[str, list[str]]:
     canonical_to_raw: dict[str, list[str]] = defaultdict(list)
     for raw_column, canonical_name in translation.items():
-        canonical_to_raw[canonical_name].append(raw_column)
+        final_name = "stay_id_local" if canonical_name == "stay_id" else canonical_name
+        canonical_to_raw[final_name].append(raw_column)
     return dict(canonical_to_raw)
 
 
@@ -240,8 +249,29 @@ def build_harmonized_dynamic_table(
             )
         source_map[canonical_name] = used_columns
 
+    if "stay_id_local" in columns_dict:
+        columns_dict["stay_id_local"] = normalize_stay_id_local_series(columns_dict["stay_id_local"])
+        columns_dict["stay_id_global"] = build_stay_id_global_series(
+            columns_dict["hospital_id"],
+            columns_dict["stay_id_local"],
+        )
+        source_map["stay_id_global"] = [DERIVED_GLOBAL_STAY_ID_SOURCE]
+
     harmonized = pd.DataFrame(columns_dict, index=df.index)
-    return harmonized[ordered_canonical_columns], source_map
+    ordered_with_global = [
+        "hospital_id",
+        "stay_id_global",
+        "stay_id_local",
+        "time",
+        "minutes_since_admit",
+    ]
+    ordered_with_global.extend(
+        column
+        for column in sorted(harmonized.columns)
+        if column not in ordered_with_global
+    )
+    final_columns = [column for column in ordered_with_global if column in harmonized.columns]
+    return harmonized[final_columns], source_map
 
 
 def build_harmonized_dynamic_tables(
@@ -270,7 +300,8 @@ def find_non_numeric_value_issues(
         for raw_column, canonical_name in translation.items():
             if raw_column not in df.columns:
                 continue
-            if canonical_name in NON_NUMERIC_CANONICAL_COLUMNS:
+            final_name = "stay_id_local" if canonical_name == "stay_id" else canonical_name
+            if final_name in NON_NUMERIC_CANONICAL_COLUMNS:
                 continue
 
             raw_series = normalize_missing(df[raw_column])
@@ -285,7 +316,7 @@ def find_non_numeric_value_issues(
             cleaned_series = apply_hospital_numeric_cleaning(raw_series, hospital)
             parsed_numeric = coerce_numeric_series(
                 raw_series,
-                canonical_name,
+                final_name,
                 hospital=hospital,
             )
             unresolved_count, _ = unresolved_numeric_string_examples(
@@ -305,7 +336,7 @@ def find_non_numeric_value_issues(
                 {
                     "hospital": hospital,
                     "raw_column": raw_column,
-                    "canonical_name": canonical_name,
+                    "canonical_name": final_name,
                     "non_null_count": int(raw_series.notna().sum()),
                     "raw_non_numeric_count": int(raw_non_numeric_mask.sum()),
                     "resolved_by_custom_parser_count": int(

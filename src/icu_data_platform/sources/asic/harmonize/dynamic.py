@@ -38,9 +38,22 @@ def empty_columns(df: pd.DataFrame) -> list[str]:
 
 
 def build_dynamic_column_order(translation: dict[str, str]) -> list[str]:
-    canonical_columns = sorted(set(translation.values()))
-    preferred_first = ["hospital_id", "stay_id", "time", "minutes_since_admit"]
-    ordered = [column for column in preferred_first if column == "hospital_id" or column in canonical_columns]
+    canonical_columns = sorted(
+        "stay_id_local" if column == "stay_id" else column
+        for column in set(translation.values())
+    )
+    preferred_first = [
+        "hospital_id",
+        "stay_id_global",
+        "stay_id_local",
+        "time",
+        "minutes_since_admit",
+    ]
+    ordered = [
+        column
+        for column in preferred_first
+        if column in {"hospital_id", "stay_id_global"} or column in canonical_columns
+    ]
     ordered.extend(column for column in canonical_columns if column not in ordered)
     return ordered
 
@@ -78,11 +91,6 @@ def harmonize_dynamic_tables(
     for hospital, raw_df in raw_tables.items():
         harmonized_df, source_map = build_harmonized_dynamic_table(raw_df, hospital, translation)
         harmonized_df = harmonized_df[[column for column in ordered_columns if column in harmonized_df.columns]].copy()
-        if "stay_id" in harmonized_df.columns:
-            harmonized_df["stay_id"] = pd.to_numeric(
-                harmonized_df["stay_id"],
-                errors="coerce",
-            ).astype("Int64")
 
         tables_by_hospital[hospital] = harmonized_df
         source_map_rows.extend(_ordered_source_map_rows(hospital, harmonized_df.columns, source_map))

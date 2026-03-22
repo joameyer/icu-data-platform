@@ -12,12 +12,18 @@ from icu_data_platform.sources.asic.extract.raw_tables import (
     load_static_tables,
     load_static_translation,
 )
+from icu_data_platform.sources.asic.stay_ids import (
+    DERIVED_GLOBAL_STAY_ID_SOURCE,
+    build_stay_id_global_series,
+    normalize_stay_id_local_series,
+)
 
 
 DROPPED_STATIC_CANONICAL_COLUMNS = frozenset({"cluster_id", "study_day", "phase"})
 FINAL_STATIC_COLUMNS = [
     "hospital_id",
-    "stay_id",
+    "stay_id_global",
+    "stay_id_local",
     "age_group",
     "sex",
     "height_group",
@@ -34,7 +40,6 @@ FINAL_STATIC_COLUMNS = [
 ]
 STATIC_NUMERIC_COLUMNS = frozenset(
     {
-        "stay_id",
         "hosp_mortality",
         "icu_mortality",
         "hosp_los",
@@ -112,6 +117,8 @@ def build_static_canonical_to_raw(
             continue
 
         final_name = canonical_name
+        if canonical_name == "stay_id":
+            final_name = "stay_id_local"
         if canonical_name == "discharge_status":
             final_name = "hosp_mortality"
         elif canonical_name == "death_status":
@@ -248,7 +255,7 @@ def build_harmonized_static_table(
     source_map = {"hospital_id": ["derived from filename"]}
 
     passthrough_columns = [
-        "stay_id",
+        "stay_id_local",
         "age_group",
         "sex",
         "height_group",
@@ -270,6 +277,13 @@ def build_harmonized_static_table(
         )
         harmonized[canonical_name] = merged
         source_map[canonical_name] = used_columns
+
+    harmonized["stay_id_local"] = normalize_stay_id_local_series(harmonized["stay_id_local"])
+    harmonized["stay_id_global"] = build_stay_id_global_series(
+        harmonized["hospital_id"],
+        harmonized["stay_id_local"],
+    )
+    source_map["stay_id_global"] = [DERIVED_GLOBAL_STAY_ID_SOURCE]
 
     merged, used_columns = merge_raw_columns(
         df,

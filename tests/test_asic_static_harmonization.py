@@ -45,7 +45,11 @@ class TestASICStaticHarmonization(unittest.TestCase):
         )
 
         self.assertEqual(list(harmonized_df.columns), FINAL_STATIC_COLUMNS)
-        self.assertEqual(str(harmonized_df["stay_id"].dtype), "Int64")
+        self.assertEqual(str(harmonized_df["stay_id_local"].dtype), "string")
+        self.assertEqual(str(harmonized_df["stay_id_global"].dtype), "string")
+        self.assertTrue(
+            harmonized_df["stay_id_global"].str.startswith("asic_UK02_").all()
+        )
         self.assertTrue(
             set(harmonized_df["sex"].dropna().unique()).issubset({"F", "M"})
         )
@@ -55,7 +59,11 @@ class TestASICStaticHarmonization(unittest.TestCase):
                 for value in harmonized_df["bmi_group"].dropna().astype(str)
             )
         )
-        self.assertEqual(set(source_map["stay_id"]), {"PseudoID", "Pseudo-ID"})
+        self.assertEqual(set(source_map["stay_id_local"]), {"PseudoID", "Pseudo-ID"})
+        self.assertEqual(
+            source_map["stay_id_global"],
+            ["derived from hospital_id and stay_id_local"],
+        )
         self.assertTrue(
             set(harmonized_df["hosp_mortality"].dropna().astype(int).unique()).issubset(
                 {0, 1}
@@ -103,7 +111,8 @@ class TestASICStaticHarmonization(unittest.TestCase):
                 self.translation,
             )
 
-        self.assertEqual(int(harmonized_df.loc[0, "stay_id"]), 1)
+        self.assertEqual(str(harmonized_df.loc[0, "stay_id_local"]), "1")
+        self.assertEqual(str(harmonized_df.loc[0, "stay_id_global"]), "asic_TEST_1")
         self.assertEqual(len(caught), 4)
         messages = " | ".join(str(w.message) for w in caught)
         self.assertIn("sex", messages)

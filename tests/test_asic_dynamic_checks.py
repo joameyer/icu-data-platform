@@ -84,6 +84,11 @@ class TestASICDynamicChecks(unittest.TestCase):
             self.translation,
         )
 
+        self.assertIn("stay_id_local", harmonized_df.columns)
+        self.assertIn("stay_id_global", harmonized_df.columns)
+        self.assertTrue(
+            harmonized_df["stay_id_global"].dropna().str.startswith("asic_UK02_").all()
+        )
         self.assertGreater(int(harmonized_df["ie_ratio"].notna().sum()), 0)
 
         parsed = coerce_numeric_series(uk02_df["I:E"], "ie_ratio").dropna()

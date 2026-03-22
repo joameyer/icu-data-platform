@@ -22,6 +22,10 @@ from icu_data_platform.sources.asic.pipeline import (  # noqa: E402
     build_asic_harmonized_dataset,
     write_asic_harmonized_dataset,
 )
+from icu_data_platform.sources.asic.qc.stay_id import (  # noqa: E402
+    assert_valid_asic_stay_ids,
+    build_asic_stay_id_qc,
+)
 
 
 class TestASICPipeline(unittest.TestCase):
@@ -46,6 +50,13 @@ class TestASICPipeline(unittest.TestCase):
             int(dataset.dynamic.combined.shape[0]),
             sum(df.shape[0] for df in self.raw_dynamic_tables.values()),
         )
+        self.assertIn("stay_id_local", dataset.static.combined.columns)
+        self.assertIn("stay_id_global", dataset.static.combined.columns)
+        self.assertIn("stay_id_local", dataset.dynamic.combined.columns)
+        self.assertIn("stay_id_global", dataset.dynamic.combined.columns)
+        self.assertTrue(dataset.stay_id_qc.mapping_failures.empty)
+        self.assertTrue(dataset.stay_id_qc.static_duplicate_global_ids.empty)
+        self.assertTrue(dataset.stay_id_qc.duplicate_dynamic_time_index.empty)
         self.assertFalse(dataset.static.source_map.empty)
         self.assertFalse(dataset.dynamic.source_map.empty)
         self.assertEqual(
@@ -73,6 +84,13 @@ class TestASICPipeline(unittest.TestCase):
                 "dynamic_non_numeric_issues",
                 "dynamic_distribution_summary",
                 "dynamic_distribution_issues",
+                "qc_stay_id_summary",
+                "qc_stay_id_unique_stays_per_hospital",
+                "qc_stay_id_local_id_collisions",
+                "qc_stay_id_missing_id_values",
+                "qc_stay_id_duplicate_static_global_ids",
+                "qc_stay_id_mapping_failures",
+                "qc_stay_id_duplicate_dynamic_time_index",
             }
             self.assertEqual(set(output_paths), expected_keys)
             self.assertTrue(all(path.exists() for path in output_paths.values()))
@@ -81,3 +99,29 @@ class TestASICPipeline(unittest.TestCase):
             dynamic_df = pd.read_csv(output_paths["dynamic_harmonized"])
             self.assertGreater(int(static_df.shape[0]), 0)
             self.assertGreater(int(dynamic_df.shape[0]), 0)
+
+    def test_stay_id_qc_reports_failures_for_bad_inputs(self) -> None:
+        static_df = pd.DataFrame(
+            {
+                "hospital_id": ["asic_A", "asic_A"],
+                "stay_id_local": ["1", "1"],
+                "stay_id_global": ["asic_A_1", "asic_A_1"],
+            }
+        )
+        dynamic_df = pd.DataFrame(
+            {
+                "hospital_id": ["asic_A", "asic_A", "asic_B", "asic_A"],
+                "stay_id_local": ["1", "1", "9", None],
+                "stay_id_global": ["asic_A_1", "asic_A_1", "asic_B_9", None],
+                "time": ["0 days", "0 days", "0 days", "1 day"],
+            }
+        )
+
+        qc_result = build_asic_stay_id_qc(static_df=static_df, dynamic_df=dynamic_df)
+
+        self.assertFalse(qc_result.static_duplicate_global_ids.empty)
+        self.assertFalse(qc_result.mapping_failures.empty)
+        self.assertFalse(qc_result.missing_id_values.empty)
+        self.assertFalse(qc_result.duplicate_dynamic_time_index.empty)
+        with self.assertRaisesRegex(ValueError, "ASIC pooled stay-ID QC failed"):
+            assert_valid_asic_stay_ids(qc_result)

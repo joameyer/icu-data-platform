@@ -22,7 +22,12 @@ def _serialize_cell(value: object) -> object:
 def prepare_dataframe_for_write(df: pd.DataFrame) -> pd.DataFrame:
     result = df.copy()
     for column in result.columns:
-        if result[column].map(lambda value: isinstance(value, (list, tuple, set, dict))).any():
+        contains_nested = (
+            result[column]
+            .astype("object")
+            .map(lambda value: isinstance(value, (list, tuple, set, dict)))
+        )
+        if contains_nested.to_numpy(dtype=bool).any():
             result[column] = result[column].map(_serialize_cell)
     return result
 
