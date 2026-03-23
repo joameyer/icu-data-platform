@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import re
 import warnings
 from collections import defaultdict
@@ -8,6 +7,12 @@ from pathlib import Path
 
 import pandas as pd
 
+from icu_data_platform.sources.asic.extract.raw_tables import (
+    DEFAULT_ASIC_RAW_DATA_DIR,
+    DEFAULT_TRANSLATION_PATH,
+    load_dynamic_tables as load_dynamic_raw_tables,
+    load_dynamic_translation as load_dynamic_translation_map,
+)
 from icu_data_platform.sources.asic.stay_ids import (
     DERIVED_GLOBAL_STAY_ID_SOURCE,
     build_stay_id_global_series,
@@ -15,8 +20,7 @@ from icu_data_platform.sources.asic.stay_ids import (
 )
 
 
-DEFAULT_DYNAMIC_DATA_DIR = Path("/Users/joanameyer/data/asic/raw_sample10")
-DEFAULT_TRANSLATION_PATH = Path(__file__).resolve().parents[1] / "column_translation.json"
+DEFAULT_DYNAMIC_DATA_DIR = DEFAULT_ASIC_RAW_DATA_DIR
 
 NON_NUMERIC_CANONICAL_COLUMNS = frozenset(
     {"hospital_id", "stay_id_local", "stay_id_global", "time"}
@@ -27,24 +31,16 @@ IE_RATIO_PATTERN = re.compile(
 )
 
 
-def hospital_name_from_path(path: Path) -> str:
-    return path.stem.replace("_dynamic", "")
-
-
 def load_dynamic_translation(
     translation_path: Path = DEFAULT_TRANSLATION_PATH,
 ) -> dict[str, str]:
-    translation = json.loads(translation_path.read_text())
-    return translation["dynamic"]
+    return load_dynamic_translation_map(translation_path)
 
 
 def load_dynamic_tables(
     raw_dir: Path = DEFAULT_DYNAMIC_DATA_DIR,
 ) -> dict[str, pd.DataFrame]:
-    return {
-        hospital_name_from_path(path): pd.read_csv(path, low_memory=False)
-        for path in sorted(raw_dir.glob("asic_*_dynamic.csv"))
-    }
+    return load_dynamic_raw_tables(raw_dir)
 
 
 def normalize_missing(series: pd.Series) -> pd.Series:
@@ -99,7 +95,7 @@ def clean_uk04_numeric_strings(series: pd.Series) -> pd.Series:
         return series
 
     cleaned = to_clean_string(series)
-    storniert_mask = cleaned.str.lower().eq("storniert")
+    storniert_mask = cleaned.str.lower().isin({"storniert", "storno"})
     less_than_mask = cleaned.str.contains("<", regex=False, na=False)
     cleaned = cleaned.mask(storniert_mask, pd.NA)
     cleaned = cleaned.mask(less_than_mask, "0")

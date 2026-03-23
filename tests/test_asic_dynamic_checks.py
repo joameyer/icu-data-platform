@@ -24,6 +24,10 @@ from icu_data_platform.sources.asic.qc.dynamic_checks import (  # noqa: E402
     numeric_distribution_summary,
     parse_ie_ratio_value,
 )
+from icu_data_platform.sources.asic.harmonize.dynamic import (  # noqa: E402
+    DYNAMIC_COLUMN_PREFIX,
+    build_dynamic_column_order,
+)
 
 
 class TestASICDynamicChecks(unittest.TestCase):
@@ -69,12 +73,13 @@ class TestASICDynamicChecks(unittest.TestCase):
         )
 
     def test_coerce_numeric_series_handles_uk04_special_strings(self) -> None:
-        series = pd.Series(["<0.15", "storniert", "2.4"])
+        series = pd.Series(["<0.15", "storniert", "storno", "2.4"])
         parsed = coerce_numeric_series(series, "crp", hospital="asic_UK04")
 
         self.assertEqual(float(parsed.iloc[0]), 0.0)
         self.assertTrue(pd.isna(parsed.iloc[1]))
-        self.assertEqual(float(parsed.iloc[2]), 2.4)
+        self.assertTrue(pd.isna(parsed.iloc[2]))
+        self.assertEqual(float(parsed.iloc[3]), 2.4)
 
     def test_harmonized_ie_ratio_keeps_uk02_values(self) -> None:
         uk02_df = self.dynamic_tables["asic_UK02"]
@@ -93,7 +98,9 @@ class TestASICDynamicChecks(unittest.TestCase):
 
         parsed = coerce_numeric_series(uk02_df["I:E"], "ie_ratio").dropna()
         self.assertGreater(int(parsed.shape[0]), 0)
-        self.assertAlmostEqual(float(parsed.iloc[0]), 1 / 1.5)
+        self.assertTrue(
+            any(abs(float(value) - (1 / 1.5)) < 1e-9 for value in parsed.tolist())
+        )
 
     def test_harmonized_table_warns_on_unexpected_strings(self) -> None:
         df = pd.DataFrame({"CRP": ["1.2", "unexpected", None]})
@@ -140,6 +147,42 @@ class TestASICDynamicChecks(unittest.TestCase):
                 "range_width",
             }.issubset(issue_df.columns)
         )
+
+    def test_build_dynamic_column_order_uses_theme_groups_after_prefix(self) -> None:
+        ordered = build_dynamic_column_order(self.translation)
+
+        self.assertEqual(ordered[: len(DYNAMIC_COLUMN_PREFIX)], DYNAMIC_COLUMN_PREFIX)
+        self.assertEqual(
+            ordered[
+                len(DYNAMIC_COLUMN_PREFIX) : len(DYNAMIC_COLUMN_PREFIX) + 11
+            ],
+            [
+                "heart_rate",
+                "sbp",
+                "map",
+                "dbp",
+                "resp_rate",
+                "spont_resp_rate",
+                "core_temp",
+                "spo2",
+                "sao2",
+                "scvo2",
+                "cvp",
+            ],
+        )
+
+    def test_build_dynamic_column_order_raises_for_unassigned_column(self) -> None:
+        translation = {
+            "PseudoID": "stay_id",
+            "Time": "time",
+            "Mystery": "mystery_signal",
+        }
+
+        with self.assertRaisesRegex(
+            ValueError,
+            "missing theme assignments for non-prefix columns",
+        ):
+            build_dynamic_column_order(translation)
 
 
 if __name__ == "__main__":

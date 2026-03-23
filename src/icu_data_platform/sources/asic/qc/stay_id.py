@@ -69,16 +69,36 @@ def _missing_id_rows(static_df: pd.DataFrame, dynamic_df: pd.DataFrame) -> pd.Da
 
 
 def _static_duplicate_global_ids(static_df: pd.DataFrame) -> pd.DataFrame:
-    duplicates = static_df["stay_id_global"].value_counts(dropna=True)
-    duplicate_ids = duplicates[duplicates > 1].index.tolist()
-    if not duplicate_ids:
-        return pd.DataFrame(columns=["hospital_id", "stay_id_local", "stay_id_global"])
+    duplicate_counts = (
+        static_df.dropna(subset=["stay_id_global"])
+        .groupby("stay_id_global")
+        .size()
+        .rename("duplicate_count_per_stay_id_global")
+        .reset_index()
+    )
+    duplicate_counts = duplicate_counts[
+        duplicate_counts["duplicate_count_per_stay_id_global"] > 1
+    ]
+    if duplicate_counts.empty:
+        return pd.DataFrame(
+            columns=[
+                "hospital_id",
+                "stay_id_local",
+                "stay_id_global",
+                "duplicate_count_per_stay_id_global",
+            ]
+        )
 
     return (
-        static_df[static_df["stay_id_global"].isin(duplicate_ids)][
-            ["hospital_id", "stay_id_local", "stay_id_global"]
-        ]
-        .sort_values(["stay_id_global", "hospital_id", "stay_id_local"])
+        static_df[["hospital_id", "stay_id_local", "stay_id_global"]]
+        .merge(duplicate_counts, on="stay_id_global", how="inner")
+        .sort_values(
+            [
+                "stay_id_global",
+                "hospital_id",
+                "stay_id_local",
+            ]
+        )
         .reset_index(drop=True)
     )
 
@@ -184,7 +204,11 @@ def build_asic_stay_id_qc(
     summary = pd.DataFrame(
         [
             {
-                "metric": "unique_stays_total",
+                "metric": "static_rows_total",
+                "value": int(static_df.shape[0]),
+            },
+            {
+                "metric": "static_unique_stay_id_global_total",
                 "value": int(static_df["stay_id_global"].nunique(dropna=True)),
             },
             {

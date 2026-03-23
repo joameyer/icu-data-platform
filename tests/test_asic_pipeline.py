@@ -57,6 +57,12 @@ class TestASICPipeline(unittest.TestCase):
         self.assertTrue(dataset.stay_id_qc.mapping_failures.empty)
         self.assertTrue(dataset.stay_id_qc.static_duplicate_global_ids.empty)
         self.assertTrue(dataset.stay_id_qc.duplicate_dynamic_time_index.empty)
+        summary = dict(dataset.stay_id_qc.summary[["metric", "value"]].itertuples(index=False))
+        self.assertEqual(summary["static_rows_total"], int(dataset.static.combined.shape[0]))
+        self.assertEqual(
+            summary["static_unique_stay_id_global_total"],
+            int(dataset.static.combined["stay_id_global"].nunique(dropna=True)),
+        )
         self.assertFalse(dataset.static.source_map.empty)
         self.assertFalse(dataset.dynamic.source_map.empty)
         self.assertEqual(
@@ -120,8 +126,19 @@ class TestASICPipeline(unittest.TestCase):
         qc_result = build_asic_stay_id_qc(static_df=static_df, dynamic_df=dynamic_df)
 
         self.assertFalse(qc_result.static_duplicate_global_ids.empty)
+        self.assertIn(
+            "duplicate_count_per_stay_id_global",
+            qc_result.static_duplicate_global_ids.columns,
+        )
+        self.assertEqual(
+            int(qc_result.static_duplicate_global_ids.iloc[0]["duplicate_count_per_stay_id_global"]),
+            2,
+        )
         self.assertFalse(qc_result.mapping_failures.empty)
         self.assertFalse(qc_result.missing_id_values.empty)
         self.assertFalse(qc_result.duplicate_dynamic_time_index.empty)
+        summary = dict(qc_result.summary[["metric", "value"]].itertuples(index=False))
+        self.assertEqual(summary["static_rows_total"], 2)
+        self.assertEqual(summary["static_unique_stay_id_global_total"], 1)
         with self.assertRaisesRegex(ValueError, "ASIC pooled stay-ID QC failed"):
             assert_valid_asic_stay_ids(qc_result)

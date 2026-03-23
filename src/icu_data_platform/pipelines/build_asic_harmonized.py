@@ -19,7 +19,10 @@ def build_argument_parser() -> argparse.ArgumentParser:
         "--raw-dir",
         type=Path,
         default=DEFAULT_ASIC_RAW_DATA_DIR,
-        help="Directory containing asic_*_static.csv and asic_*_dynamic.csv files.",
+        help=(
+            "ASIC root directory containing UK_* hospital folders with static/ and "
+            "dynamic_filtered/ or dynamic/ subfolders."
+        ),
     )
     parser.add_argument(
         "--translation-path",

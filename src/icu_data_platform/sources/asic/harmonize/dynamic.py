@@ -37,24 +37,188 @@ def empty_columns(df: pd.DataFrame) -> list[str]:
     return [column for column in df.columns if normalize_missing(df[column]).isna().all()]
 
 
+DYNAMIC_COLUMN_PREFIX = [
+    "hospital_id",
+    "stay_id_global",
+    "stay_id_local",
+    "time",
+    "minutes_since_admit",
+]
+
+DYNAMIC_THEME_GROUPS = {
+    "vitals": [
+        "heart_rate",
+        "sbp",
+        "map",
+        "dbp",
+        "resp_rate",
+        "spont_resp_rate",
+        "core_temp",
+        "spo2",
+        "sao2",
+        "scvo2",
+        "cvp",
+    ],
+    "ventilation": [
+        "fio2",
+        "feo2",
+        "peep",
+        "delta_p",
+        "insp_pressure",
+        "compliance",
+        "ie_ratio",
+        "vt",
+        "vt_per_kg_ibw",
+        "etco2",
+        "pf_ratio",
+    ],
+    "blood_gas": [
+        "pao2",
+        "paco2",
+        "ph_art",
+        "bicarbonate_art",
+        "base_excess_art",
+        "lactate_art",
+    ],
+    "hemodynamics": [
+        "pap_sys",
+        "pap_mean",
+        "pap_dias",
+        "pcwp",
+        "cardiac_output_bolus",
+        "cardiac_output_cont",
+        "cardiac_index_bolus",
+        "cardiac_index_cont",
+        "stroke_volume_bolus",
+        "stroke_volume_cont",
+        "stroke_index_bolus",
+        "stroke_index_cont",
+        "svri",
+        "pvri",
+        "gedvi",
+        "evlwi",
+    ],
+    "hematology_coag": [
+        "hemoglobin",
+        "hematocrit",
+        "wbc",
+        "platelets",
+        "lymph_abs",
+        "lymph_pct",
+        "inr",
+        "ptt",
+        "d_dimer",
+    ],
+    "chemistry_inflammation": [
+        "albumin",
+        "crp",
+        "pct",
+        "il6",
+        "bilirubin_total",
+        "urea",
+        "creatinine",
+        "bnp",
+        "ntprobnp",
+        "ast",
+        "alt",
+        "ldh",
+        "amylase",
+        "lipase",
+        "troponin",
+        "ck",
+        "ck_mb",
+    ],
+    "support_therapy": [
+        "fluid_balance_24h",
+        "position_therapy",
+        "ecmo",
+        "ecmo_o2",
+        "extracorp_blood_flow",
+        "extracorp_o2_flow",
+        "inhaled_no",
+        "inhaled_iloprost",
+    ],
+    "vasoactive_inotrope": [
+        "dobutamine_iv_cont",
+        "epinephrine_iv_cont",
+        "norepinephrine_iv_cont",
+        "vasopressin_iv_cont",
+        "milrinone_iv_cont",
+        "levosimendan_iv_cont",
+        "terlipressin_iv_bolus",
+    ],
+    "sedation_analgesia": [
+        "propofol_iv_cont",
+        "midazolam_iv_cont",
+        "clonidine_iv_cont",
+        "dexmedetomidine_iv_cont",
+        "ketanest_iv_cont",
+        "isoflurane_inh",
+        "sevoflurane_inh",
+        "sufentanil_iv_cont",
+        "fentanyl_iv_cont",
+        "morphine_iv_cont",
+        "rocuronium_iv_bolus",
+    ],
+    "other_meds": [
+        "furosemide_iv_cont",
+        "hydrocortisone_iv_bolus",
+        "prednisolone_iv_bolus",
+        "dexamethasone_iv_bolus",
+        "fludrocortisone_po_bolus",
+    ],
+    "scores": [
+        "sofa",
+    ],
+}
+
+
+def _ordered_theme_columns(canonical_columns: list[str]) -> list[str]:
+    theme_assignment_counts: dict[str, int] = {}
+    ordered_columns: list[str] = []
+
+    for theme_columns in DYNAMIC_THEME_GROUPS.values():
+        for column in theme_columns:
+            theme_assignment_counts[column] = theme_assignment_counts.get(column, 0) + 1
+            if column in canonical_columns and column not in ordered_columns:
+                ordered_columns.append(column)
+
+    duplicate_theme_assignments = sorted(
+        column
+        for column, count in theme_assignment_counts.items()
+        if count > 1
+    )
+    if duplicate_theme_assignments:
+        raise ValueError(
+            "Dynamic theme groups assign the same column more than once: "
+            f"{duplicate_theme_assignments}"
+        )
+
+    unassigned_columns = sorted(
+        column
+        for column in canonical_columns
+        if column not in DYNAMIC_COLUMN_PREFIX and column not in ordered_columns
+    )
+    if unassigned_columns:
+        raise ValueError(
+            "Dynamic column order is missing theme assignments for non-prefix columns: "
+            f"{unassigned_columns}"
+        )
+
+    return ordered_columns
+
+
 def build_dynamic_column_order(translation: dict[str, str]) -> list[str]:
     canonical_columns = sorted(
         "stay_id_local" if column == "stay_id" else column
         for column in set(translation.values())
     )
-    preferred_first = [
-        "hospital_id",
-        "stay_id_global",
-        "stay_id_local",
-        "time",
-        "minutes_since_admit",
-    ]
     ordered = [
         column
-        for column in preferred_first
+        for column in DYNAMIC_COLUMN_PREFIX
         if column in {"hospital_id", "stay_id_global"} or column in canonical_columns
     ]
-    ordered.extend(column for column in canonical_columns if column not in ordered)
+    ordered.extend(_ordered_theme_columns(canonical_columns))
     return ordered
 
 
