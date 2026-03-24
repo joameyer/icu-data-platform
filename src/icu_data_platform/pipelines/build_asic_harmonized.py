@@ -8,8 +8,8 @@ from icu_data_platform.sources.asic.extract.raw_tables import (
     DEFAULT_TRANSLATION_PATH,
 )
 from icu_data_platform.sources.asic.pipeline import (
-    build_asic_harmonized_dataset,
-    write_asic_harmonized_dataset,
+    DEFAULT_ASIC_HARMONIZED_OUTPUT_DIR,
+    build_and_write_asic_harmonized_dataset,
 )
 
 
@@ -33,7 +33,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path("artifacts") / "asic_harmonized",
+        default=DEFAULT_ASIC_HARMONIZED_OUTPUT_DIR,
         help="Directory where the harmonized outputs should be written.",
     )
     parser.add_argument(
@@ -67,17 +67,14 @@ def main() -> int:
     parser = build_argument_parser()
     args = parser.parse_args()
 
-    dataset = build_asic_harmonized_dataset(
+    dataset, output_paths = build_and_write_asic_harmonized_dataset(
         raw_dir=args.raw_dir,
         translation_path=args.translation_path,
+        output_dir=args.output_dir,
+        output_format=args.format,
         min_non_null=args.min_non_null,
         min_hospitals=args.min_hospitals,
         fence_factor=args.fence_factor,
-    )
-    output_paths = write_asic_harmonized_dataset(
-        dataset,
-        output_dir=args.output_dir,
-        output_format=args.format,
     )
 
     print(f"Built ASIC static rows: {dataset.static.combined.shape[0]}")

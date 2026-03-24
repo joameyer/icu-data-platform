@@ -29,6 +29,7 @@ class HarmonizedDynamicResult:
     source_map: pd.DataFrame
     schema_summary: pd.DataFrame
     non_numeric_issues: pd.DataFrame
+    semantic_decisions: pd.DataFrame
     distribution_summary: pd.DataFrame
     distribution_issues: pd.DataFrame
 
@@ -172,6 +173,39 @@ DYNAMIC_THEME_GROUPS = {
     ],
 }
 
+SEMANTIC_TARGET_VARIABLES = (
+    "norepinephrine_iv_cont",
+    "clonidine_iv_cont",
+    "vt_per_kg_ibw",
+    "etco2",
+    "ie_ratio",
+)
+
+DETERMINISTIC_UNIT_CONVERSION = "deterministic unit conversion"
+DETERMINISTIC_DEFINITIONAL_RECODING = "deterministic definitional recoding"
+UNRESOLVED_MISMATCH = "unresolved mismatch requiring metadata confirmation"
+SITE_INVALID = "site-specific invalid variable to set missing or exclude"
+NO_ACTION_NEEDED = "no action needed"
+
+ETCO2_PA_SITE = "asic_UK04"
+ETCO2_PA_PER_MMHG = 7.50062
+
+SEMANTIC_DECISION_COLUMNS = [
+    "hospital",
+    "canonical_name",
+    "decision_classification",
+    "applied_action",
+    "metadata_review_required",
+    "chapter1_recommendation",
+    "non_null_before",
+    "non_null_after",
+    "median_before",
+    "median_after",
+    "candidate_reciprocal_median_before",
+    "flagged_metrics_before",
+    "evidence",
+]
+
 
 def _ordered_theme_columns(canonical_columns: list[str]) -> list[str]:
     theme_assignment_counts: dict[str, int] = {}
@@ -237,6 +271,207 @@ def _ordered_source_map_rows(
     ]
 
 
+def _empty_semantic_decisions() -> pd.DataFrame:
+    return pd.DataFrame(columns=SEMANTIC_DECISION_COLUMNS)
+
+
+def _build_summary_lookup(summary_df: pd.DataFrame) -> dict[tuple[str, str], dict[str, object]]:
+    if summary_df.empty:
+        return {}
+    return {
+        (str(row["hospital"]), str(row["canonical_name"])): row.to_dict()
+        for _, row in summary_df.iterrows()
+    }
+
+
+def _build_issue_lookup(issue_df: pd.DataFrame) -> dict[tuple[str, str], list[str]]:
+    if issue_df.empty:
+        return {}
+    return {
+        (str(row["hospital"]), str(row["canonical_name"])): list(row["flagged_metrics"])
+        for _, row in issue_df.iterrows()
+    }
+
+
+def _numeric_column(df: pd.DataFrame, column: str) -> pd.Series:
+    if column not in df.columns:
+        return pd.Series(pd.NA, index=df.index, dtype="Float64")
+    return pd.to_numeric(df[column], errors="coerce")
+
+
+def _format_metric(value: object) -> str:
+    if value is None or pd.isna(value):
+        return "NA"
+    return f"{float(value):.3f}"
+
+
+def _candidate_reciprocal(value: object) -> float | pd.NA:
+    if value is None or pd.isna(value):
+        return pd.NA
+    numeric_value = float(value)
+    if numeric_value == 0:
+        return pd.NA
+    return 1.0 / numeric_value
+
+
+def _apply_semantic_action(before_series: pd.Series, applied_action: str) -> pd.Series:
+    if applied_action == "convert_pa_to_mmhg":
+        return before_series / ETCO2_PA_PER_MMHG
+    if applied_action == "set_missing":
+        return pd.Series(pd.NA, index=before_series.index, dtype="Float64")
+    return before_series.copy()
+
+
+def _build_semantic_decision(
+    hospital: str,
+    canonical_name: str,
+    before_series: pd.Series,
+    summary_row: dict[str, object] | None,
+    flagged_metrics: list[str],
+) -> tuple[pd.Series, dict[str, object]]:
+    non_null_before = int(before_series.notna().sum())
+    median_before = summary_row.get("median") if summary_row is not None else pd.NA
+    candidate_reciprocal_median = (
+        _candidate_reciprocal(median_before)
+        if canonical_name == "ie_ratio"
+        else pd.NA
+    )
+
+    decision_classification = NO_ACTION_NEEDED
+    applied_action = "keep_as_is"
+    metadata_review_required = False
+    chapter1_recommendation = "retain"
+    evidence = "Existing harmonization retained; no targeted semantic action needed."
+
+    if non_null_before == 0:
+        applied_action = "leave_missing"
+        evidence = "Variable is absent or fully missing for this site in the current sample."
+    elif canonical_name == "etco2" and hospital == ETCO2_PA_SITE:
+        decision_classification = DETERMINISTIC_UNIT_CONVERSION
+        applied_action = "convert_pa_to_mmhg"
+        evidence = (
+            "Pre-harmonization ETCO2 values are Pa-like for this site "
+            f"(median {_format_metric(median_before)}); converted using "
+            f"1 mmHg = {ETCO2_PA_PER_MMHG:.5f} Pa."
+        )
+    elif canonical_name == "vt_per_kg_ibw" and hospital == "asic_UK06":
+        decision_classification = SITE_INVALID
+        applied_action = "set_missing"
+        chapter1_recommendation = "site_drop"
+        evidence = (
+            "Pre-harmonization values show unrecoverable mixed scales for this site "
+            f"(median {_format_metric(median_before)}, max "
+            f"{_format_metric(summary_row.get('max') if summary_row is not None else pd.NA)})."
+        )
+    elif canonical_name == "norepinephrine_iv_cont" and hospital == "asic_UK03":
+        decision_classification = SITE_INVALID
+        applied_action = "set_missing"
+        metadata_review_required = True
+        chapter1_recommendation = "site_drop"
+        evidence = (
+            "Pre-harmonization values are off-scale versus peer sites "
+            f"(median {_format_metric(median_before)}); no exact source unit/definition "
+            "mapping could be confirmed from the current codebase or metadata."
+        )
+    elif canonical_name == "clonidine_iv_cont" and hospital == "asic_UK08":
+        decision_classification = SITE_INVALID
+        applied_action = "set_missing"
+        metadata_review_required = True
+        chapter1_recommendation = "site_drop"
+        evidence = (
+            "Pre-harmonization values differ sharply from the peer site "
+            f"(median {_format_metric(median_before)}); no exact source unit/definition "
+            "mapping could be confirmed from the current codebase or metadata."
+        )
+    elif canonical_name == "ie_ratio":
+        decision_classification = UNRESOLVED_MISMATCH
+        applied_action = "keep_as_is_pending_metadata_review"
+        metadata_review_required = True
+        chapter1_recommendation = "exclude"
+        evidence = (
+            "Observed site distribution could reflect either I:E or E:I semantics "
+            f"(median {_format_metric(median_before)}, reciprocal median "
+            f"{_format_metric(candidate_reciprocal_median)}); no documented site "
+            "convention was found in the current codebase or metadata."
+        )
+    elif flagged_metrics:
+        evidence = (
+            "Existing harmonization retained; distribution summary was monitored for this "
+            f"variable-site pair and no confirmed semantic rule was needed. "
+            f"Pre-harmonization flagged metrics: {flagged_metrics}."
+        )
+
+    after_series = _apply_semantic_action(before_series, applied_action)
+    non_null_after = int(after_series.notna().sum())
+    median_after = float(after_series.median()) if non_null_after else pd.NA
+
+    return after_series, {
+        "hospital": hospital,
+        "canonical_name": canonical_name,
+        "decision_classification": decision_classification,
+        "applied_action": applied_action,
+        "metadata_review_required": metadata_review_required,
+        "chapter1_recommendation": chapter1_recommendation,
+        "non_null_before": non_null_before,
+        "non_null_after": non_null_after,
+        "median_before": median_before,
+        "median_after": median_after,
+        "candidate_reciprocal_median_before": candidate_reciprocal_median,
+        "flagged_metrics_before": flagged_metrics,
+        "evidence": evidence,
+    }
+
+
+def apply_dynamic_semantic_harmonization(
+    tables_by_hospital: dict[str, pd.DataFrame],
+    min_non_null: int = 20,
+    min_hospitals: int = 4,
+    fence_factor: float = 1.5,
+) -> tuple[dict[str, pd.DataFrame], pd.DataFrame]:
+    harmonized_tables = {
+        hospital: df.copy()
+        for hospital, df in tables_by_hospital.items()
+    }
+    pre_distribution_summary = numeric_distribution_summary(
+        harmonized_tables,
+        min_non_null=min_non_null,
+    )
+    pre_distribution_issues = flag_cross_hospital_distribution_issues(
+        pre_distribution_summary,
+        min_hospitals=min_hospitals,
+        fence_factor=fence_factor,
+    )
+    summary_lookup = _build_summary_lookup(pre_distribution_summary)
+    issue_lookup = _build_issue_lookup(pre_distribution_issues)
+    decision_rows = []
+
+    for hospital in sorted(harmonized_tables):
+        df = harmonized_tables[hospital]
+        for canonical_name in SEMANTIC_TARGET_VARIABLES:
+            before_series = _numeric_column(df, canonical_name)
+            after_series, decision_row = _build_semantic_decision(
+                hospital,
+                canonical_name,
+                before_series,
+                summary_lookup.get((hospital, canonical_name)),
+                issue_lookup.get((hospital, canonical_name), []),
+            )
+            if canonical_name in df.columns and decision_row["applied_action"] in {
+                "convert_pa_to_mmhg",
+                "set_missing",
+            }:
+                df[canonical_name] = after_series
+            decision_rows.append(decision_row)
+
+    if not decision_rows:
+        return harmonized_tables, _empty_semantic_decisions()
+
+    decisions_df = pd.DataFrame(decision_rows).sort_values(
+        ["canonical_name", "hospital"]
+    ).reset_index(drop=True)
+    return harmonized_tables, decisions_df
+
+
 def harmonize_dynamic_tables(
     raw_dir=DEFAULT_ASIC_RAW_DATA_DIR,
     translation_path=DEFAULT_TRANSLATION_PATH,
@@ -250,7 +485,6 @@ def harmonize_dynamic_tables(
 
     tables_by_hospital: dict[str, pd.DataFrame] = {}
     source_map_rows = []
-    schema_rows = []
 
     for hospital, raw_df in raw_tables.items():
         harmonized_df, source_map = build_harmonized_dynamic_table(raw_df, hospital, translation)
@@ -259,6 +493,15 @@ def harmonize_dynamic_tables(
         tables_by_hospital[hospital] = harmonized_df
         source_map_rows.extend(_ordered_source_map_rows(hospital, harmonized_df.columns, source_map))
 
+    tables_by_hospital, semantic_decisions = apply_dynamic_semantic_harmonization(
+        tables_by_hospital,
+        min_non_null=min_non_null,
+        min_hospitals=min_hospitals,
+        fence_factor=fence_factor,
+    )
+
+    schema_rows = []
+    for hospital, harmonized_df in tables_by_hospital.items():
         schema_rows.append(
             {
                 "hospital": hospital,
@@ -294,6 +537,7 @@ def harmonize_dynamic_tables(
         source_map=source_map_df,
         schema_summary=schema_summary_df,
         non_numeric_issues=non_numeric_issues,
+        semantic_decisions=semantic_decisions,
         distribution_summary=distribution_summary,
         distribution_issues=distribution_issues,
     )

@@ -22,6 +22,8 @@ from icu_data_platform.sources.asic.qc.stay_id import (
     build_asic_stay_id_qc,
 )
 
+DEFAULT_ASIC_HARMONIZED_OUTPUT_DIR = Path("artifacts") / "asic_harmonized"
+
 
 @dataclass(frozen=True)
 class ASICHarmonizedDataset:
@@ -62,7 +64,7 @@ def build_asic_harmonized_dataset(
 
 def write_asic_harmonized_dataset(
     dataset: ASICHarmonizedDataset,
-    output_dir: Path,
+    output_dir: Path = DEFAULT_ASIC_HARMONIZED_OUTPUT_DIR,
     output_format: str = "csv",
 ) -> dict[str, Path]:
     extension = "csv" if output_format == "csv" else "parquet"
@@ -83,6 +85,7 @@ def write_asic_harmonized_dataset(
         "source_map": dataset.dynamic.source_map,
         "schema_summary": dataset.dynamic.schema_summary,
         "non_numeric_issues": dataset.dynamic.non_numeric_issues,
+        "semantic_decisions": dataset.dynamic.semantic_decisions,
         "distribution_summary": dataset.dynamic.distribution_summary,
         "distribution_issues": dataset.dynamic.distribution_issues,
     }
@@ -109,3 +112,27 @@ def write_asic_harmonized_dataset(
         output_paths[f"qc_{name}"] = write_dataframe(df, path, output_format=output_format)
 
     return output_paths
+
+
+def build_and_write_asic_harmonized_dataset(
+    raw_dir: Path = DEFAULT_ASIC_RAW_DATA_DIR,
+    translation_path: Path = DEFAULT_TRANSLATION_PATH,
+    output_dir: Path = DEFAULT_ASIC_HARMONIZED_OUTPUT_DIR,
+    output_format: str = "csv",
+    min_non_null: int = 20,
+    min_hospitals: int = 4,
+    fence_factor: float = 1.5,
+) -> tuple[ASICHarmonizedDataset, dict[str, Path]]:
+    dataset = build_asic_harmonized_dataset(
+        raw_dir=raw_dir,
+        translation_path=translation_path,
+        min_non_null=min_non_null,
+        min_hospitals=min_hospitals,
+        fence_factor=fence_factor,
+    )
+    output_paths = write_asic_harmonized_dataset(
+        dataset,
+        output_dir=output_dir,
+        output_format=output_format,
+    )
+    return dataset, output_paths
