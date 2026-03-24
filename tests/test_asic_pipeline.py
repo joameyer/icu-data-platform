@@ -75,6 +75,211 @@ class TestASICPipeline(unittest.TestCase):
         self.assertFalse(dataset.dynamic.semantic_decisions.empty)
         self.assertFalse(dataset.dynamic.invalid_value_rules.empty)
         self.assertFalse(dataset.dynamic.invalid_value_qc.empty)
+        self.assertFalse(dataset.cohort.table.empty)
+        self.assertFalse(dataset.cohort.summary.empty)
+        self.assertFalse(dataset.cohort.preprocessing_notes.empty)
+        self.assertFalse(dataset.cohort.icu_end_time_proxy_summary_by_hospital.empty)
+        self.assertFalse(dataset.cohort.coding_distribution_by_hospital.empty)
+        self.assertFalse(dataset.cohort.chapter1.table.empty)
+        self.assertFalse(dataset.cohort.chapter1.notes.empty)
+        self.assertFalse(dataset.cohort.chapter1.core_vital_group_coverage.empty)
+        self.assertFalse(dataset.cohort.chapter1.site_eligibility.empty)
+        self.assertFalse(dataset.cohort.chapter1.site_counts_summary.empty)
+        self.assertFalse(dataset.cohort.chapter1.stay_exclusions.empty)
+        self.assertFalse(dataset.cohort.chapter1.stay_exclusion_summary_by_hospital.empty)
+        self.assertFalse(dataset.cohort.chapter1.counts_by_hospital.empty)
+        self.assertFalse(dataset.cohort.chapter1.retained_hospitals.empty)
+        self.assertFalse(dataset.cohort.chapter1.retained_stays.empty)
+
+    def test_build_asic_harmonized_dataset_builds_authoritative_stay_level_cohort(self) -> None:
+        dataset = build_asic_harmonized_dataset(DEFAULT_ASIC_RAW_DATA_DIR)
+        cohort = dataset.cohort.table
+        cohort_summary = dict(dataset.cohort.summary[["metric", "value"]].itertuples(index=False))
+
+        self.assertEqual(
+            int(cohort.shape[0]),
+            int(dataset.static.combined["stay_id_global"].nunique(dropna=True)),
+        )
+        self.assertFalse(cohort["stay_id_global"].duplicated().any())
+        self.assertTrue((cohort["icu_admission_time"] == 0).all())
+        self.assertIn("readmission", cohort.columns)
+        self.assertNotIn("icu_readmit", cohort.columns)
+        self.assertIn("icu_end_time_proxy", cohort.columns)
+        self.assertEqual(
+            cohort_summary["stays_missing_icu_end_time_proxy"],
+            int(cohort["icu_end_time_proxy"].isna().sum()),
+        )
+        self.assertEqual(
+            cohort_summary["cohort_rows_total"],
+            int(cohort.shape[0]),
+        )
+        self.assertEqual(
+            cohort_summary["cohort_unique_stay_id_global_total"],
+            int(cohort["stay_id_global"].nunique(dropna=True)),
+        )
+
+        dynamic_end_time = (
+            dataset.dynamic.combined.assign(
+                parsed_time=pd.to_timedelta(dataset.dynamic.combined["time"], errors="coerce")
+            )
+            .dropna(subset=["parsed_time"])
+            .groupby("stay_id_global")["parsed_time"]
+            .max()
+            .astype("string")
+        )
+        cohort_with_dynamic = cohort.dropna(subset=["icu_end_time_proxy"]).set_index("stay_id_global")
+        self.assertTrue(
+            cohort_with_dynamic["icu_end_time_proxy"].equals(
+                dynamic_end_time.loc[cohort_with_dynamic.index]
+            )
+        )
+
+        notes = dataset.cohort.preprocessing_notes
+        self.assertTrue(
+            notes["note"].str.contains("proxy-based", case=False, na=False).any()
+        )
+        self.assertTrue(
+            notes["note"].str.contains("inherited from the provided ASIC source cohort", na=False)
+            .any()
+        )
+        self.assertTrue(
+            notes["note"].str.contains("AMA and hospice flags are not derived", na=False).any()
+        )
+
+        proxy_summary = dataset.cohort.icu_end_time_proxy_summary_by_hospital
+        self.assertEqual(
+            set(proxy_summary["hospital_id"]),
+            set(cohort["hospital_id"].dropna().unique()),
+        )
+
+        coding_distribution = dataset.cohort.coding_distribution_by_hospital
+        self.assertEqual(
+            set(coding_distribution["variable"]),
+            {"readmission", "icu_mortality"},
+        )
+        hospital_totals = cohort.groupby("hospital_id").size()
+        distribution_totals = (
+            coding_distribution.groupby(["hospital_id", "variable"])["count"].sum()
+        )
+        for hospital_id, total in hospital_totals.items():
+            self.assertEqual(int(distribution_totals[(hospital_id, "readmission")]), int(total))
+            self.assertEqual(int(distribution_totals[(hospital_id, "icu_mortality")]), int(total))
+
+    def test_build_asic_harmonized_dataset_builds_chapter1_site_restricted_cohort(self) -> None:
+        dataset = build_asic_harmonized_dataset(DEFAULT_ASIC_RAW_DATA_DIR)
+        chapter1 = dataset.cohort.chapter1
+
+        retained_hospitals = set(chapter1.retained_hospitals["hospital_id"])
+        self.assertEqual(
+            retained_hospitals,
+            {"asic_UK02", "asic_UK04", "asic_UK07", "asic_UK08"},
+        )
+
+        coverage = chapter1.core_vital_group_coverage
+        uk01_groups = coverage[coverage["hospital_id"] == "asic_UK01"].set_index("physiologic_group")
+        uk06_groups = coverage[coverage["hospital_id"] == "asic_UK06"].set_index("physiologic_group")
+        uk03_groups = coverage[coverage["hospital_id"] == "asic_UK03"].set_index("physiologic_group")
+        self.assertEqual(uk01_groups.at["cardiac_rate", "satisfying_variables"], [])
+        self.assertEqual(uk06_groups.at["blood_pressure", "satisfying_variables"], [])
+        self.assertEqual(uk03_groups.at["blood_pressure", "satisfying_variables"], [])
+        self.assertEqual(
+            uk03_groups.at["oxygenation", "satisfying_variables"],
+            ["spo2", "sao2"],
+        )
+
+        site_eligibility = chapter1.site_eligibility.set_index("hospital_id")
+        self.assertFalse(bool(site_eligibility.loc["asic_UK00", "icu_mortality_available"]))
+        self.assertTrue(bool(site_eligibility.loc["asic_UK06", "icu_mortality_available"]))
+        self.assertEqual(int(site_eligibility.loc["asic_UK03", "usable_core_vital_group_count"]), 3)
+        self.assertTrue(bool(site_eligibility.loc["asic_UK03", "core_vitals_eligible"]))
+        self.assertEqual(int(site_eligibility.loc["asic_UK01", "usable_core_vital_group_count"]), 0)
+        self.assertFalse(bool(site_eligibility.loc["asic_UK01", "site_included_ch1"]))
+        self.assertIn(
+            "insufficient core-vitals coverage",
+            site_eligibility.loc["asic_UK01", "exclusion_reasons"],
+        )
+        self.assertEqual(
+            site_eligibility.loc["asic_UK01", "icu_mortality_verification_status"],
+            "verified_raw_icu_mortality_source_present_but_all_missing",
+        )
+        self.assertEqual(int(site_eligibility.loc["asic_UK06", "usable_core_vital_group_count"]), 0)
+        self.assertFalse(bool(site_eligibility.loc["asic_UK06", "core_vitals_eligible"]))
+        self.assertFalse(bool(site_eligibility.loc["asic_UK06", "site_included_ch1"]))
+        self.assertIn(
+            "insufficient core-vitals coverage",
+            site_eligibility.loc["asic_UK06", "exclusion_reasons"],
+        )
+        self.assertEqual(
+            site_eligibility.loc["asic_UK06", "icu_mortality_verification_status"],
+            "verified_non_missing_harmonized_icu_mortality",
+        )
+        self.assertFalse(bool(site_eligibility.loc["asic_UK03", "site_included_ch1"]))
+        self.assertIn(
+            "missing/unusable icu_mortality",
+            site_eligibility.loc["asic_UK03", "exclusion_reasons"],
+        )
+        self.assertEqual(
+            site_eligibility.loc["asic_UK03", "icu_mortality_verification_status"],
+            "verified_no_raw_icu_mortality_source_column",
+        )
+        self.assertEqual(site_eligibility.loc["asic_UK03", "blood_pressure_satisfied_by"], [])
+        self.assertEqual(
+            site_eligibility.loc["asic_UK00", "icu_mortality_verification_status"],
+            "verified_raw_icu_mortality_source_present_but_all_missing",
+        )
+
+        site_counts_summary = dict(
+            chapter1.site_counts_summary[["metric", "value"]].itertuples(index=False)
+        )
+        self.assertEqual(site_counts_summary["hospitals_before_site_level_exclusion"], 8)
+        self.assertEqual(site_counts_summary["hospitals_after_site_level_exclusion"], 4)
+
+        stay_exclusions = chapter1.stay_exclusions
+        self.assertTrue(
+            stay_exclusions.loc[stay_exclusions["exclude_site_ineligible"], "exclude_missing_readmission"]
+            .eq(False)
+            .all()
+        )
+        self.assertEqual(int(stay_exclusions["exclude_no_dynamic_data"].sum()), 0)
+        self.assertEqual(int(stay_exclusions["exclude_missing_readmission"].sum()), 0)
+        self.assertEqual(int(stay_exclusions["exclude_readmission_flagged"].sum()), 1)
+        self.assertEqual(int(stay_exclusions["first_stay_proxy_eligible"].sum()), 39)
+        self.assertEqual(int(chapter1.table.shape[0]), 39)
+        self.assertEqual(int(chapter1.retained_stays.shape[0]), 39)
+        self.assertTrue(chapter1.table["has_dynamic_data"].all())
+        self.assertTrue(chapter1.table["first_stay_proxy_eligible"].all())
+        self.assertTrue(chapter1.table["final_retained_ch1"].all())
+        self.assertTrue(chapter1.table["final_ch1_status"].eq("retained").all())
+        self.assertTrue(chapter1.table["exclusion_reason"].isna().all())
+        self.assertTrue(chapter1.table["readmission"].eq(0).all())
+        self.assertEqual(
+            sorted(chapter1.table["hospital_id"].dropna().unique().tolist()),
+            sorted(chapter1.retained_hospitals["hospital_id"].tolist()),
+        )
+
+        counts = chapter1.counts_by_hospital.set_index("hospital_id")
+        self.assertEqual(int(counts.loc["asic_UK02", "after_site_level_exclusion"]), 10)
+        self.assertEqual(int(counts.loc["asic_UK07", "after_missing_readmission_exclusion"]), 10)
+        self.assertEqual(int(counts.loc["asic_UK07", "excluded_readmission_flagged_stays"]), 1)
+        self.assertEqual(int(counts.loc["asic_UK07", "final_retained_stays"]), 9)
+        self.assertEqual(int(counts.loc["asic_UK00", "after_site_level_exclusion"]), 0)
+
+        stay_summary = chapter1.stay_exclusion_summary_by_hospital.set_index("hospital_id")
+        self.assertEqual(int(stay_summary.loc["asic_UK02", "before_site_level_exclusion"]), 10)
+        self.assertEqual(int(stay_summary.loc["asic_UK07", "after_readmission_flagged_exclusion"]), 9)
+        self.assertEqual(int(stay_summary.loc["asic_UK07", "excluded_readmission_flagged_stays"]), 1)
+        self.assertEqual(int(stay_summary.loc["asic_UK01", "after_site_level_exclusion"]), 0)
+
+        notes = chapter1.notes
+        self.assertTrue(
+            notes["note"].str.contains("site-restricted ASIC Chapter 1 cohort", na=False).any()
+        )
+        self.assertTrue(
+            notes["note"].str.contains(
+                "blood_pressure=map or sbp or dbp",
+                na=False,
+            ).any()
+        )
 
     def test_build_asic_harmonized_dataset_applies_semantic_site_rules(self) -> None:
         dataset = build_asic_harmonized_dataset(DEFAULT_ASIC_RAW_DATA_DIR)
@@ -243,14 +448,33 @@ class TestASICPipeline(unittest.TestCase):
                 "qc_stay_id_duplicate_static_global_ids",
                 "qc_stay_id_mapping_failures",
                 "qc_stay_id_duplicate_dynamic_time_index",
+                "cohort_stay_level",
+                "cohort_summary",
+                "cohort_preprocessing_notes",
+                "cohort_icu_end_time_proxy_summary_by_hospital",
+                "cohort_coding_distribution_by_hospital",
+                "cohort_chapter1_stay_level",
+                "cohort_chapter1_notes",
+                "cohort_chapter1_core_vital_group_coverage",
+                "cohort_chapter1_site_eligibility",
+                "cohort_chapter1_site_counts_summary",
+                "cohort_chapter1_stay_exclusions",
+                "cohort_chapter1_stay_exclusion_summary_by_hospital",
+                "cohort_chapter1_counts_by_hospital",
+                "cohort_chapter1_retained_hospitals",
+                "cohort_chapter1_retained_stays",
             }
             self.assertEqual(set(output_paths), expected_keys)
             self.assertTrue(all(path.exists() for path in output_paths.values()))
 
             static_df = pd.read_csv(output_paths["static_harmonized"])
             dynamic_df = pd.read_csv(output_paths["dynamic_harmonized"])
+            cohort_df = pd.read_csv(output_paths["cohort_stay_level"])
+            chapter1_df = pd.read_csv(output_paths["cohort_chapter1_stay_level"])
             self.assertGreater(int(static_df.shape[0]), 0)
             self.assertGreater(int(dynamic_df.shape[0]), 0)
+            self.assertGreater(int(cohort_df.shape[0]), 0)
+            self.assertGreater(int(chapter1_df.shape[0]), 0)
 
     def test_build_and_write_asic_harmonized_dataset_uses_default_artifacts_dir(self) -> None:
         with TemporaryDirectory() as tmpdir:

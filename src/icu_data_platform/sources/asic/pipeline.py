@@ -4,9 +4,14 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from icu_data_platform.common.io import ensure_directory, write_dataframe
+from icu_data_platform.sources.asic.cohort import (
+    ASICStayLevelCohortResult,
+    build_asic_stay_level_cohort,
+)
 from icu_data_platform.sources.asic.extract.raw_tables import (
     DEFAULT_ASIC_RAW_DATA_DIR,
     DEFAULT_TRANSLATION_PATH,
+    load_static_tables,
 )
 from icu_data_platform.sources.asic.harmonize.dynamic import (
     HarmonizedDynamicResult,
@@ -30,6 +35,7 @@ class ASICHarmonizedDataset:
     static: HarmonizedStaticResult
     dynamic: HarmonizedDynamicResult
     stay_id_qc: ASICStayIdQCResult
+    cohort: ASICStayLevelCohortResult
 
 
 def build_asic_harmonized_dataset(
@@ -39,6 +45,7 @@ def build_asic_harmonized_dataset(
     min_hospitals: int = 4,
     fence_factor: float = 1.5,
 ) -> ASICHarmonizedDataset:
+    raw_static_tables = load_static_tables(raw_dir)
     static_result = harmonize_static_tables(
         raw_dir=raw_dir,
         translation_path=translation_path,
@@ -55,10 +62,17 @@ def build_asic_harmonized_dataset(
         dynamic_df=dynamic_result.combined,
     )
     assert_valid_asic_stay_ids(stay_id_qc)
+    cohort = build_asic_stay_level_cohort(
+        static_df=static_result.combined,
+        dynamic_df=dynamic_result.combined,
+        static_source_map=static_result.source_map,
+        raw_static_tables=raw_static_tables,
+    )
     return ASICHarmonizedDataset(
         static=static_result,
         dynamic=dynamic_result,
         stay_id_qc=stay_id_qc,
+        cohort=cohort,
     )
 
 
@@ -73,6 +87,7 @@ def write_asic_harmonized_dataset(
     static_dir = ensure_directory(output_dir / "static")
     dynamic_dir = ensure_directory(output_dir / "dynamic")
     qc_dir = ensure_directory(output_dir / "qc")
+    cohort_dir = ensure_directory(output_dir / "cohort")
 
     static_outputs = {
         "harmonized": dataset.static.combined,
@@ -100,6 +115,27 @@ def write_asic_harmonized_dataset(
         "stay_id_mapping_failures": dataset.stay_id_qc.mapping_failures,
         "stay_id_duplicate_dynamic_time_index": dataset.stay_id_qc.duplicate_dynamic_time_index,
     }
+    cohort_outputs = {
+        "stay_level": dataset.cohort.table,
+        "summary": dataset.cohort.summary,
+        "preprocessing_notes": dataset.cohort.preprocessing_notes,
+        "icu_end_time_proxy_summary_by_hospital": (
+            dataset.cohort.icu_end_time_proxy_summary_by_hospital
+        ),
+        "coding_distribution_by_hospital": dataset.cohort.coding_distribution_by_hospital,
+        "chapter1_stay_level": dataset.cohort.chapter1.table,
+        "chapter1_notes": dataset.cohort.chapter1.notes,
+        "chapter1_core_vital_group_coverage": dataset.cohort.chapter1.core_vital_group_coverage,
+        "chapter1_site_eligibility": dataset.cohort.chapter1.site_eligibility,
+        "chapter1_site_counts_summary": dataset.cohort.chapter1.site_counts_summary,
+        "chapter1_stay_exclusions": dataset.cohort.chapter1.stay_exclusions,
+        "chapter1_stay_exclusion_summary_by_hospital": (
+            dataset.cohort.chapter1.stay_exclusion_summary_by_hospital
+        ),
+        "chapter1_counts_by_hospital": dataset.cohort.chapter1.counts_by_hospital,
+        "chapter1_retained_hospitals": dataset.cohort.chapter1.retained_hospitals,
+        "chapter1_retained_stays": dataset.cohort.chapter1.retained_stays,
+    }
 
     for name, df in static_outputs.items():
         path = static_dir / f"{name}.{extension}"
@@ -112,6 +148,10 @@ def write_asic_harmonized_dataset(
     for name, df in qc_outputs.items():
         path = qc_dir / f"{name}.{extension}"
         output_paths[f"qc_{name}"] = write_dataframe(df, path, output_format=output_format)
+
+    for name, df in cohort_outputs.items():
+        path = cohort_dir / f"{name}.{extension}"
+        output_paths[f"cohort_{name}"] = write_dataframe(df, path, output_format=output_format)
 
     return output_paths
 
