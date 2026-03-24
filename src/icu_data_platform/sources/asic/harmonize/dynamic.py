@@ -30,8 +30,19 @@ class HarmonizedDynamicResult:
     schema_summary: pd.DataFrame
     non_numeric_issues: pd.DataFrame
     semantic_decisions: pd.DataFrame
+    invalid_value_rules: pd.DataFrame
+    invalid_value_qc: pd.DataFrame
     distribution_summary: pd.DataFrame
     distribution_issues: pd.DataFrame
+
+
+@dataclass(frozen=True)
+class InvalidValueRule:
+    canonical_name: str
+    hard_min: float | None = None
+    hard_max: float | None = None
+    invalid_zero: bool = False
+    description: str = ""
 
 
 def empty_columns(df: pd.DataFrame) -> list[str]:
@@ -205,6 +216,328 @@ SEMANTIC_DECISION_COLUMNS = [
     "flagged_metrics_before",
     "evidence",
 ]
+
+INVALID_VALUE_RULE_COLUMNS = [
+    "canonical_name",
+    "hard_min",
+    "hard_max",
+    "invalid_zero",
+    "description",
+]
+
+INVALID_VALUE_QC_COLUMNS = [
+    "hospital",
+    "canonical_name",
+    "non_null_before",
+    "non_null_after",
+    "invalid_count",
+    "invalid_proportion",
+    "invalid_examples",
+    "variable_total_invalid_count",
+    "hospital_share_of_variable_invalids",
+    "dominant_invalid_hospital",
+    "dominant_invalid_hospital_share",
+    "invalidity_concentrated_in_specific_hospitals",
+]
+
+INVALID_VALUE_RULES = {
+    rule.canonical_name: rule
+    for rule in (
+        InvalidValueRule(
+            "albumin",
+            invalid_zero=True,
+            description="Albumin concentrations cannot be exactly zero.",
+        ),
+        InvalidValueRule(
+            "cardiac_index_bolus",
+            hard_min=0.0,
+            hard_max=15.0,
+            invalid_zero=True,
+            description="Cardiac index must be >0; values above 15 L/min/m2 are not interpretable.",
+        ),
+        InvalidValueRule(
+            "cardiac_index_cont",
+            hard_min=0.0,
+            hard_max=15.0,
+            invalid_zero=True,
+            description="Cardiac index must be >0; values above 15 L/min/m2 are not interpretable.",
+        ),
+        InvalidValueRule(
+            "cardiac_output_bolus",
+            hard_min=0.0,
+            hard_max=25.0,
+            invalid_zero=True,
+            description="Cardiac output must be >0; values above 25 L/min are not interpretable.",
+        ),
+        InvalidValueRule(
+            "cardiac_output_cont",
+            hard_min=0.0,
+            hard_max=25.0,
+            invalid_zero=True,
+            description="Cardiac output must be >0; values above 25 L/min are not interpretable.",
+        ),
+        InvalidValueRule(
+            "compliance",
+            hard_min=0.0,
+            hard_max=300.0,
+            invalid_zero=True,
+            description="Respiratory-system compliance must be >0; values above 300 are treated as artifacts.",
+        ),
+        InvalidValueRule(
+            "core_temp",
+            hard_min=25.0,
+            hard_max=45.0,
+            description="Core temperature outside 25-45 C is treated as physiologically impossible.",
+        ),
+        InvalidValueRule(
+            "creatinine",
+            invalid_zero=True,
+            description="Creatinine cannot be exactly zero.",
+        ),
+        InvalidValueRule(
+            "cvp",
+            hard_min=-20.0,
+            hard_max=60.0,
+            description="CVP outside -20 to 60 mmHg is treated as uninterpretable.",
+        ),
+        InvalidValueRule(
+            "dbp",
+            hard_min=0.0,
+            hard_max=200.0,
+            invalid_zero=True,
+            description="Diastolic blood pressure must be >0 and <=200 mmHg.",
+        ),
+        InvalidValueRule(
+            "delta_p",
+            hard_min=0.0,
+            hard_max=60.0,
+            description="Driving pressure below 0 or above 60 cmH2O is treated as invalid.",
+        ),
+        InvalidValueRule(
+            "evlwi",
+            hard_min=0.0,
+            hard_max=80.0,
+            invalid_zero=True,
+            description="Extravascular lung water index must be >0 and <=80.",
+        ),
+        InvalidValueRule(
+            "fio2",
+            hard_min=20.0,
+            hard_max=100.0,
+            description="FiO2 is expected in percent and must stay within 20-100.",
+        ),
+        InvalidValueRule(
+            "gedvi",
+            hard_min=0.0,
+            hard_max=2000.0,
+            invalid_zero=True,
+            description="GEDVI must be >0 and <=2000.",
+        ),
+        InvalidValueRule(
+            "heart_rate",
+            hard_min=0.0,
+            hard_max=250.0,
+            invalid_zero=True,
+            description="Heart rate must be >0 and <=250 bpm.",
+        ),
+        InvalidValueRule(
+            "hematocrit",
+            hard_min=0.0,
+            hard_max=80.0,
+            invalid_zero=True,
+            description="Hematocrit must be >0 and <=80.",
+        ),
+        InvalidValueRule(
+            "hemoglobin",
+            hard_min=0.0,
+            hard_max=25.0,
+            invalid_zero=True,
+            description="Hemoglobin must be >0 and <=25 in the harmonized units.",
+        ),
+        InvalidValueRule(
+            "ie_ratio",
+            hard_min=0.0,
+            hard_max=10.0,
+            invalid_zero=True,
+            description="I:E or E:I ratios must stay >0 and <=10 even before convention review.",
+        ),
+        InvalidValueRule(
+            "inr",
+            hard_min=0.0,
+            hard_max=15.0,
+            invalid_zero=True,
+            description="INR must be >0 and <=15.",
+        ),
+        InvalidValueRule(
+            "insp_pressure",
+            hard_min=0.0,
+            hard_max=80.0,
+            description="Inspiratory pressure below 0 or above 80 cmH2O is treated as invalid.",
+        ),
+        InvalidValueRule(
+            "lactate_art",
+            hard_min=0.0,
+            hard_max=30.0,
+            invalid_zero=True,
+            description="Arterial lactate must be >0 and <=30 mmol/L.",
+        ),
+        InvalidValueRule(
+            "map",
+            hard_min=0.0,
+            hard_max=250.0,
+            invalid_zero=True,
+            description="Mean arterial pressure must be >0 and <=250 mmHg.",
+        ),
+        InvalidValueRule(
+            "paco2",
+            hard_min=0.0,
+            hard_max=150.0,
+            invalid_zero=True,
+            description="PaCO2 must be >0 and <=150 mmHg.",
+        ),
+        InvalidValueRule(
+            "pao2",
+            hard_min=0.0,
+            hard_max=760.0,
+            invalid_zero=True,
+            description="PaO2 must be >0 and <=760 mmHg.",
+        ),
+        InvalidValueRule(
+            "pap_dias",
+            hard_min=0.0,
+            hard_max=100.0,
+            invalid_zero=True,
+            description="Pulmonary artery diastolic pressure must be >0 and <=100 mmHg.",
+        ),
+        InvalidValueRule(
+            "pap_mean",
+            hard_min=0.0,
+            hard_max=100.0,
+            invalid_zero=True,
+            description="Pulmonary artery mean pressure must be >0 and <=100 mmHg.",
+        ),
+        InvalidValueRule(
+            "pap_sys",
+            hard_min=0.0,
+            hard_max=150.0,
+            invalid_zero=True,
+            description="Pulmonary artery systolic pressure must be >0 and <=150 mmHg.",
+        ),
+        InvalidValueRule(
+            "pcwp",
+            hard_min=0.0,
+            hard_max=50.0,
+            invalid_zero=True,
+            description="Pulmonary capillary wedge pressure must be >0 and <=50 mmHg.",
+        ),
+        InvalidValueRule(
+            "peep",
+            hard_min=0.0,
+            hard_max=30.0,
+            description="PEEP below 0 or above 30 cmH2O is treated as invalid.",
+        ),
+        InvalidValueRule(
+            "pf_ratio",
+            hard_min=0.0,
+            hard_max=2500.0,
+            invalid_zero=True,
+            description="PaO2/FiO2 ratio must be >0 and <=2500.",
+        ),
+        InvalidValueRule(
+            "ph_art",
+            hard_min=6.8,
+            hard_max=7.8,
+            description="Arterial pH outside 6.8-7.8 is treated as invalid.",
+        ),
+        InvalidValueRule(
+            "platelets",
+            hard_min=0.0,
+            hard_max=2000.0,
+            invalid_zero=True,
+            description="Platelet count must be >0 and <=2000.",
+        ),
+        InvalidValueRule(
+            "ptt",
+            hard_min=0.0,
+            hard_max=300.0,
+            invalid_zero=True,
+            description="PTT must be >0 and <=300 seconds.",
+        ),
+        InvalidValueRule(
+            "resp_rate",
+            hard_min=0.0,
+            hard_max=80.0,
+            invalid_zero=True,
+            description="Total respiratory rate must be >0 and <=80 breaths/min.",
+        ),
+        InvalidValueRule(
+            "sao2",
+            hard_min=50.0,
+            hard_max=100.0,
+            description="Arterial oxygen saturation must stay within 50-100%.",
+        ),
+        InvalidValueRule(
+            "sbp",
+            hard_min=0.0,
+            hard_max=300.0,
+            invalid_zero=True,
+            description="Systolic blood pressure must be >0 and <=300 mmHg.",
+        ),
+        InvalidValueRule(
+            "scvo2",
+            hard_min=20.0,
+            hard_max=100.0,
+            description="ScvO2 must stay within 20-100%.",
+        ),
+        InvalidValueRule(
+            "sofa",
+            hard_min=0.0,
+            hard_max=24.0,
+            description="SOFA score must stay within 0-24.",
+        ),
+        InvalidValueRule(
+            "spo2",
+            hard_min=30.0,
+            hard_max=100.0,
+            description="Peripheral oxygen saturation must stay within 30-100%.",
+        ),
+        InvalidValueRule(
+            "stroke_index_cont",
+            hard_min=0.0,
+            hard_max=100.0,
+            invalid_zero=True,
+            description="Stroke index must be >0 and <=100.",
+        ),
+        InvalidValueRule(
+            "stroke_volume_cont",
+            hard_min=0.0,
+            hard_max=300.0,
+            invalid_zero=True,
+            description="Stroke volume must be >0 and <=300 mL.",
+        ),
+        InvalidValueRule(
+            "svri",
+            hard_min=0.0,
+            hard_max=10000.0,
+            invalid_zero=True,
+            description="SVRI must be >0 and <=10000.",
+        ),
+        InvalidValueRule(
+            "vt",
+            hard_min=0.0,
+            hard_max=2000.0,
+            invalid_zero=True,
+            description="Tidal volume must be >0 and <=2000 mL.",
+        ),
+        InvalidValueRule(
+            "vt_per_kg_ibw",
+            hard_min=0.0,
+            hard_max=30.0,
+            invalid_zero=True,
+            description="Tidal volume per kg IBW must be >0 and <=30 mL/kg.",
+        ),
+    )
+}
 
 
 def _ordered_theme_columns(canonical_columns: list[str]) -> list[str]:
@@ -472,6 +805,134 @@ def apply_dynamic_semantic_harmonization(
     return harmonized_tables, decisions_df
 
 
+def build_invalid_value_rule_table() -> pd.DataFrame:
+    rows = [
+        {
+            "canonical_name": rule.canonical_name,
+            "hard_min": rule.hard_min,
+            "hard_max": rule.hard_max,
+            "invalid_zero": rule.invalid_zero,
+            "description": rule.description,
+        }
+        for rule in INVALID_VALUE_RULES.values()
+    ]
+    if not rows:
+        return pd.DataFrame(columns=INVALID_VALUE_RULE_COLUMNS)
+    return pd.DataFrame(rows).sort_values("canonical_name").reset_index(drop=True)
+
+
+def _empty_invalid_value_qc() -> pd.DataFrame:
+    return pd.DataFrame(columns=INVALID_VALUE_QC_COLUMNS)
+
+
+def _invalid_value_mask(series: pd.Series, rule: InvalidValueRule) -> pd.Series:
+    mask = pd.Series(False, index=series.index, dtype="boolean")
+    if rule.hard_min is not None:
+        mask = mask | (series < rule.hard_min)
+    if rule.hard_max is not None:
+        mask = mask | (series > rule.hard_max)
+    if rule.invalid_zero:
+        mask = mask | (series == 0)
+    return series.notna() & mask.fillna(False)
+
+
+def _example_flagged_values(series: pd.Series, mask: pd.Series, max_examples: int = 10) -> list[float]:
+    if not mask.any():
+        return []
+    return (
+        series[mask]
+        .dropna()
+        .drop_duplicates()
+        .sort_values()
+        .tolist()[:max_examples]
+    )
+
+
+def apply_dynamic_invalid_value_cleaning(
+    tables_by_hospital: dict[str, pd.DataFrame],
+) -> tuple[dict[str, pd.DataFrame], pd.DataFrame, pd.DataFrame]:
+    cleaned_tables = {
+        hospital: df.copy()
+        for hospital, df in tables_by_hospital.items()
+    }
+    rule_table = build_invalid_value_rule_table()
+    qc_rows = []
+
+    for hospital in sorted(cleaned_tables):
+        df = cleaned_tables[hospital]
+        for canonical_name, rule in INVALID_VALUE_RULES.items():
+            before_series = _numeric_column(df, canonical_name)
+            non_null_before = int(before_series.notna().sum())
+            invalid_mask = _invalid_value_mask(before_series, rule)
+            invalid_count = int(invalid_mask.sum())
+            after_series = before_series.mask(invalid_mask, pd.NA)
+            non_null_after = int(after_series.notna().sum())
+
+            if canonical_name in df.columns and invalid_count > 0:
+                df[canonical_name] = after_series
+
+            qc_rows.append(
+                {
+                    "hospital": hospital,
+                    "canonical_name": canonical_name,
+                    "non_null_before": non_null_before,
+                    "non_null_after": non_null_after,
+                    "invalid_count": invalid_count,
+                    "invalid_proportion": (
+                        invalid_count / non_null_before if non_null_before else 0.0
+                    ),
+                    "invalid_examples": _example_flagged_values(before_series, invalid_mask),
+                }
+            )
+
+    if not qc_rows:
+        return cleaned_tables, rule_table, _empty_invalid_value_qc()
+
+    qc_df = pd.DataFrame(qc_rows).sort_values(
+        ["canonical_name", "hospital"]
+    ).reset_index(drop=True)
+    variable_totals = qc_df.groupby("canonical_name")["invalid_count"].transform("sum")
+    qc_df["variable_total_invalid_count"] = variable_totals
+    qc_df["hospital_share_of_variable_invalids"] = 0.0
+
+    non_zero_total_mask = variable_totals > 0
+    qc_df.loc[non_zero_total_mask, "hospital_share_of_variable_invalids"] = (
+        qc_df.loc[non_zero_total_mask, "invalid_count"]
+        / variable_totals[non_zero_total_mask]
+    )
+
+    dominant_hospitals = {}
+    dominant_shares = {}
+    concentrated_flags = {}
+    for canonical_name, group in qc_df.groupby("canonical_name"):
+        total_invalid = int(group["invalid_count"].sum())
+        if total_invalid == 0:
+            dominant_hospitals[canonical_name] = pd.NA
+            dominant_shares[canonical_name] = 0.0
+            concentrated_flags[canonical_name] = False
+            continue
+
+        dominant_row = group.sort_values(
+            ["hospital_share_of_variable_invalids", "hospital"],
+            ascending=[False, True],
+        ).iloc[0]
+        dominant_hospitals[canonical_name] = dominant_row["hospital"]
+        dominant_shares[canonical_name] = float(
+            dominant_row["hospital_share_of_variable_invalids"]
+        )
+        concentrated_flags[canonical_name] = (
+            total_invalid >= 5 and dominant_shares[canonical_name] >= 0.5
+        )
+
+    qc_df["dominant_invalid_hospital"] = qc_df["canonical_name"].map(dominant_hospitals)
+    qc_df["dominant_invalid_hospital_share"] = qc_df["canonical_name"].map(dominant_shares)
+    qc_df["invalidity_concentrated_in_specific_hospitals"] = qc_df[
+        "canonical_name"
+    ].map(concentrated_flags)
+    qc_df = qc_df[INVALID_VALUE_QC_COLUMNS]
+    return cleaned_tables, rule_table, qc_df
+
+
 def harmonize_dynamic_tables(
     raw_dir=DEFAULT_ASIC_RAW_DATA_DIR,
     translation_path=DEFAULT_TRANSLATION_PATH,
@@ -498,6 +959,9 @@ def harmonize_dynamic_tables(
         min_non_null=min_non_null,
         min_hospitals=min_hospitals,
         fence_factor=fence_factor,
+    )
+    tables_by_hospital, invalid_value_rules, invalid_value_qc = (
+        apply_dynamic_invalid_value_cleaning(tables_by_hospital)
     )
 
     schema_rows = []
@@ -538,6 +1002,8 @@ def harmonize_dynamic_tables(
         schema_summary=schema_summary_df,
         non_numeric_issues=non_numeric_issues,
         semantic_decisions=semantic_decisions,
+        invalid_value_rules=invalid_value_rules,
+        invalid_value_qc=invalid_value_qc,
         distribution_summary=distribution_summary,
         distribution_issues=distribution_issues,
     )

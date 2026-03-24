@@ -73,6 +73,8 @@ class TestASICPipeline(unittest.TestCase):
             0,
         )
         self.assertFalse(dataset.dynamic.semantic_decisions.empty)
+        self.assertFalse(dataset.dynamic.invalid_value_rules.empty)
+        self.assertFalse(dataset.dynamic.invalid_value_qc.empty)
 
     def test_build_asic_harmonized_dataset_applies_semantic_site_rules(self) -> None:
         dataset = build_asic_harmonized_dataset(DEFAULT_ASIC_RAW_DATA_DIR)
@@ -164,6 +166,53 @@ class TestASICPipeline(unittest.TestCase):
         self.assertEqual(uk02_ie_ratio["chapter1_recommendation"], "exclude")
         self.assertGreater(float(uk02_ie_ratio["candidate_reciprocal_median_before"]), 1.0)
 
+    def test_build_asic_harmonized_dataset_applies_invalid_value_cleaning(self) -> None:
+        dataset = build_asic_harmonized_dataset(DEFAULT_ASIC_RAW_DATA_DIR)
+        dynamic_df = dataset.dynamic.combined
+
+        sbp = pd.to_numeric(dynamic_df["sbp"], errors="coerce")
+        self.assertFalse(((sbp <= 0) | (sbp > 300)).fillna(False).any())
+
+        map_values = pd.to_numeric(dynamic_df["map"], errors="coerce")
+        self.assertFalse(((map_values <= 0) | (map_values > 250)).fillna(False).any())
+
+        pf_ratio = pd.to_numeric(dynamic_df["pf_ratio"], errors="coerce")
+        self.assertFalse(((pf_ratio <= 0) | (pf_ratio > 2500)).fillna(False).any())
+
+        vt_per_kg_ibw = pd.to_numeric(dynamic_df["vt_per_kg_ibw"], errors="coerce")
+        self.assertFalse(((vt_per_kg_ibw <= 0) | (vt_per_kg_ibw > 30)).fillna(False).any())
+
+        core_temp = pd.to_numeric(dynamic_df["core_temp"], errors="coerce")
+        self.assertFalse(((core_temp < 25) | (core_temp > 45)).fillna(False).any())
+
+    def test_build_asic_harmonized_dataset_records_invalid_value_qc(self) -> None:
+        dataset = build_asic_harmonized_dataset(DEFAULT_ASIC_RAW_DATA_DIR)
+        rules = dataset.dynamic.invalid_value_rules
+        qc = dataset.dynamic.invalid_value_qc
+
+        sbp_rule = rules[rules["canonical_name"] == "sbp"].iloc[0]
+        self.assertEqual(float(sbp_rule["hard_min"]), 0.0)
+        self.assertEqual(float(sbp_rule["hard_max"]), 300.0)
+        self.assertTrue(bool(sbp_rule["invalid_zero"]))
+
+        sbp_uk08 = qc[
+            (qc["hospital"] == "asic_UK08")
+            & (qc["canonical_name"] == "sbp")
+        ].iloc[0]
+        self.assertGreater(int(sbp_uk08["invalid_count"]), 0)
+        self.assertGreater(float(sbp_uk08["invalid_proportion"]), 0.0)
+        self.assertEqual(sbp_uk08["dominant_invalid_hospital"], "asic_UK08")
+        self.assertTrue(bool(sbp_uk08["invalidity_concentrated_in_specific_hospitals"]))
+
+        vt_qc = qc[
+            (qc["hospital"] == "asic_UK07")
+            & (qc["canonical_name"] == "vt_per_kg_ibw")
+        ].iloc[0]
+        self.assertGreater(int(vt_qc["invalid_count"]), 0)
+        self.assertTrue(
+            any(abs(float(value) - 38.71) < 1e-9 for value in vt_qc["invalid_examples"])
+        )
+
     def test_write_asic_harmonized_dataset_outputs_expected_files(self) -> None:
         dataset = build_asic_harmonized_dataset(DEFAULT_ASIC_RAW_DATA_DIR)
         with TemporaryDirectory() as tmpdir:
@@ -183,6 +232,8 @@ class TestASICPipeline(unittest.TestCase):
                 "dynamic_schema_summary",
                 "dynamic_non_numeric_issues",
                 "dynamic_semantic_decisions",
+                "dynamic_invalid_value_rules",
+                "dynamic_invalid_value_qc",
                 "dynamic_distribution_summary",
                 "dynamic_distribution_issues",
                 "qc_stay_id_summary",

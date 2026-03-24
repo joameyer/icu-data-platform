@@ -86,6 +86,8 @@ def write_asic_harmonized_dataset(
         "schema_summary": dataset.dynamic.schema_summary,
         "non_numeric_issues": dataset.dynamic.non_numeric_issues,
         "semantic_decisions": dataset.dynamic.semantic_decisions,
+        "invalid_value_rules": dataset.dynamic.invalid_value_rules,
+        "invalid_value_qc": dataset.dynamic.invalid_value_qc,
         "distribution_summary": dataset.dynamic.distribution_summary,
         "distribution_issues": dataset.dynamic.distribution_issues,
     }
