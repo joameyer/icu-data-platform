@@ -79,6 +79,7 @@ def main() -> int:
 
     print(f"Built ASIC static rows: {dataset.static.combined.shape[0]}")
     print(f"Built ASIC dynamic rows: {dataset.dynamic.combined.shape[0]}")
+    print(f"Built ASIC Chapter 1 8h blocks: {dataset.chapter1_8h_blocks.block_index.shape[0]}")
     for name, path in sorted(output_paths.items()):
         print(f"{name}: {path}")
 

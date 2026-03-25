@@ -4,6 +4,10 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from icu_data_platform.common.io import ensure_directory, write_dataframe
+from icu_data_platform.sources.asic.blocks import (
+    ASICChapter1BlockResult,
+    build_asic_chapter1_8h_blocks,
+)
 from icu_data_platform.sources.asic.cohort import (
     ASICStayLevelCohortResult,
     build_asic_stay_level_cohort,
@@ -36,6 +40,7 @@ class ASICHarmonizedDataset:
     dynamic: HarmonizedDynamicResult
     stay_id_qc: ASICStayIdQCResult
     cohort: ASICStayLevelCohortResult
+    chapter1_8h_blocks: ASICChapter1BlockResult
 
 
 def build_asic_harmonized_dataset(
@@ -68,11 +73,16 @@ def build_asic_harmonized_dataset(
         static_source_map=static_result.source_map,
         raw_static_tables=raw_static_tables,
     )
+    chapter1_8h_blocks = build_asic_chapter1_8h_blocks(
+        chapter1_cohort_df=cohort.chapter1.table,
+        dynamic_df=dynamic_result.combined,
+    )
     return ASICHarmonizedDataset(
         static=static_result,
         dynamic=dynamic_result,
         stay_id_qc=stay_id_qc,
         cohort=cohort,
+        chapter1_8h_blocks=chapter1_8h_blocks,
     )
 
 
@@ -88,6 +98,7 @@ def write_asic_harmonized_dataset(
     dynamic_dir = ensure_directory(output_dir / "dynamic")
     qc_dir = ensure_directory(output_dir / "qc")
     cohort_dir = ensure_directory(output_dir / "cohort")
+    blocks_dir = ensure_directory(output_dir / "blocks")
 
     static_outputs = {
         "harmonized": dataset.static.combined,
@@ -136,6 +147,18 @@ def write_asic_harmonized_dataset(
         "chapter1_retained_hospitals": dataset.cohort.chapter1.retained_hospitals,
         "chapter1_retained_stays": dataset.cohort.chapter1.retained_stays,
     }
+    blocks_outputs = {
+        "chapter1_8h_block_index": dataset.chapter1_8h_blocks.block_index,
+        "chapter1_8h_stay_block_counts": dataset.chapter1_8h_blocks.stay_block_counts,
+        "chapter1_8h_block_count_distribution_by_hospital": (
+            dataset.chapter1_8h_blocks.block_count_distribution_by_hospital
+        ),
+        "chapter1_8h_negative_dynamic_time_qc": (
+            dataset.chapter1_8h_blocks.negative_dynamic_time_qc
+        ),
+        "chapter1_8h_qc_summary": dataset.chapter1_8h_blocks.qc_summary,
+        "chapter1_8h_example_stays": dataset.chapter1_8h_blocks.example_stays,
+    }
 
     for name, df in static_outputs.items():
         path = static_dir / f"{name}.{extension}"
@@ -152,6 +175,10 @@ def write_asic_harmonized_dataset(
     for name, df in cohort_outputs.items():
         path = cohort_dir / f"{name}.{extension}"
         output_paths[f"cohort_{name}"] = write_dataframe(df, path, output_format=output_format)
+
+    for name, df in blocks_outputs.items():
+        path = blocks_dir / f"{name}.{extension}"
+        output_paths[f"blocks_{name}"] = write_dataframe(df, path, output_format=output_format)
 
     return output_paths
 

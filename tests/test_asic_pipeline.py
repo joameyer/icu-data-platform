@@ -90,6 +90,11 @@ class TestASICPipeline(unittest.TestCase):
         self.assertFalse(dataset.cohort.chapter1.counts_by_hospital.empty)
         self.assertFalse(dataset.cohort.chapter1.retained_hospitals.empty)
         self.assertFalse(dataset.cohort.chapter1.retained_stays.empty)
+        self.assertFalse(dataset.chapter1_8h_blocks.block_index.empty)
+        self.assertFalse(dataset.chapter1_8h_blocks.stay_block_counts.empty)
+        self.assertFalse(dataset.chapter1_8h_blocks.block_count_distribution_by_hospital.empty)
+        self.assertFalse(dataset.chapter1_8h_blocks.qc_summary.empty)
+        self.assertFalse(dataset.chapter1_8h_blocks.example_stays.empty)
 
     def test_build_asic_harmonized_dataset_builds_authoritative_stay_level_cohort(self) -> None:
         dataset = build_asic_harmonized_dataset(DEFAULT_ASIC_RAW_DATA_DIR)
@@ -281,6 +286,74 @@ class TestASICPipeline(unittest.TestCase):
             ).any()
         )
 
+    def test_build_asic_harmonized_dataset_builds_chapter1_8h_blocks(self) -> None:
+        dataset = build_asic_harmonized_dataset(DEFAULT_ASIC_RAW_DATA_DIR)
+        blocks = dataset.chapter1_8h_blocks
+        retained_cohort = dataset.cohort.chapter1.table
+
+        stay_counts = blocks.stay_block_counts
+        self.assertEqual(int(stay_counts.shape[0]), int(retained_cohort.shape[0]))
+        self.assertEqual(
+            set(stay_counts["stay_id_global"]),
+            set(retained_cohort["stay_id_global"]),
+        )
+
+        proxy_hours = pd.to_timedelta(
+            retained_cohort["icu_end_time_proxy"],
+            errors="coerce",
+        ).dt.total_seconds() / 3600.0
+        expected_block_rows = int((proxy_hours // 8).fillna(0).clip(lower=0).sum())
+        self.assertEqual(int(blocks.block_index.shape[0]), expected_block_rows)
+
+        metrics = dict(blocks.qc_summary[["metric", "value"]].itertuples(index=False))
+        self.assertEqual(
+            int(metrics["retained_chapter1_stays_total"]),
+            int(retained_cohort.shape[0]),
+        )
+        self.assertEqual(int(metrics["block_rows_total"]), int(blocks.block_index.shape[0]))
+        self.assertEqual(
+            int(metrics["retained_stays_with_zero_blocks"])
+            + int(metrics["retained_stays_with_one_or_more_blocks"]),
+            int(retained_cohort.shape[0]),
+        )
+        self.assertEqual(
+            int(metrics["all_constructed_blocks_end_on_or_before_icu_end_time_proxy"]),
+            1,
+        )
+        self.assertEqual(
+            int(metrics["exact_boundary_stays_have_terminal_block_end_equal_proxy"]),
+            1,
+        )
+        self.assertEqual(
+            int(metrics["negative_dynamic_time_rows_in_retained_input"]),
+            int(blocks.negative_dynamic_time_qc["negative_dynamic_time_row_count"].sum()),
+        )
+
+        terminal_block_end = (
+            blocks.block_index.groupby("stay_id_global")["block_end_h"]
+            .max()
+            .rename("max_block_end_h")
+        )
+        validation = stay_counts.set_index("stay_id_global").join(terminal_block_end, how="left")
+        validation["max_block_end_h"] = validation["max_block_end_h"].fillna(0)
+        self.assertTrue(
+            validation.loc[validation["completed_block_count"].ge(1), "max_block_end_h"]
+            .le(validation.loc[validation["completed_block_count"].ge(1), "icu_end_time_proxy_hours"])
+            .all()
+        )
+        exact_boundary = validation[validation["ends_exactly_on_8h_boundary"]]
+        self.assertTrue(
+            exact_boundary["terminal_block_end_h"]
+            .eq(exact_boundary["icu_end_time_proxy_hours"])
+            .all()
+        )
+
+        distribution = blocks.block_count_distribution_by_hospital
+        self.assertEqual(
+            set(distribution["hospital_id"]),
+            set(retained_cohort["hospital_id"].dropna().unique()),
+        )
+
     def test_build_asic_harmonized_dataset_applies_semantic_site_rules(self) -> None:
         dataset = build_asic_harmonized_dataset(DEFAULT_ASIC_RAW_DATA_DIR)
 
@@ -463,6 +536,12 @@ class TestASICPipeline(unittest.TestCase):
                 "cohort_chapter1_counts_by_hospital",
                 "cohort_chapter1_retained_hospitals",
                 "cohort_chapter1_retained_stays",
+                "blocks_chapter1_8h_block_index",
+                "blocks_chapter1_8h_stay_block_counts",
+                "blocks_chapter1_8h_block_count_distribution_by_hospital",
+                "blocks_chapter1_8h_negative_dynamic_time_qc",
+                "blocks_chapter1_8h_qc_summary",
+                "blocks_chapter1_8h_example_stays",
             }
             self.assertEqual(set(output_paths), expected_keys)
             self.assertTrue(all(path.exists() for path in output_paths.values()))
@@ -471,10 +550,12 @@ class TestASICPipeline(unittest.TestCase):
             dynamic_df = pd.read_csv(output_paths["dynamic_harmonized"])
             cohort_df = pd.read_csv(output_paths["cohort_stay_level"])
             chapter1_df = pd.read_csv(output_paths["cohort_chapter1_stay_level"])
+            block_index_df = pd.read_csv(output_paths["blocks_chapter1_8h_block_index"])
             self.assertGreater(int(static_df.shape[0]), 0)
             self.assertGreater(int(dynamic_df.shape[0]), 0)
             self.assertGreater(int(cohort_df.shape[0]), 0)
             self.assertGreater(int(chapter1_df.shape[0]), 0)
+            self.assertGreater(int(block_index_df.shape[0]), 0)
 
     def test_build_and_write_asic_harmonized_dataset_uses_default_artifacts_dir(self) -> None:
         with TemporaryDirectory() as tmpdir:
