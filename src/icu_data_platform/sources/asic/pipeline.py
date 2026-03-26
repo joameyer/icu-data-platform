@@ -4,6 +4,10 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from icu_data_platform.common.io import ensure_directory, write_dataframe
+from icu_data_platform.sources.asic.blocking import (
+    ASICBlockResult,
+    build_asic_8h_blocks,
+)
 from icu_data_platform.sources.asic.blocks import (
     ASICChapter1BlockResult,
     build_asic_chapter1_8h_blocks,
@@ -25,6 +29,10 @@ from icu_data_platform.sources.asic.harmonize.static import (
     HarmonizedStaticResult,
     harmonize_static_tables,
 )
+from icu_data_platform.sources.asic.stay_level import (
+    ASICStayLevelResult,
+    build_asic_stay_level_table,
+)
 from icu_data_platform.sources.asic.qc.stay_id import (
     ASICStayIdQCResult,
     assert_valid_asic_stay_ids,
@@ -39,6 +47,12 @@ class ASICHarmonizedDataset:
     static: HarmonizedStaticResult
     dynamic: HarmonizedDynamicResult
     stay_id_qc: ASICStayIdQCResult
+
+
+@dataclass(frozen=True)
+class ASICStandardizedDataset:
+    stay_level: ASICStayLevelResult
+    blocked_8h: ASICBlockResult
 
 
 @dataclass(frozen=True)
@@ -95,6 +109,23 @@ def build_asic_chapter1_dataset(
     return ASICChapter1Dataset(
         cohort=cohort,
         chapter1_8h_blocks=chapter1_8h_blocks,
+    )
+
+
+def build_asic_standardized_dataset(
+    harmonized_dataset: ASICHarmonizedDataset,
+) -> ASICStandardizedDataset:
+    stay_level = build_asic_stay_level_table(
+        static_df=harmonized_dataset.static.combined,
+        dynamic_df=harmonized_dataset.dynamic.combined,
+    )
+    blocked_8h = build_asic_8h_blocks(
+        stay_level_df=stay_level.table,
+        dynamic_df=harmonized_dataset.dynamic.combined,
+    )
+    return ASICStandardizedDataset(
+        stay_level=stay_level,
+        blocked_8h=blocked_8h,
     )
 
 
@@ -169,6 +200,63 @@ def build_and_write_asic_harmonized_dataset(
         fence_factor=fence_factor,
     )
     output_paths = write_asic_harmonized_dataset(
+        dataset,
+        output_dir=output_dir,
+        output_format=output_format,
+    )
+    return dataset, output_paths
+
+
+def write_asic_standardized_dataset(
+    dataset: ASICStandardizedDataset,
+    output_dir: Path = DEFAULT_ASIC_HARMONIZED_OUTPUT_DIR,
+    output_format: str = "csv",
+) -> dict[str, Path]:
+    extension = "csv" if output_format == "csv" else "parquet"
+    output_paths: dict[str, Path] = {}
+
+    cohort_dir = ensure_directory(output_dir / "cohort")
+    blocked_dir = ensure_directory(output_dir / "blocked")
+
+    cohort_outputs = {
+        "stay_level": dataset.stay_level.table,
+        "summary": dataset.stay_level.summary,
+        "preprocessing_notes": dataset.stay_level.preprocessing_notes,
+        "icu_end_time_proxy_summary_by_hospital": (
+            dataset.stay_level.icu_end_time_proxy_summary_by_hospital
+        ),
+        "coding_distribution_by_hospital": dataset.stay_level.coding_distribution_by_hospital,
+    }
+    blocked_outputs = {
+        "asic_8h_block_index": dataset.blocked_8h.block_index,
+        "asic_8h_blocked_dynamic_features": dataset.blocked_8h.blocked_dynamic_features,
+        "asic_8h_stay_block_counts": dataset.blocked_8h.stay_block_counts,
+        "asic_8h_block_count_distribution_by_hospital": (
+            dataset.blocked_8h.block_count_distribution_by_hospital
+        ),
+        "asic_8h_negative_dynamic_time_qc": dataset.blocked_8h.negative_dynamic_time_qc,
+        "asic_8h_qc_summary": dataset.blocked_8h.qc_summary,
+        "asic_8h_example_stays": dataset.blocked_8h.example_stays,
+    }
+
+    for name, df in cohort_outputs.items():
+        path = cohort_dir / f"{name}.{extension}"
+        output_paths[f"cohort_{name}"] = write_dataframe(df, path, output_format=output_format)
+
+    for name, df in blocked_outputs.items():
+        path = blocked_dir / f"{name}.{extension}"
+        output_paths[f"blocked_{name}"] = write_dataframe(df, path, output_format=output_format)
+
+    return output_paths
+
+
+def build_and_write_asic_standardized_dataset(
+    harmonized_dataset: ASICHarmonizedDataset,
+    output_dir: Path = DEFAULT_ASIC_HARMONIZED_OUTPUT_DIR,
+    output_format: str = "csv",
+) -> tuple[ASICStandardizedDataset, dict[str, Path]]:
+    dataset = build_asic_standardized_dataset(harmonized_dataset)
+    output_paths = write_asic_standardized_dataset(
         dataset,
         output_dir=output_dir,
         output_format=output_format,
