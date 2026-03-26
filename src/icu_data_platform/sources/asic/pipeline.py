@@ -39,6 +39,10 @@ class ASICHarmonizedDataset:
     static: HarmonizedStaticResult
     dynamic: HarmonizedDynamicResult
     stay_id_qc: ASICStayIdQCResult
+
+
+@dataclass(frozen=True)
+class ASICChapter1Dataset:
     cohort: ASICStayLevelCohortResult
     chapter1_8h_blocks: ASICChapter1BlockResult
 
@@ -50,7 +54,6 @@ def build_asic_harmonized_dataset(
     min_hospitals: int = 4,
     fence_factor: float = 1.5,
 ) -> ASICHarmonizedDataset:
-    raw_static_tables = load_static_tables(raw_dir)
     static_result = harmonize_static_tables(
         raw_dir=raw_dir,
         translation_path=translation_path,
@@ -67,20 +70,29 @@ def build_asic_harmonized_dataset(
         dynamic_df=dynamic_result.combined,
     )
     assert_valid_asic_stay_ids(stay_id_qc)
-    cohort = build_asic_stay_level_cohort(
-        static_df=static_result.combined,
-        dynamic_df=dynamic_result.combined,
-        static_source_map=static_result.source_map,
-        raw_static_tables=raw_static_tables,
-    )
-    chapter1_8h_blocks = build_asic_chapter1_8h_blocks(
-        chapter1_cohort_df=cohort.chapter1.table,
-        dynamic_df=dynamic_result.combined,
-    )
     return ASICHarmonizedDataset(
         static=static_result,
         dynamic=dynamic_result,
         stay_id_qc=stay_id_qc,
+    )
+
+
+def build_asic_chapter1_dataset(
+    harmonized_dataset: ASICHarmonizedDataset,
+    raw_dir: Path = DEFAULT_ASIC_RAW_DATA_DIR,
+) -> ASICChapter1Dataset:
+    raw_static_tables = load_static_tables(raw_dir)
+    cohort = build_asic_stay_level_cohort(
+        static_df=harmonized_dataset.static.combined,
+        dynamic_df=harmonized_dataset.dynamic.combined,
+        static_source_map=harmonized_dataset.static.source_map,
+        raw_static_tables=raw_static_tables,
+    )
+    chapter1_8h_blocks = build_asic_chapter1_8h_blocks(
+        chapter1_cohort_df=cohort.chapter1.table,
+        dynamic_df=harmonized_dataset.dynamic.combined,
+    )
+    return ASICChapter1Dataset(
         cohort=cohort,
         chapter1_8h_blocks=chapter1_8h_blocks,
     )
@@ -97,8 +109,6 @@ def write_asic_harmonized_dataset(
     static_dir = ensure_directory(output_dir / "static")
     dynamic_dir = ensure_directory(output_dir / "dynamic")
     qc_dir = ensure_directory(output_dir / "qc")
-    cohort_dir = ensure_directory(output_dir / "cohort")
-    blocks_dir = ensure_directory(output_dir / "blocks")
 
     static_outputs = {
         "harmonized": dataset.static.combined,
@@ -126,6 +136,57 @@ def write_asic_harmonized_dataset(
         "stay_id_mapping_failures": dataset.stay_id_qc.mapping_failures,
         "stay_id_duplicate_dynamic_time_index": dataset.stay_id_qc.duplicate_dynamic_time_index,
     }
+
+    for name, df in static_outputs.items():
+        path = static_dir / f"{name}.{extension}"
+        output_paths[f"static_{name}"] = write_dataframe(df, path, output_format=output_format)
+
+    for name, df in dynamic_outputs.items():
+        path = dynamic_dir / f"{name}.{extension}"
+        output_paths[f"dynamic_{name}"] = write_dataframe(df, path, output_format=output_format)
+
+    for name, df in qc_outputs.items():
+        path = qc_dir / f"{name}.{extension}"
+        output_paths[f"qc_{name}"] = write_dataframe(df, path, output_format=output_format)
+
+    return output_paths
+
+
+def build_and_write_asic_harmonized_dataset(
+    raw_dir: Path = DEFAULT_ASIC_RAW_DATA_DIR,
+    translation_path: Path = DEFAULT_TRANSLATION_PATH,
+    output_dir: Path = DEFAULT_ASIC_HARMONIZED_OUTPUT_DIR,
+    output_format: str = "csv",
+    min_non_null: int = 20,
+    min_hospitals: int = 4,
+    fence_factor: float = 1.5,
+) -> tuple[ASICHarmonizedDataset, dict[str, Path]]:
+    dataset = build_asic_harmonized_dataset(
+        raw_dir=raw_dir,
+        translation_path=translation_path,
+        min_non_null=min_non_null,
+        min_hospitals=min_hospitals,
+        fence_factor=fence_factor,
+    )
+    output_paths = write_asic_harmonized_dataset(
+        dataset,
+        output_dir=output_dir,
+        output_format=output_format,
+    )
+    return dataset, output_paths
+
+
+def write_asic_chapter1_dataset(
+    dataset: ASICChapter1Dataset,
+    output_dir: Path = DEFAULT_ASIC_HARMONIZED_OUTPUT_DIR,
+    output_format: str = "csv",
+) -> dict[str, Path]:
+    extension = "csv" if output_format == "csv" else "parquet"
+    output_paths: dict[str, Path] = {}
+
+    cohort_dir = ensure_directory(output_dir / "cohort")
+    blocks_dir = ensure_directory(output_dir / "blocks")
+
     cohort_outputs = {
         "stay_level": dataset.cohort.table,
         "summary": dataset.cohort.summary,
@@ -149,6 +210,9 @@ def write_asic_harmonized_dataset(
     }
     blocks_outputs = {
         "chapter1_8h_block_index": dataset.chapter1_8h_blocks.block_index,
+        "chapter1_8h_blocked_dynamic_features": (
+            dataset.chapter1_8h_blocks.blocked_dynamic_features
+        ),
         "chapter1_8h_stay_block_counts": dataset.chapter1_8h_blocks.stay_block_counts,
         "chapter1_8h_block_count_distribution_by_hospital": (
             dataset.chapter1_8h_blocks.block_count_distribution_by_hospital
@@ -159,18 +223,6 @@ def write_asic_harmonized_dataset(
         "chapter1_8h_qc_summary": dataset.chapter1_8h_blocks.qc_summary,
         "chapter1_8h_example_stays": dataset.chapter1_8h_blocks.example_stays,
     }
-
-    for name, df in static_outputs.items():
-        path = static_dir / f"{name}.{extension}"
-        output_paths[f"static_{name}"] = write_dataframe(df, path, output_format=output_format)
-
-    for name, df in dynamic_outputs.items():
-        path = dynamic_dir / f"{name}.{extension}"
-        output_paths[f"dynamic_{name}"] = write_dataframe(df, path, output_format=output_format)
-
-    for name, df in qc_outputs.items():
-        path = qc_dir / f"{name}.{extension}"
-        output_paths[f"qc_{name}"] = write_dataframe(df, path, output_format=output_format)
 
     for name, df in cohort_outputs.items():
         path = cohort_dir / f"{name}.{extension}"
@@ -183,23 +235,17 @@ def write_asic_harmonized_dataset(
     return output_paths
 
 
-def build_and_write_asic_harmonized_dataset(
+def build_and_write_asic_chapter1_dataset(
+    harmonized_dataset: ASICHarmonizedDataset,
     raw_dir: Path = DEFAULT_ASIC_RAW_DATA_DIR,
-    translation_path: Path = DEFAULT_TRANSLATION_PATH,
     output_dir: Path = DEFAULT_ASIC_HARMONIZED_OUTPUT_DIR,
     output_format: str = "csv",
-    min_non_null: int = 20,
-    min_hospitals: int = 4,
-    fence_factor: float = 1.5,
-) -> tuple[ASICHarmonizedDataset, dict[str, Path]]:
-    dataset = build_asic_harmonized_dataset(
+) -> tuple[ASICChapter1Dataset, dict[str, Path]]:
+    dataset = build_asic_chapter1_dataset(
+        harmonized_dataset,
         raw_dir=raw_dir,
-        translation_path=translation_path,
-        min_non_null=min_non_null,
-        min_hospitals=min_hospitals,
-        fence_factor=fence_factor,
     )
-    output_paths = write_asic_harmonized_dataset(
+    output_paths = write_asic_chapter1_dataset(
         dataset,
         output_dir=output_dir,
         output_format=output_format,

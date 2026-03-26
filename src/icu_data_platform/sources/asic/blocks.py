@@ -49,11 +49,26 @@ EXAMPLE_STAY_COLUMNS = [
     "completed_block_count",
     "block_boundaries",
 ]
+BLOCKED_DYNAMIC_EXCLUDED_COLUMNS = {
+    "hospital_id",
+    "stay_id_global",
+    "stay_id_local",
+    "time",
+    "time_h",
+    "minutes_since_admit",
+    "source_row_order",
+}
+BLOCKED_DYNAMIC_BASE_COLUMNS = BLOCK_INDEX_COLUMNS + [
+    "dynamic_row_count",
+    "non_missing_measurements_in_block",
+    "observed_variables_in_block",
+]
 
 
 @dataclass(frozen=True)
 class ASICChapter1BlockResult:
     block_index: pd.DataFrame
+    blocked_dynamic_features: pd.DataFrame
     stay_block_counts: pd.DataFrame
     block_count_distribution_by_hospital: pd.DataFrame
     negative_dynamic_time_qc: pd.DataFrame
@@ -142,11 +157,16 @@ def _retained_dynamic_input(
     stay_ids = retained_stays["stay_id_global"].dropna().astype("string")
     retained_dynamic = dynamic_df[
         dynamic_df["stay_id_global"].astype("string").isin(stay_ids)
-    ][["stay_id_global", "hospital_id", "time"]].copy()
+    ].copy()
     retained_dynamic["stay_id_global"] = retained_dynamic["stay_id_global"].astype("string")
     retained_dynamic["hospital_id"] = retained_dynamic["hospital_id"].astype("string")
     retained_dynamic["time_h"] = (
         pd.to_timedelta(retained_dynamic["time"], errors="coerce").dt.total_seconds() / 3600.0
+    )
+    retained_dynamic["source_row_order"] = pd.Series(
+        range(retained_dynamic.shape[0]),
+        index=retained_dynamic.index,
+        dtype="Int64",
     )
     return retained_dynamic
 
@@ -204,6 +224,143 @@ def _build_block_index(stay_block_counts: pd.DataFrame) -> pd.DataFrame:
         return pd.DataFrame(columns=BLOCK_INDEX_COLUMNS)
 
     return pd.DataFrame(rows)[BLOCK_INDEX_COLUMNS].sort_values(
+        ["hospital_id", "stay_id_global", "block_index"]
+    ).reset_index(drop=True)
+
+
+def _blocked_dynamic_feature_columns(retained_dynamic: pd.DataFrame) -> list[str]:
+    return [
+        column
+        for column in retained_dynamic.columns
+        if column not in BLOCKED_DYNAMIC_EXCLUDED_COLUMNS
+    ]
+
+
+def _blocked_dynamic_output_columns(feature_columns: list[str]) -> list[str]:
+    columns = list(BLOCKED_DYNAMIC_BASE_COLUMNS)
+    for column in feature_columns:
+        columns.extend(
+            [
+                f"{column}_obs_count",
+                f"{column}_mean",
+                f"{column}_median",
+                f"{column}_min",
+                f"{column}_max",
+                f"{column}_last",
+            ]
+        )
+    return columns
+
+
+def _build_blocked_dynamic_features(
+    block_index: pd.DataFrame,
+    retained_dynamic: pd.DataFrame,
+) -> pd.DataFrame:
+    feature_columns = _blocked_dynamic_feature_columns(retained_dynamic)
+    output_columns = _blocked_dynamic_output_columns(feature_columns)
+
+    if block_index.empty:
+        return pd.DataFrame(columns=output_columns)
+
+    assignable = retained_dynamic[
+        retained_dynamic["time_h"].notna() & retained_dynamic["time_h"].ge(0)
+    ].copy()
+    assignable["block_index"] = (assignable["time_h"] // BLOCK_SIZE_HOURS).astype("Int64")
+
+    block_lookup = block_index[BLOCK_INDEX_COLUMNS].copy()
+    assigned = assignable.merge(
+        block_lookup,
+        on=["stay_id_global", "hospital_id", "block_index"],
+        how="inner",
+    ).sort_values(
+        ["hospital_id", "stay_id_global", "block_index", "time_h", "source_row_order"]
+    )
+
+    aggregated = pd.DataFrame(columns=output_columns)
+    if not assigned.empty:
+        group_columns = BLOCK_INDEX_COLUMNS
+        grouped = assigned.groupby(group_columns, dropna=False, sort=False)
+        dynamic_row_count = grouped.size().rename("dynamic_row_count")
+
+        aggregated_parts: list[pd.Series | pd.DataFrame] = [dynamic_row_count]
+        if feature_columns:
+            assigned.loc[:, feature_columns] = assigned[feature_columns].apply(
+                pd.to_numeric,
+                errors="coerce",
+            )
+            assigned["row_non_missing_measurements"] = assigned[feature_columns].notna().sum(axis=1)
+            grouped = assigned.groupby(group_columns, dropna=False, sort=False)
+
+            counts = grouped[feature_columns].count().rename(
+                columns=lambda column: f"{column}_obs_count"
+            )
+            aggregated_parts.extend(
+                [
+                    grouped["row_non_missing_measurements"]
+                    .sum()
+                    .rename("non_missing_measurements_in_block"),
+                    counts.gt(0).sum(axis=1).rename("observed_variables_in_block"),
+                    counts,
+                    grouped[feature_columns].mean().rename(
+                        columns=lambda column: f"{column}_mean"
+                    ),
+                    grouped[feature_columns].median().rename(
+                        columns=lambda column: f"{column}_median"
+                    ),
+                    grouped[feature_columns].min().rename(
+                        columns=lambda column: f"{column}_min"
+                    ),
+                    grouped[feature_columns].max().rename(
+                        columns=lambda column: f"{column}_max"
+                    ),
+                    grouped[feature_columns].agg("last").rename(
+                        columns=lambda column: f"{column}_last"
+                    ),
+                ]
+            )
+        else:
+            aggregated_parts.extend(
+                [
+                    pd.Series(0, index=dynamic_row_count.index, name="non_missing_measurements_in_block"),
+                    pd.Series(0, index=dynamic_row_count.index, name="observed_variables_in_block"),
+                ]
+            )
+
+        aggregated = pd.concat(aggregated_parts, axis=1).reset_index()
+
+    blocked_dynamic = block_index.merge(
+        aggregated,
+        on=BLOCK_INDEX_COLUMNS,
+        how="left",
+    )
+
+    count_columns = [
+        "dynamic_row_count",
+        "non_missing_measurements_in_block",
+        "observed_variables_in_block",
+        *[f"{column}_obs_count" for column in feature_columns],
+    ]
+    summary_columns = [
+        name
+        for name in output_columns
+        if name not in BLOCK_INDEX_COLUMNS and name not in count_columns
+    ]
+
+    for column in count_columns:
+        if column not in blocked_dynamic.columns:
+            blocked_dynamic[column] = pd.Series(0, index=blocked_dynamic.index, dtype="Int64")
+        else:
+            blocked_dynamic[column] = (
+                pd.to_numeric(blocked_dynamic[column], errors="coerce").fillna(0).astype("Int64")
+            )
+
+    for column in summary_columns:
+        if column not in blocked_dynamic.columns:
+            blocked_dynamic[column] = pd.Series(pd.NA, index=blocked_dynamic.index, dtype="Float64")
+        else:
+            blocked_dynamic[column] = pd.to_numeric(blocked_dynamic[column], errors="coerce")
+
+    return blocked_dynamic[output_columns].sort_values(
         ["hospital_id", "stay_id_global", "block_index"]
     ).reset_index(drop=True)
 
@@ -496,6 +653,7 @@ def build_asic_chapter1_8h_blocks(
     retained_dynamic = _retained_dynamic_input(dynamic_df, stay_block_counts)
     negative_dynamic_time_qc = _build_negative_dynamic_time_qc(retained_dynamic)
     block_index = _build_block_index(stay_block_counts)
+    blocked_dynamic_features = _build_blocked_dynamic_features(block_index, retained_dynamic)
     validation = _build_validation_table(stay_block_counts, block_index)
     _validate_block_index(validation, block_index)
     block_count_distribution_by_hospital = _build_block_count_distribution_by_hospital(
@@ -512,6 +670,7 @@ def build_asic_chapter1_8h_blocks(
 
     return ASICChapter1BlockResult(
         block_index=block_index,
+        blocked_dynamic_features=blocked_dynamic_features,
         stay_block_counts=stay_block_counts,
         block_count_distribution_by_hospital=block_count_distribution_by_hospital,
         negative_dynamic_time_qc=negative_dynamic_time_qc,

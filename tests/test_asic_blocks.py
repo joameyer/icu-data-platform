@@ -135,3 +135,85 @@ class TestASICChapter1Blocks(unittest.TestCase):
 
         with self.assertRaisesRegex(ValueError, "icu_admission_time = 0"):
             build_asic_chapter1_8h_blocks(chapter1_cohort_df, dynamic_df)
+
+    def test_build_asic_chapter1_8h_blocks_builds_blocked_dynamic_features(self) -> None:
+        chapter1_cohort_df = pd.DataFrame(
+            {
+                "stay_id_global": ["asic_A_1", "asic_A_2"],
+                "hospital_id": ["asic_A", "asic_A"],
+                "icu_admission_time": pd.Series([0, 0], dtype="Int64"),
+                "icu_end_time_proxy": pd.Series(
+                    ["1 days 00:00:00", "0 days 08:00:00"],
+                    dtype="string",
+                ),
+            }
+        )
+        dynamic_df = pd.DataFrame(
+            {
+                "stay_id_global": [
+                    "asic_A_1",
+                    "asic_A_1",
+                    "asic_A_1",
+                    "asic_A_1",
+                    "asic_A_1",
+                    "asic_A_1",
+                    "asic_A_1",
+                    "asic_A_1",
+                    "asic_A_2",
+                ],
+                "hospital_id": ["asic_A"] * 9,
+                "time": [
+                    "0 days 01:00:00",
+                    "0 days 07:30:00",
+                    "0 days 08:00:00",
+                    "0 days 15:00:00",
+                    "0 days 16:00:00",
+                    "0 days 23:30:00",
+                    "1 days 00:00:00",
+                    "-1h",
+                    "0 days 08:00:00",
+                ],
+                "heart_rate": [100, 110, 120, 130, 140, 150, 160, 90, 200],
+                "sbp": [pd.NA, 110, 120, pd.NA, 140, 150, 160, 100, 210],
+            }
+        )
+
+        result = build_asic_chapter1_8h_blocks(chapter1_cohort_df, dynamic_df)
+        blocked = result.blocked_dynamic_features.set_index(["stay_id_global", "block_index"])
+
+        self.assertEqual(int(result.blocked_dynamic_features.shape[0]), 4)
+
+        first_block = blocked.loc[("asic_A_1", 0)]
+        self.assertEqual(int(first_block["dynamic_row_count"]), 2)
+        self.assertEqual(int(first_block["non_missing_measurements_in_block"]), 3)
+        self.assertEqual(int(first_block["observed_variables_in_block"]), 2)
+        self.assertEqual(int(first_block["heart_rate_obs_count"]), 2)
+        self.assertAlmostEqual(float(first_block["heart_rate_mean"]), 105.0)
+        self.assertAlmostEqual(float(first_block["heart_rate_median"]), 105.0)
+        self.assertAlmostEqual(float(first_block["heart_rate_min"]), 100.0)
+        self.assertAlmostEqual(float(first_block["heart_rate_max"]), 110.0)
+        self.assertAlmostEqual(float(first_block["heart_rate_last"]), 110.0)
+        self.assertEqual(int(first_block["sbp_obs_count"]), 1)
+        self.assertAlmostEqual(float(first_block["sbp_median"]), 110.0)
+        self.assertAlmostEqual(float(first_block["sbp_last"]), 110.0)
+
+        second_block = blocked.loc[("asic_A_1", 1)]
+        self.assertEqual(int(second_block["dynamic_row_count"]), 2)
+        self.assertEqual(int(second_block["heart_rate_obs_count"]), 2)
+        self.assertAlmostEqual(float(second_block["heart_rate_median"]), 125.0)
+        self.assertAlmostEqual(float(second_block["heart_rate_last"]), 130.0)
+        self.assertEqual(int(second_block["sbp_obs_count"]), 1)
+        self.assertAlmostEqual(float(second_block["sbp_median"]), 120.0)
+        self.assertAlmostEqual(float(second_block["sbp_last"]), 120.0)
+
+        third_block = blocked.loc[("asic_A_1", 2)]
+        self.assertEqual(int(third_block["dynamic_row_count"]), 2)
+        self.assertAlmostEqual(float(third_block["heart_rate_median"]), 145.0)
+        self.assertAlmostEqual(float(third_block["heart_rate_last"]), 150.0)
+        self.assertAlmostEqual(float(third_block["sbp_median"]), 145.0)
+        self.assertAlmostEqual(float(third_block["sbp_last"]), 150.0)
+
+        empty_boundary_block = blocked.loc[("asic_A_2", 0)]
+        self.assertEqual(int(empty_boundary_block["dynamic_row_count"]), 0)
+        self.assertEqual(int(empty_boundary_block["heart_rate_obs_count"]), 0)
+        self.assertTrue(pd.isna(empty_boundary_block["heart_rate_last"]))
