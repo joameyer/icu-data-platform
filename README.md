@@ -25,6 +25,10 @@ It is not responsible for:
 ## Output contract
 This repo produces harmonized dataset-level tables that can be consumed by downstream chapter-specific analysis repositories.
 
+For ASIC, the upstream harmonized build also emits reusable QC artifacts, including an
+observed mechanical-ventilation `>=24h` verification derived directly from harmonized
+dynamic timestamps. See `docs/asic_mech_vent_ge_24h_qc.md`.
+
 ## Data policy
 No real patient-level data is committed to this repository.
 Only schemas, synthetic examples, and safe metadata/QC outputs may be stored here.

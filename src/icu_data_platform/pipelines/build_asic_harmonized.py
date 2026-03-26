@@ -91,6 +91,14 @@ def main() -> int:
 
     print(f"Built ASIC static rows: {dataset.static.combined.shape[0]}")
     print(f"Built ASIC dynamic rows: {dataset.dynamic.combined.shape[0]}")
+    print(
+        "Built ASIC mech vent >=24h QC stays: "
+        f"{dataset.mech_vent_ge_24h_qc.stay_level.shape[0]}"
+    )
+    print(
+        "Observed mech vent >=24h QC-positive stays: "
+        f"{int(dataset.mech_vent_ge_24h_qc.stay_level['mech_vent_ge_24h_qc'].sum())}"
+    )
     print(f"Built ASIC stay-level rows: {standardized_dataset.stay_level.table.shape[0]}")
     print(
         "Built ASIC generic 8h blocks: "

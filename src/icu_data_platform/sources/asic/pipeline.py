@@ -38,6 +38,10 @@ from icu_data_platform.sources.asic.qc.stay_id import (
     assert_valid_asic_stay_ids,
     build_asic_stay_id_qc,
 )
+from icu_data_platform.sources.asic.qc.mech_ventilation import (
+    ASICMechanicalVentilationQCResult,
+    build_asic_mech_vent_ge_24h_qc,
+)
 
 DEFAULT_ASIC_HARMONIZED_OUTPUT_DIR = Path("artifacts") / "asic_harmonized"
 
@@ -47,6 +51,7 @@ class ASICHarmonizedDataset:
     static: HarmonizedStaticResult
     dynamic: HarmonizedDynamicResult
     stay_id_qc: ASICStayIdQCResult
+    mech_vent_ge_24h_qc: ASICMechanicalVentilationQCResult
 
 
 @dataclass(frozen=True)
@@ -84,10 +89,12 @@ def build_asic_harmonized_dataset(
         dynamic_df=dynamic_result.combined,
     )
     assert_valid_asic_stay_ids(stay_id_qc)
+    mech_vent_ge_24h_qc = build_asic_mech_vent_ge_24h_qc(dynamic_result.combined)
     return ASICHarmonizedDataset(
         static=static_result,
         dynamic=dynamic_result,
         stay_id_qc=stay_id_qc,
+        mech_vent_ge_24h_qc=mech_vent_ge_24h_qc,
     )
 
 
@@ -166,6 +173,11 @@ def write_asic_harmonized_dataset(
         "stay_id_duplicate_static_global_ids": dataset.stay_id_qc.static_duplicate_global_ids,
         "stay_id_mapping_failures": dataset.stay_id_qc.mapping_failures,
         "stay_id_duplicate_dynamic_time_index": dataset.stay_id_qc.duplicate_dynamic_time_index,
+        "mech_vent_ge_24h_stay_level": dataset.mech_vent_ge_24h_qc.stay_level,
+        "mech_vent_ge_24h_episode_level": dataset.mech_vent_ge_24h_qc.episode_level,
+        "mech_vent_ge_24h_hospital_summary": dataset.mech_vent_ge_24h_qc.hospital_summary,
+        "mech_vent_ge_24h_failed_stays": dataset.mech_vent_ge_24h_qc.failed_stays,
+        "mech_vent_ge_24h_documentation": dataset.mech_vent_ge_24h_qc.documentation,
     }
 
     for name, df in static_outputs.items():

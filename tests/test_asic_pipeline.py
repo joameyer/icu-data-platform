@@ -83,8 +83,78 @@ class TestASICPipeline(unittest.TestCase):
         self.assertFalse(dataset.dynamic.semantic_decisions.empty)
         self.assertFalse(dataset.dynamic.invalid_value_rules.empty)
         self.assertFalse(dataset.dynamic.invalid_value_qc.empty)
+        self.assertFalse(dataset.mech_vent_ge_24h_qc.stay_level.empty)
+        self.assertFalse(dataset.mech_vent_ge_24h_qc.hospital_summary.empty)
+        self.assertFalse(dataset.mech_vent_ge_24h_qc.documentation.empty)
         self.assertFalse(hasattr(dataset, "cohort"))
         self.assertFalse(hasattr(dataset, "chapter1_8h_blocks"))
+
+    def test_build_asic_harmonized_dataset_builds_mech_vent_qc_artifacts(self) -> None:
+        dataset = self.harmonized_dataset
+        qc = dataset.mech_vent_ge_24h_qc
+
+        stay_level = qc.stay_level
+        self.assertEqual(
+            int(stay_level.shape[0]),
+            int(dataset.dynamic.combined["stay_id_global"].nunique(dropna=True)),
+        )
+        self.assertTrue(
+            {
+                "stay_id_global",
+                "hospital_id",
+                "number_of_ventilation_supported_timestamps",
+                "number_of_derived_ventilation_episodes",
+                "maximum_derived_episode_duration_hours",
+                "mech_vent_ge_24h_qc",
+            }.issubset(stay_level.columns)
+        )
+        self.assertTrue(
+            stay_level["maximum_derived_episode_duration_hours"].ge(0).all()
+        )
+
+        episode_level = qc.episode_level
+        self.assertTrue(
+            {
+                "stay_id_global",
+                "hospital_id",
+                "episode_index",
+                "episode_start_time",
+                "episode_end_time",
+                "episode_duration_hours",
+            }.issubset(episode_level.columns)
+        )
+        self.assertTrue(episode_level["episode_duration_hours"].ge(0).all())
+
+        failed_stays = qc.failed_stays
+        expected_failed_stays = stay_level.loc[~stay_level["mech_vent_ge_24h_qc"]]
+        self.assertEqual(
+            set(failed_stays["stay_id_global"]),
+            set(expected_failed_stays["stay_id_global"]),
+        )
+        self.assertTrue(failed_stays["mech_vent_ge_24h_qc"].eq(False).all())
+
+        hospital_summary = qc.hospital_summary
+        self.assertEqual(
+            set(hospital_summary["hospital_id"]),
+            set(stay_level["hospital_id"].dropna().unique()),
+        )
+        self.assertTrue(
+            hospital_summary["proportion_satisfying_mech_vent_ge_24h_qc"].between(0, 1).all()
+        )
+
+        documentation = qc.documentation
+        self.assertTrue(
+            documentation["note"].str.contains("8 hours", case=False, na=False).any()
+        )
+        self.assertTrue(
+            documentation["note"].str.contains(
+                "cohort-contract verification for Chapter 1",
+                na=False,
+            ).any()
+        )
+        self.assertTrue(
+            documentation["note"].str.contains("not a claim of perfect ground-truth", na=False).any()
+        )
 
     def test_build_asic_chapter1_dataset_builds_authoritative_stay_level_cohort(self) -> None:
         harmonized_dataset = self.harmonized_dataset
@@ -533,14 +603,21 @@ class TestASICPipeline(unittest.TestCase):
                 "qc_stay_id_duplicate_static_global_ids",
                 "qc_stay_id_mapping_failures",
                 "qc_stay_id_duplicate_dynamic_time_index",
+                "qc_mech_vent_ge_24h_stay_level",
+                "qc_mech_vent_ge_24h_episode_level",
+                "qc_mech_vent_ge_24h_hospital_summary",
+                "qc_mech_vent_ge_24h_failed_stays",
+                "qc_mech_vent_ge_24h_documentation",
             }
             self.assertEqual(set(output_paths), expected_keys)
             self.assertTrue(all(path.exists() for path in output_paths.values()))
 
             static_df = pd.read_csv(output_paths["static_harmonized"])
             dynamic_df = pd.read_csv(output_paths["dynamic_harmonized"])
+            mech_vent_stay_qc = pd.read_csv(output_paths["qc_mech_vent_ge_24h_stay_level"])
             self.assertGreater(int(static_df.shape[0]), 0)
             self.assertGreater(int(dynamic_df.shape[0]), 0)
+            self.assertGreater(int(mech_vent_stay_qc.shape[0]), 0)
 
     def test_write_asic_chapter1_dataset_outputs_expected_files(self) -> None:
         dataset = self.chapter1_dataset
