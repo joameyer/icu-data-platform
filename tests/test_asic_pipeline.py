@@ -25,6 +25,8 @@ from icu_data_platform.sources.asic.pipeline import (  # noqa: E402
     build_asic_harmonized_dataset,
     build_and_write_asic_chapter1_dataset,
     build_and_write_asic_harmonized_dataset,
+    build_and_write_asic_standardized_dataset,
+    build_and_write_asic_standardized_dataset_from_harmonized_outputs,
     write_asic_chapter1_dataset,
     write_asic_harmonized_dataset,
 )
@@ -618,6 +620,78 @@ class TestASICPipeline(unittest.TestCase):
             self.assertGreater(int(static_df.shape[0]), 0)
             self.assertGreater(int(dynamic_df.shape[0]), 0)
             self.assertGreater(int(mech_vent_stay_qc.shape[0]), 0)
+
+    def test_build_standardized_from_harmonized_outputs_matches_direct_builder(self) -> None:
+        with TemporaryDirectory() as tmpdir:
+            harmonized_dir = Path(tmpdir) / "harmonized"
+            direct_dir = Path(tmpdir) / "direct_standardized"
+            streamed_dir = Path(tmpdir) / "streamed_standardized"
+
+            harmonized_dataset, _ = build_and_write_asic_harmonized_dataset(
+                raw_dir=DEFAULT_ASIC_RAW_DATA_DIR,
+                output_dir=harmonized_dir,
+                output_format="csv",
+            )
+            _, direct_paths = build_and_write_asic_standardized_dataset(
+                harmonized_dataset,
+                output_dir=direct_dir,
+                output_format="csv",
+            )
+            streamed_paths = build_and_write_asic_standardized_dataset_from_harmonized_outputs(
+                input_dir=harmonized_dir,
+                output_dir=streamed_dir,
+                input_format="csv",
+                output_format="csv",
+                dynamic_chunksize=10_000,
+            )
+
+            self.assertEqual(set(streamed_paths), set(direct_paths))
+
+            def assert_equal_csv(
+                key: str,
+                sort_columns: list[str],
+            ) -> None:
+                direct_df = pd.read_csv(direct_paths[key]).sort_values(sort_columns).reset_index(
+                    drop=True
+                )
+                streamed_df = (
+                    pd.read_csv(streamed_paths[key]).sort_values(sort_columns).reset_index(drop=True)
+                )
+                pd.testing.assert_frame_equal(direct_df, streamed_df, check_dtype=False)
+
+            assert_equal_csv("cohort_stay_level", ["hospital_id", "stay_id_global"])
+            assert_equal_csv("cohort_summary", ["metric"])
+            assert_equal_csv("cohort_preprocessing_notes", ["note_id"])
+            assert_equal_csv(
+                "cohort_icu_end_time_proxy_summary_by_hospital",
+                ["hospital_id"],
+            )
+            assert_equal_csv(
+                "cohort_coding_distribution_by_hospital",
+                ["hospital_id", "variable", "code"],
+            )
+            assert_equal_csv(
+                "blocked_asic_8h_block_index",
+                ["hospital_id", "stay_id_global", "block_index"],
+            )
+            assert_equal_csv(
+                "blocked_asic_8h_blocked_dynamic_features",
+                ["hospital_id", "stay_id_global", "block_index"],
+            )
+            assert_equal_csv(
+                "blocked_asic_8h_stay_block_counts",
+                ["hospital_id", "stay_id_global"],
+            )
+            assert_equal_csv(
+                "blocked_asic_8h_block_count_distribution_by_hospital",
+                ["hospital_id", "completed_block_count"],
+            )
+            assert_equal_csv(
+                "blocked_asic_8h_negative_dynamic_time_qc",
+                ["hospital_id", "stay_id_global"],
+            )
+            assert_equal_csv("blocked_asic_8h_qc_summary", ["metric"])
+            assert_equal_csv("blocked_asic_8h_example_stays", ["example_type"])
 
     def test_write_asic_chapter1_dataset_outputs_expected_files(self) -> None:
         dataset = self.chapter1_dataset

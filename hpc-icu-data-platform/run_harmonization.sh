@@ -28,6 +28,7 @@ FORMAT="csv"
 MIN_NON_NULL=20
 MIN_HOSPITALS=4
 FENCE_FACTOR=1.5
+BUILD_STANDARDIZED="${BUILD_STANDARDIZED:-0}"
 
 # Optional: point this to your existing virtual environment.
 VENV_PATH="/home/am861154/mypyenv"
@@ -62,14 +63,24 @@ echo "FORMAT: ${FORMAT}"
 echo "MIN_NON_NULL: ${MIN_NON_NULL}"
 echo "MIN_HOSPITALS: ${MIN_HOSPITALS}"
 echo "FENCE_FACTOR: ${FENCE_FACTOR}"
+echo "BUILD_STANDARDIZED: ${BUILD_STANDARDIZED}"
 
-# Run the ASIC harmonization + generic 8h blocking pipeline.
-python run_asic_harmonization.py \
-    --raw-dir "${RAW_DIR}" \
-    --output-dir "${OUTPUT_DIR}" \
-    --format "${FORMAT}" \
-    --min-non-null "${MIN_NON_NULL}" \
-    --min-hospitals "${MIN_HOSPITALS}" \
+# Run the ASIC harmonization pipeline, with standardized outputs as an opt-in.
+cmd=(
+    python
+    run_asic_harmonization.py
+    --raw-dir "${RAW_DIR}"
+    --output-dir "${OUTPUT_DIR}"
+    --format "${FORMAT}"
+    --min-non-null "${MIN_NON_NULL}"
+    --min-hospitals "${MIN_HOSPITALS}"
     --fence-factor "${FENCE_FACTOR}"
+)
+
+if [ "${BUILD_STANDARDIZED}" != "1" ]; then
+    cmd+=(--skip-standardized)
+fi
+
+"${cmd[@]}"
 
 echo "[$(date)] ASIC harmonization job finished"

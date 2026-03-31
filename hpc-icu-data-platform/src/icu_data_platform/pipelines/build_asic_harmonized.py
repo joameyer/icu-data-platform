@@ -66,6 +66,14 @@ def build_argument_parser() -> argparse.ArgumentParser:
         default=1.5,
         help="IQR fence multiplier for dynamic cross-hospital issue checks.",
     )
+    parser.add_argument(
+        "--skip-standardized",
+        action="store_true",
+        help=(
+            "Build only harmonized tables and QC artifacts; skip standardized "
+            "stay-level and generic 8-hour blocked outputs."
+        ),
+    )
     return parser
 
 
@@ -82,12 +90,14 @@ def main() -> int:
         min_hospitals=args.min_hospitals,
         fence_factor=args.fence_factor,
     )
-    standardized_dataset, standardized_output_paths = build_and_write_asic_standardized_dataset(
-        dataset,
-        output_dir=args.output_dir,
-        output_format=args.format,
-    )
-    output_paths = {**output_paths, **standardized_output_paths}
+    standardized_dataset = None
+    if not args.skip_standardized:
+        standardized_dataset, standardized_output_paths = build_and_write_asic_standardized_dataset(
+            dataset,
+            output_dir=args.output_dir,
+            output_format=args.format,
+        )
+        output_paths = {**output_paths, **standardized_output_paths}
 
     print(f"Built ASIC static rows: {dataset.static.combined.shape[0]}")
     print(f"Built ASIC dynamic rows: {dataset.dynamic.combined.shape[0]}")
@@ -99,11 +109,14 @@ def main() -> int:
         "Observed mech vent >=24h QC-positive stays: "
         f"{int(dataset.mech_vent_ge_24h_qc.stay_level['mech_vent_ge_24h_qc'].sum())}"
     )
-    print(f"Built ASIC stay-level rows: {standardized_dataset.stay_level.table.shape[0]}")
-    print(
-        "Built ASIC generic 8h blocks: "
-        f"{standardized_dataset.blocked_8h.block_index.shape[0]}"
-    )
+    if standardized_dataset is None:
+        print("Skipped ASIC standardized stay-level and generic 8h blocks.")
+    else:
+        print(f"Built ASIC stay-level rows: {standardized_dataset.stay_level.table.shape[0]}")
+        print(
+            "Built ASIC generic 8h blocks: "
+            f"{standardized_dataset.blocked_8h.block_index.shape[0]}"
+        )
     for name, path in sorted(output_paths.items()):
         print(f"{name}: {path}")
 

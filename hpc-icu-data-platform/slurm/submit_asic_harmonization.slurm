@@ -15,6 +15,7 @@ FORMAT="${FORMAT:-csv}"
 MIN_NON_NULL="${MIN_NON_NULL:-20}"
 MIN_HOSPITALS="${MIN_HOSPITALS:-4}"
 FENCE_FACTOR="${FENCE_FACTOR:-1.5}"
+BUILD_STANDARDIZED="${BUILD_STANDARDIZED:-0}"
 
 if [ ! -d "$PROJECT_DIR" ]; then
   echo "PROJECT_DIR does not exist: $PROJECT_DIR" >&2
@@ -49,13 +50,22 @@ echo "FORMAT: $FORMAT"
 echo "MIN_NON_NULL: $MIN_NON_NULL"
 echo "MIN_HOSPITALS: $MIN_HOSPITALS"
 echo "FENCE_FACTOR: $FENCE_FACTOR"
+echo "BUILD_STANDARDIZED: $BUILD_STANDARDIZED"
 
-"$PROJECT_DIR/scripts/run_asic_harmonization.sh" \
-  --raw-dir "$RAW_DIR" \
-  --output-dir "$OUTPUT_DIR" \
-  --format "$FORMAT" \
-  --min-non-null "$MIN_NON_NULL" \
-  --min-hospitals "$MIN_HOSPITALS" \
+cmd=(
+  "$PROJECT_DIR/scripts/run_asic_harmonization.sh"
+  --raw-dir "$RAW_DIR"
+  --output-dir "$OUTPUT_DIR"
+  --format "$FORMAT"
+  --min-non-null "$MIN_NON_NULL"
+  --min-hospitals "$MIN_HOSPITALS"
   --fence-factor "$FENCE_FACTOR"
+)
+
+if [ "$BUILD_STANDARDIZED" != "1" ]; then
+  cmd+=(--skip-standardized)
+fi
+
+"${cmd[@]}"
 
 echo "[$(date)] ASIC harmonization job finished"

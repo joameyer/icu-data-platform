@@ -543,7 +543,7 @@ def _select_example_stays(
 
 def _build_qc_summary(
     stay_block_counts: pd.DataFrame,
-    retained_dynamic: pd.DataFrame,
+    dynamic_rows_total: int,
     negative_dynamic_time_qc: pd.DataFrame,
     validation: pd.DataFrame,
     block_index: pd.DataFrame,
@@ -589,7 +589,7 @@ def _build_qc_summary(
             },
             {
                 "metric": "dynamic_rows_total",
-                "value": int(retained_dynamic.shape[0]),
+                "value": int(dynamic_rows_total),
                 "note": "Harmonized dynamic rows for stays included in generic block construction.",
             },
             {
@@ -653,6 +653,29 @@ def _build_qc_summary(
     )
 
 
+def build_asic_8h_example_stays(
+    stay_block_counts: pd.DataFrame,
+    block_index: pd.DataFrame,
+) -> pd.DataFrame:
+    return _select_example_stays(stay_block_counts, block_index)
+
+
+def build_asic_8h_qc_summary(
+    stay_block_counts: pd.DataFrame,
+    dynamic_rows_total: int,
+    negative_dynamic_time_qc: pd.DataFrame,
+    block_index: pd.DataFrame,
+) -> pd.DataFrame:
+    validation = _build_validation_table(stay_block_counts, block_index)
+    return _build_qc_summary(
+        stay_block_counts=stay_block_counts,
+        dynamic_rows_total=dynamic_rows_total,
+        negative_dynamic_time_qc=negative_dynamic_time_qc,
+        validation=validation,
+        block_index=block_index,
+    )
+
+
 def build_asic_8h_blocks(
     stay_level_df: pd.DataFrame,
     dynamic_df: pd.DataFrame,
@@ -667,12 +690,11 @@ def build_asic_8h_blocks(
     block_count_distribution_by_hospital = _build_block_count_distribution_by_hospital(
         stay_block_counts
     )
-    example_stays = _select_example_stays(stay_block_counts, block_index)
-    qc_summary = _build_qc_summary(
+    example_stays = build_asic_8h_example_stays(stay_block_counts, block_index)
+    qc_summary = build_asic_8h_qc_summary(
         stay_block_counts=stay_block_counts,
-        retained_dynamic=retained_dynamic,
+        dynamic_rows_total=int(retained_dynamic.shape[0]),
         negative_dynamic_time_qc=negative_dynamic_time_qc,
-        validation=validation,
         block_index=block_index,
     )
 

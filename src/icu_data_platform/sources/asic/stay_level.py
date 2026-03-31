@@ -31,7 +31,7 @@ def _require_columns(df: pd.DataFrame, required_columns: set[str], table_name: s
         raise KeyError(f"{table_name} is missing required stay-level columns: {missing}")
 
 
-def _dynamic_end_time_proxy(dynamic_df: pd.DataFrame) -> pd.DataFrame:
+def build_asic_dynamic_end_time_proxy(dynamic_df: pd.DataFrame) -> pd.DataFrame:
     _require_columns(dynamic_df, {"stay_id_global", "time"}, "dynamic_df")
 
     dynamic_times = dynamic_df[["stay_id_global", "time"]].copy()
@@ -65,6 +65,44 @@ def _dynamic_end_time_proxy(dynamic_df: pd.DataFrame) -> pd.DataFrame:
     return end_time_proxy[
         ["stay_id_global", "icu_end_time_proxy", "icu_end_time_proxy_hours"]
     ]
+
+
+def _authoritative_static_stay_level_input(static_df: pd.DataFrame) -> pd.DataFrame:
+    _require_columns(
+        static_df,
+        {"stay_id_global", "hospital_id", "icu_readmit", "icu_mortality", "icd10_codes"},
+        "static_df",
+    )
+
+    authoritative_static = static_df[
+        ["stay_id_global", "hospital_id", "icu_readmit", "icu_mortality", "icd10_codes"]
+    ].copy()
+    authoritative_static = authoritative_static.rename(columns={"icu_readmit": "readmission"})
+    authoritative_static["stay_id_global"] = authoritative_static["stay_id_global"].astype("string")
+    authoritative_static["hospital_id"] = authoritative_static["hospital_id"].astype("string")
+    authoritative_static["icd10_codes"] = authoritative_static["icd10_codes"].astype("string")
+    authoritative_static["icu_admission_time"] = pd.Series(
+        0,
+        index=authoritative_static.index,
+        dtype="Int64",
+    )
+
+    if authoritative_static["stay_id_global"].duplicated().any():
+        duplicate_ids = (
+            authoritative_static.loc[
+                authoritative_static["stay_id_global"].duplicated(keep=False),
+                "stay_id_global",
+            ]
+            .dropna()
+            .drop_duplicates()
+            .tolist()[:10]
+        )
+        raise ValueError(
+            "ASIC authoritative stay-level cohort requires one row per stay_id_global. "
+            f"Duplicate IDs found: {duplicate_ids}"
+        )
+
+    return authoritative_static
 
 
 def _build_preprocessing_notes() -> pd.DataFrame:
@@ -233,45 +271,11 @@ def _summarize_coding_distribution_by_hospital(stay_level_df: pd.DataFrame) -> p
     )
 
 
-def build_asic_stay_level_table(
+def build_asic_stay_level_table_from_dynamic_end_time_proxy(
     static_df: pd.DataFrame,
-    dynamic_df: pd.DataFrame,
+    dynamic_end_time_proxy: pd.DataFrame,
 ) -> ASICStayLevelResult:
-    _require_columns(
-        static_df,
-        {"stay_id_global", "hospital_id", "icu_readmit", "icu_mortality", "icd10_codes"},
-        "static_df",
-    )
-
-    authoritative_static = static_df[
-        ["stay_id_global", "hospital_id", "icu_readmit", "icu_mortality", "icd10_codes"]
-    ].copy()
-    authoritative_static = authoritative_static.rename(columns={"icu_readmit": "readmission"})
-    authoritative_static["stay_id_global"] = authoritative_static["stay_id_global"].astype("string")
-    authoritative_static["hospital_id"] = authoritative_static["hospital_id"].astype("string")
-    authoritative_static["icd10_codes"] = authoritative_static["icd10_codes"].astype("string")
-    authoritative_static["icu_admission_time"] = pd.Series(
-        0,
-        index=authoritative_static.index,
-        dtype="Int64",
-    )
-
-    if authoritative_static["stay_id_global"].duplicated().any():
-        duplicate_ids = (
-            authoritative_static.loc[
-                authoritative_static["stay_id_global"].duplicated(keep=False),
-                "stay_id_global",
-            ]
-            .dropna()
-            .drop_duplicates()
-            .tolist()[:10]
-        )
-        raise ValueError(
-            "ASIC authoritative stay-level cohort requires one row per stay_id_global. "
-            f"Duplicate IDs found: {duplicate_ids}"
-        )
-
-    dynamic_end_time_proxy = _dynamic_end_time_proxy(dynamic_df)
+    authoritative_static = _authoritative_static_stay_level_input(static_df)
     stay_level_df = authoritative_static.merge(
         dynamic_end_time_proxy,
         on="stay_id_global",
@@ -293,4 +297,15 @@ def build_asic_stay_level_table(
             stay_level_df
         ),
         coding_distribution_by_hospital=_summarize_coding_distribution_by_hospital(stay_level_df),
+    )
+
+
+def build_asic_stay_level_table(
+    static_df: pd.DataFrame,
+    dynamic_df: pd.DataFrame,
+) -> ASICStayLevelResult:
+    dynamic_end_time_proxy = build_asic_dynamic_end_time_proxy(dynamic_df)
+    return build_asic_stay_level_table_from_dynamic_end_time_proxy(
+        static_df,
+        dynamic_end_time_proxy,
     )

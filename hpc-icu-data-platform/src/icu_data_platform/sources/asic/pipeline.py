@@ -2,11 +2,21 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
-from icu_data_platform.common.io import ensure_directory, write_dataframe
+import pandas as pd
+
+from icu_data_platform.common.io import (
+    append_dataframe_csv,
+    ensure_directory,
+    read_dataframe,
+    write_dataframe,
+)
 from icu_data_platform.sources.asic.blocking import (
     ASICBlockResult,
     build_asic_8h_blocks,
+    build_asic_8h_example_stays,
+    build_asic_8h_qc_summary,
 )
 from icu_data_platform.sources.asic.blocks import (
     ASICChapter1BlockResult,
@@ -32,6 +42,7 @@ from icu_data_platform.sources.asic.harmonize.static import (
 from icu_data_platform.sources.asic.stay_level import (
     ASICStayLevelResult,
     build_asic_stay_level_table,
+    build_asic_stay_level_table_from_dynamic_end_time_proxy,
 )
 from icu_data_platform.sources.asic.qc.stay_id import (
     ASICStayIdQCResult,
@@ -274,6 +285,341 @@ def build_and_write_asic_standardized_dataset(
         output_format=output_format,
     )
     return dataset, output_paths
+
+
+def _harmonized_artifact_path(
+    input_dir: Path,
+    section: str,
+    name: str,
+    input_format: str,
+) -> Path:
+    extension = "csv" if input_format == "csv" else "parquet"
+    return input_dir / section / f"{name}.{extension}"
+
+
+def _dynamic_end_time_proxy_from_lookup(
+    max_time_by_stay: dict[str, pd.Timedelta],
+) -> pd.DataFrame:
+    if not max_time_by_stay:
+        return pd.DataFrame(
+            columns=[
+                "stay_id_global",
+                "icu_end_time_proxy",
+                "icu_end_time_proxy_hours",
+            ]
+        )
+
+    stay_ids = pd.Series(list(max_time_by_stay.keys()), dtype="string")
+    timedeltas = pd.Series(list(max_time_by_stay.values()))
+    dynamic_end_time_proxy = pd.DataFrame(
+        {
+            "stay_id_global": stay_ids,
+            "icu_end_time_proxy_timedelta": timedeltas,
+        }
+    )
+    dynamic_end_time_proxy["icu_end_time_proxy"] = dynamic_end_time_proxy[
+        "icu_end_time_proxy_timedelta"
+    ].astype("string")
+    dynamic_end_time_proxy["icu_end_time_proxy_hours"] = (
+        dynamic_end_time_proxy["icu_end_time_proxy_timedelta"].dt.total_seconds() / 3600.0
+    )
+    return dynamic_end_time_proxy[
+        ["stay_id_global", "icu_end_time_proxy", "icu_end_time_proxy_hours"]
+    ]
+
+
+def _partition_harmonized_dynamic_csv_by_hospital(
+    dynamic_path: Path,
+    temp_dir: Path,
+    stay_ids: set[str],
+    dynamic_chunksize: int,
+) -> tuple[dict[str, Path], pd.DataFrame, int, list[str]]:
+    hospital_paths: dict[str, Path] = {}
+    max_time_by_stay: dict[str, pd.Timedelta] = {}
+    dynamic_rows_total = 0
+    dynamic_columns = pd.read_csv(dynamic_path, nrows=0).columns.tolist()
+
+    for chunk in pd.read_csv(dynamic_path, chunksize=dynamic_chunksize):
+        chunk_stay_ids = chunk["stay_id_global"].astype("string")
+        retain_mask = chunk_stay_ids.isin(stay_ids)
+        if not retain_mask.any():
+            continue
+
+        retained_chunk = chunk.loc[retain_mask].copy()
+        retained_chunk["stay_id_global"] = chunk_stay_ids.loc[retain_mask]
+        dynamic_rows_total += int(retained_chunk.shape[0])
+
+        parsed_time = pd.to_timedelta(retained_chunk["time"], errors="coerce")
+        valid_time_mask = retained_chunk["stay_id_global"].notna() & parsed_time.notna()
+        if valid_time_mask.any():
+            time_summary = (
+                pd.DataFrame(
+                    {
+                        "stay_id_global": retained_chunk.loc[
+                            valid_time_mask,
+                            "stay_id_global",
+                        ],
+                        "parsed_time": parsed_time.loc[valid_time_mask],
+                    }
+                )
+                .groupby("stay_id_global", dropna=False)["parsed_time"]
+                .max()
+            )
+            for stay_id, parsed in time_summary.items():
+                stay_key = str(stay_id)
+                current = max_time_by_stay.get(stay_key)
+                if current is None or parsed > current:
+                    max_time_by_stay[stay_key] = parsed
+
+        for hospital_id, hospital_df in retained_chunk.groupby(
+            "hospital_id",
+            dropna=False,
+            sort=False,
+        ):
+            if pd.isna(hospital_id):
+                raise ValueError(
+                    "Encountered missing hospital_id while partitioning harmonized ASIC "
+                    "dynamic rows for per-hospital blocking."
+                )
+            hospital_key = str(hospital_id)
+            hospital_path = hospital_paths.setdefault(
+                hospital_key,
+                temp_dir / f"{hospital_key}.csv",
+            )
+            hospital_df.to_csv(
+                hospital_path,
+                mode="a",
+                header=not hospital_path.exists(),
+                index=False,
+            )
+
+    dynamic_end_time_proxy = _dynamic_end_time_proxy_from_lookup(max_time_by_stay)
+    return hospital_paths, dynamic_end_time_proxy, dynamic_rows_total, dynamic_columns
+
+
+def _cohort_output_paths(
+    output_dir: Path,
+    output_format: str,
+) -> dict[str, Path]:
+    extension = "csv" if output_format == "csv" else "parquet"
+    cohort_dir = ensure_directory(output_dir / "cohort")
+    return {
+        "cohort_stay_level": cohort_dir / f"stay_level.{extension}",
+        "cohort_summary": cohort_dir / f"summary.{extension}",
+        "cohort_preprocessing_notes": cohort_dir / f"preprocessing_notes.{extension}",
+        "cohort_icu_end_time_proxy_summary_by_hospital": (
+            cohort_dir / f"icu_end_time_proxy_summary_by_hospital.{extension}"
+        ),
+        "cohort_coding_distribution_by_hospital": (
+            cohort_dir / f"coding_distribution_by_hospital.{extension}"
+        ),
+    }
+
+
+def _blocked_output_paths(
+    output_dir: Path,
+    output_format: str,
+) -> dict[str, Path]:
+    extension = "csv" if output_format == "csv" else "parquet"
+    blocked_dir = ensure_directory(output_dir / "blocked")
+    return {
+        "blocked_asic_8h_block_index": blocked_dir / f"asic_8h_block_index.{extension}",
+        "blocked_asic_8h_blocked_dynamic_features": (
+            blocked_dir / f"asic_8h_blocked_dynamic_features.{extension}"
+        ),
+        "blocked_asic_8h_stay_block_counts": (
+            blocked_dir / f"asic_8h_stay_block_counts.{extension}"
+        ),
+        "blocked_asic_8h_block_count_distribution_by_hospital": (
+            blocked_dir / f"asic_8h_block_count_distribution_by_hospital.{extension}"
+        ),
+        "blocked_asic_8h_negative_dynamic_time_qc": (
+            blocked_dir / f"asic_8h_negative_dynamic_time_qc.{extension}"
+        ),
+        "blocked_asic_8h_qc_summary": blocked_dir / f"asic_8h_qc_summary.{extension}",
+        "blocked_asic_8h_example_stays": blocked_dir / f"asic_8h_example_stays.{extension}",
+    }
+
+
+def _unlink_if_exists(path: Path) -> None:
+    if path.exists():
+        path.unlink()
+
+
+def build_and_write_asic_standardized_dataset_from_harmonized_outputs(
+    input_dir: Path = DEFAULT_ASIC_HARMONIZED_OUTPUT_DIR,
+    output_dir: Path | None = None,
+    input_format: str = "csv",
+    output_format: str = "csv",
+    dynamic_chunksize: int = 250_000,
+) -> dict[str, Path]:
+    if input_format != "csv" or output_format != "csv":
+        raise ValueError(
+            "Per-hospital ASIC standardized rebuild currently supports csv input and "
+            "csv output only."
+        )
+    if dynamic_chunksize <= 0:
+        raise ValueError("dynamic_chunksize must be positive.")
+
+    output_root = ensure_directory(input_dir if output_dir is None else output_dir)
+    static_path = _harmonized_artifact_path(input_dir, "static", "harmonized", input_format)
+    dynamic_path = _harmonized_artifact_path(input_dir, "dynamic", "harmonized", input_format)
+    if not static_path.exists():
+        raise FileNotFoundError(f"Missing harmonized ASIC static artifact: {static_path}")
+    if not dynamic_path.exists():
+        raise FileNotFoundError(f"Missing harmonized ASIC dynamic artifact: {dynamic_path}")
+
+    static_df = read_dataframe(static_path)
+    stay_ids = set(static_df["stay_id_global"].dropna().astype("string").tolist())
+
+    with TemporaryDirectory(prefix="asic_blocking_tmp_", dir=output_root) as temp_dir_name:
+        temp_dir = Path(temp_dir_name)
+        hospital_paths, dynamic_end_time_proxy, dynamic_rows_total, dynamic_columns = (
+            _partition_harmonized_dynamic_csv_by_hospital(
+                dynamic_path=dynamic_path,
+                temp_dir=temp_dir,
+                stay_ids=stay_ids,
+                dynamic_chunksize=dynamic_chunksize,
+            )
+        )
+
+        stay_level = build_asic_stay_level_table_from_dynamic_end_time_proxy(
+            static_df=static_df,
+            dynamic_end_time_proxy=dynamic_end_time_proxy,
+        )
+
+        output_paths: dict[str, Path] = {}
+        cohort_paths = _cohort_output_paths(output_root, output_format)
+        output_paths.update(cohort_paths)
+        write_dataframe(stay_level.table, cohort_paths["cohort_stay_level"], output_format)
+        write_dataframe(stay_level.summary, cohort_paths["cohort_summary"], output_format)
+        write_dataframe(
+            stay_level.preprocessing_notes,
+            cohort_paths["cohort_preprocessing_notes"],
+            output_format,
+        )
+        write_dataframe(
+            stay_level.icu_end_time_proxy_summary_by_hospital,
+            cohort_paths["cohort_icu_end_time_proxy_summary_by_hospital"],
+            output_format,
+        )
+        write_dataframe(
+            stay_level.coding_distribution_by_hospital,
+            cohort_paths["cohort_coding_distribution_by_hospital"],
+            output_format,
+        )
+
+        blocked_paths = _blocked_output_paths(output_root, output_format)
+        output_paths.update(blocked_paths)
+        _unlink_if_exists(blocked_paths["blocked_asic_8h_blocked_dynamic_features"])
+
+        stay_block_count_parts: list[pd.DataFrame] = []
+        block_index_parts: list[pd.DataFrame] = []
+        block_distribution_parts: list[pd.DataFrame] = []
+        negative_time_parts: list[pd.DataFrame] = []
+        blocked_dynamic_written = False
+
+        hospital_ids = (
+            stay_level.table["hospital_id"].dropna().astype("string").sort_values().unique().tolist()
+        )
+
+        for hospital_id in hospital_ids:
+            hospital_dynamic_path = hospital_paths.get(hospital_id)
+            if hospital_dynamic_path is None:
+                hospital_dynamic_df = pd.DataFrame(columns=dynamic_columns)
+            else:
+                hospital_dynamic_df = pd.read_csv(hospital_dynamic_path)
+            hospital_stay_level = stay_level.table[
+                stay_level.table["hospital_id"].astype("string").eq(hospital_id)
+            ].copy()
+            block_result = build_asic_8h_blocks(
+                stay_level_df=hospital_stay_level,
+                dynamic_df=hospital_dynamic_df,
+            )
+
+            stay_block_count_parts.append(block_result.stay_block_counts)
+            block_index_parts.append(block_result.block_index)
+            block_distribution_parts.append(block_result.block_count_distribution_by_hospital)
+            negative_time_parts.append(block_result.negative_dynamic_time_qc)
+
+            append_dataframe_csv(
+                block_result.blocked_dynamic_features,
+                blocked_paths["blocked_asic_8h_blocked_dynamic_features"],
+                include_header=not blocked_dynamic_written,
+            )
+            blocked_dynamic_written = True
+
+        combined_stay_block_counts = (
+            pd.concat(stay_block_count_parts, ignore_index=True)
+            if stay_block_count_parts
+            else pd.DataFrame()
+        )
+        combined_block_index = (
+            pd.concat(block_index_parts, ignore_index=True)
+            if block_index_parts
+            else pd.DataFrame()
+        )
+        combined_block_distribution = (
+            pd.concat(block_distribution_parts, ignore_index=True)
+            if block_distribution_parts
+            else pd.DataFrame()
+        )
+        combined_negative_time_qc = (
+            pd.concat(negative_time_parts, ignore_index=True)
+            if negative_time_parts
+            else pd.DataFrame()
+        )
+
+        qc_summary = build_asic_8h_qc_summary(
+            stay_block_counts=combined_stay_block_counts,
+            dynamic_rows_total=dynamic_rows_total,
+            negative_dynamic_time_qc=combined_negative_time_qc,
+            block_index=combined_block_index,
+        )
+        example_stays = build_asic_8h_example_stays(
+            combined_stay_block_counts,
+            combined_block_index,
+        )
+
+        write_dataframe(
+            combined_block_index,
+            blocked_paths["blocked_asic_8h_block_index"],
+            output_format,
+        )
+        write_dataframe(
+            combined_stay_block_counts,
+            blocked_paths["blocked_asic_8h_stay_block_counts"],
+            output_format,
+        )
+        write_dataframe(
+            combined_block_distribution,
+            blocked_paths["blocked_asic_8h_block_count_distribution_by_hospital"],
+            output_format,
+        )
+        write_dataframe(
+            combined_negative_time_qc,
+            blocked_paths["blocked_asic_8h_negative_dynamic_time_qc"],
+            output_format,
+        )
+        write_dataframe(
+            qc_summary,
+            blocked_paths["blocked_asic_8h_qc_summary"],
+            output_format,
+        )
+        write_dataframe(
+            example_stays,
+            blocked_paths["blocked_asic_8h_example_stays"],
+            output_format,
+        )
+
+        if not blocked_dynamic_written:
+            write_dataframe(
+                pd.DataFrame(),
+                blocked_paths["blocked_asic_8h_blocked_dynamic_features"],
+                output_format,
+            )
+
+    return output_paths
 
 
 def write_asic_chapter1_dataset(

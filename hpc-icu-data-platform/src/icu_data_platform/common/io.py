@@ -49,3 +49,23 @@ def write_dataframe(
         return path
 
     raise ValueError(f"Unsupported output format: {output_format}")
+
+
+def read_dataframe(path: Path) -> pd.DataFrame:
+    if path.suffix == ".csv":
+        return pd.read_csv(path)
+    if path.suffix == ".parquet":
+        return pd.read_parquet(path)
+    raise ValueError(f"Unsupported artifact extension for {path}")
+
+
+def append_dataframe_csv(
+    df: pd.DataFrame,
+    path: Path,
+    include_header: bool | None = None,
+) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    to_write = prepare_dataframe_for_write(df)
+    header = not path.exists() if include_header is None else include_header
+    to_write.to_csv(path, mode="a", header=header, index=False)
+    return path
