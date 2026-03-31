@@ -44,7 +44,10 @@ class TestASICDynamicChecks(unittest.TestCase):
     def test_parse_ie_ratio_value(self) -> None:
         self.assertAlmostEqual(parse_ie_ratio_value("1/1.5"), 1 / 1.5)
         self.assertAlmostEqual(parse_ie_ratio_value("1.5/1"), 1.5)
+        self.assertAlmostEqual(parse_ie_ratio_value("1:1.5"), 1 / 1.5)
+        self.assertAlmostEqual(parse_ie_ratio_value("1:2,6"), 1 / 2.6)
         self.assertAlmostEqual(parse_ie_ratio_value("0.769"), 0.769)
+        self.assertAlmostEqual(parse_ie_ratio_value("0,769"), 0.769)
         self.assertTrue(pd.isna(parse_ie_ratio_value("not_a_ratio")))
 
     def test_non_numeric_issue_report_flags_known_cases(self) -> None:
@@ -73,13 +76,55 @@ class TestASICDynamicChecks(unittest.TestCase):
         )
 
     def test_coerce_numeric_series_handles_uk04_special_strings(self) -> None:
-        series = pd.Series(["<0.15", "storniert", "storno", "2.4"])
+        series = pd.Series(
+            [
+                "<0.15",
+                "storniert",
+                "storno",
+                "kein Material",
+                "falsches Mater.",
+                "fal.Volumen",
+                "geronnen",
+                "entfällt",
+                "Folgt",
+                ">50000.0",
+                ">6,5",
+                "2,4",
+            ]
+        )
         parsed = coerce_numeric_series(series, "crp", hospital="asic_UK04")
 
         self.assertEqual(float(parsed.iloc[0]), 0.0)
         self.assertTrue(pd.isna(parsed.iloc[1]))
         self.assertTrue(pd.isna(parsed.iloc[2]))
-        self.assertEqual(float(parsed.iloc[3]), 2.4)
+        self.assertTrue(pd.isna(parsed.iloc[3]))
+        self.assertTrue(pd.isna(parsed.iloc[4]))
+        self.assertTrue(pd.isna(parsed.iloc[5]))
+        self.assertTrue(pd.isna(parsed.iloc[6]))
+        self.assertTrue(pd.isna(parsed.iloc[7]))
+        self.assertTrue(pd.isna(parsed.iloc[8]))
+        self.assertEqual(float(parsed.iloc[9]), 50000.0)
+        self.assertEqual(float(parsed.iloc[10]), 6.5)
+        self.assertEqual(float(parsed.iloc[11]), 2.4)
+
+    def test_harmonized_ie_ratio_handles_colon_ratios_without_warning(self) -> None:
+        df = pd.DataFrame({"I:E": ["1:1.4", "1.0:1", "1:2,6", None]})
+        translation = {"I:E": "ie_ratio"}
+
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            harmonized_df, _ = build_harmonized_dynamic_table(
+                df,
+                "asic_UK02",
+                translation,
+            )
+
+        expected = [1 / 1.4, 1.0, 1 / 2.6]
+        observed = harmonized_df["ie_ratio"].dropna().tolist()
+        self.assertEqual(len(caught), 0)
+        self.assertEqual(len(observed), len(expected))
+        for observed_value, expected_value in zip(observed, expected):
+            self.assertAlmostEqual(float(observed_value), expected_value)
 
     def test_harmonized_ie_ratio_keeps_uk02_values(self) -> None:
         uk02_df = self.dynamic_tables["asic_UK02"]

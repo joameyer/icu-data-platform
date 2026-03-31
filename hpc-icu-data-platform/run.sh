@@ -5,7 +5,7 @@
 #SBATCH --job-name=asic_harmonization
 #SBATCH --time=24:00:00
 #SBATCH --cpus-per-task=8
-#SBATCH --mem=64G
+#SBATCH --mem=128G
 #SBATCH --output=logs/%x_%j.log
 #SBATCH --error=logs/%x_%j.err
 # #SBATCH --account=rwth1641
@@ -15,7 +15,7 @@ set -euo pipefail
 # Define project root.
 # In Slurm, the script may execute from a spool copy under /var/spool/slurm/,
 # so prefer the submission directory or an explicit PROJECT_ROOT override.
-project_root="home/am861154/projects/hpc-icu-data-platform"
+project_root="${PROJECT_ROOT:-${SLURM_SUBMIT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)}}"
 
 # Save the full ASIC raw-data path here.
 RAW_DIR="/hpcwork/jrc_combine/richard/asic_sftp/Kontrolldaten"
@@ -43,7 +43,7 @@ fi
 
 # Load modules needed for this CPU-only pipeline.
 module purge
-module load Python/3.9.6
+# module load Python/3.9.6
 
 # Activate Python environment if present.
 if [ -f "${VENV_PATH}/bin/activate" ]; then

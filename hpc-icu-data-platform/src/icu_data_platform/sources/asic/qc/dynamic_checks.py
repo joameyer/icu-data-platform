@@ -26,9 +26,27 @@ NON_NUMERIC_CANONICAL_COLUMNS = frozenset(
     {"hospital_id", "stay_id_local", "stay_id_global", "time"}
 )
 UK04_SPECIAL_STRING_HOSPITAL = "asic_UK04"
-IE_RATIO_PATTERN = re.compile(
-    r"^\s*([0-9]+(?:\.[0-9]+)?)\s*/\s*([0-9]+(?:\.[0-9]+)?)\s*$"
+UK04_MISSING_VALUE_STRINGS = frozenset(
+    {
+        "storniert",
+        "storno",
+        "kein material",
+        "falsches mater.",
+        "falsches mater",
+        "fal.volumen",
+        "geronnen",
+        "entfällt",
+        "entfaellt",
+        "folgt",
+    }
 )
+IE_RATIO_PATTERN = re.compile(
+    r"^\s*([0-9]+(?:[.,][0-9]+)?)\s*[:/]\s*([0-9]+(?:[.,][0-9]+)?)\s*$"
+)
+UK04_THRESHOLD_PATTERN = re.compile(
+    r"^\s*([<>])\s*([0-9]+(?:[.,][0-9]+)?)\s*$"
+)
+UK04_NUMERIC_STRING_PATTERN = re.compile(r"^\s*[0-9]+(?:[.,][0-9]+)?\s*$")
 
 
 def load_dynamic_translation(
@@ -59,6 +77,10 @@ def series_values_equal(left: pd.Series, right: pd.Series) -> bool:
     return left_norm.equals(right_norm)
 
 
+def normalize_decimal_string(text: str) -> str:
+    return text.replace(",", ".")
+
+
 def parse_ie_ratio_value(value: object) -> float | pd.NA:
     if pd.isna(value):
         return pd.NA
@@ -69,13 +91,13 @@ def parse_ie_ratio_value(value: object) -> float | pd.NA:
             return pd.NA
         ratio_match = IE_RATIO_PATTERN.match(text)
         if ratio_match:
-            numerator = float(ratio_match.group(1))
-            denominator = float(ratio_match.group(2))
+            numerator = float(normalize_decimal_string(ratio_match.group(1)))
+            denominator = float(normalize_decimal_string(ratio_match.group(2)))
             if denominator == 0:
                 return pd.NA
             return numerator / denominator
         try:
-            return float(text)
+            return float(normalize_decimal_string(text))
         except ValueError:
             return pd.NA
 
@@ -90,16 +112,39 @@ def parse_ie_ratio_series(series: pd.Series) -> pd.Series:
     return pd.to_numeric(parsed, errors="coerce")
 
 
+def clean_uk04_numeric_value(value: object) -> object:
+    if pd.isna(value):
+        return pd.NA
+    if not isinstance(value, str):
+        return value
+
+    text = re.sub(r"\s+", " ", value.strip())
+    if not text:
+        return pd.NA
+
+    lowered = text.casefold()
+    if lowered in UK04_MISSING_VALUE_STRINGS:
+        return pd.NA
+
+    threshold_match = UK04_THRESHOLD_PATTERN.match(text)
+    if threshold_match:
+        comparator, numeric_text = threshold_match.groups()
+        if comparator == "<":
+            return "0"
+        return normalize_decimal_string(numeric_text)
+
+    if UK04_NUMERIC_STRING_PATTERN.match(text):
+        return normalize_decimal_string(text)
+
+    return text
+
+
 def clean_uk04_numeric_strings(series: pd.Series) -> pd.Series:
     if not (pd.api.types.is_object_dtype(series) or pd.api.types.is_string_dtype(series)):
         return series
 
-    cleaned = to_clean_string(series)
-    storniert_mask = cleaned.str.lower().isin({"storniert", "storno"})
-    less_than_mask = cleaned.str.contains("<", regex=False, na=False)
-    cleaned = cleaned.mask(storniert_mask, pd.NA)
-    cleaned = cleaned.mask(less_than_mask, "0")
-    return cleaned
+    normalized = normalize_missing(series)
+    return normalized.map(clean_uk04_numeric_value)
 
 
 def apply_hospital_numeric_cleaning(
