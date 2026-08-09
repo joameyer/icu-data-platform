@@ -1,0 +1,54 @@
+artifact: mimic_iv_selected_variable_registry
+registry_version: '0.1'
+status: human_approved_for_operator_executed_production_candidate
+static:
+  age_years: {role: predictor, unit: years, eligibility: enabled}
+  sex: {role: predictor, unit: categorical, eligibility: enabled}
+  height_cm: {role: bmi_input, unit: cm, eligibility: enabled}
+  weight_kg: {role: bmi_input, unit: kg, eligibility: enabled}
+  bmi: {role: predictor, unit: kg/m2, eligibility: enabled, computation: median_valid_weight_divided_by_squared_median_valid_height_m}
+  aids: {role: predictor, unit: boolean, eligibility: enabled}
+  crf: {role: predictor, unit: boolean, eligibility: enabled}
+  cirrhosis: {role: predictor, unit: boolean, eligibility: enabled}
+  hepatic_failure: {role: predictor, unit: boolean, eligibility: enabled}
+  immunosuppression: {role: predictor, unit: boolean, eligibility: enabled}
+  leukemia_or_myeloma: {role: predictor, unit: boolean, eligibility: enabled}
+  lymphoma: {role: predictor, unit: boolean, eligibility: enabled}
+  metastatic_cancer: {role: predictor, unit: boolean, eligibility: enabled}
+dynamic:
+  heart_rate: {role: predictor, family: vital, unit: beat/min, aggregation: [median, minimum, maximum], eligibility: enabled}
+  map: {role: predictor, family: vital, unit: mmHg, aggregation: [median, minimum, maximum], eligibility: enabled}
+  resp_rate: {role: predictor, family: vital, unit: breath/min, aggregation: [median, minimum, maximum], eligibility: enabled}
+  spo2: {role: predictor, family: vital, unit: percent, aggregation: [median, minimum, maximum], eligibility: enabled}
+  core_temp: {role: predictor, family: vital, unit: degC, aggregation: [median, minimum, maximum], eligibility: enabled}
+  fluid_balance_24h: {role: predictor, family: rolling_fluid_balance, unit: mL, aggregation: [last], eligibility: human_gate}
+  albumin: {role: predictor, family: laboratory, unit: dg/L, aggregation: [median], eligibility: enabled}
+  ast: {role: predictor, family: laboratory, unit: U/L, aggregation: [median], eligibility: enabled}
+  bilirubin_total: {role: predictor, family: laboratory, unit: umol/L, aggregation: [median], eligibility: enabled}
+  ck: {role: predictor, family: laboratory, unit: U/L, aggregation: [median], eligibility: enabled}
+  creatinine: {role: predictor, family: laboratory, unit: umol/L, aggregation: [median], eligibility: enabled}
+  hemoglobin: {role: predictor, family: laboratory, unit: mmol/L, aggregation: [median], eligibility: enabled}
+  hematocrit: {role: predictor, family: laboratory, unit: percent, aggregation: [median], eligibility: enabled}
+  inr: {role: predictor, family: laboratory, unit: ratio, aggregation: [median], eligibility: enabled}
+  lactate_art: {role: predictor, family: laboratory, unit: mmol/L, aggregation: [median], eligibility: human_gate}
+  ldh: {role: predictor, family: laboratory, unit: U/L, aggregation: [median], eligibility: enabled}
+  lipase: {role: predictor, family: laboratory, unit: U/L, aggregation: [median], eligibility: enabled}
+  pao2: {role: predictor, family: laboratory, unit: mmHg, aggregation: [median], eligibility: human_gate}
+  paco2: {role: predictor, family: laboratory, unit: mmHg, aggregation: [median], eligibility: human_gate}
+  ph_art: {role: predictor, family: laboratory, unit: pH, aggregation: [median], eligibility: human_gate}
+  platelets: {role: predictor, family: laboratory, unit: 10^9/L, aggregation: [median], eligibility: enabled}
+  urea: {role: predictor, family: laboratory, unit: mmol/L, aggregation: [median], eligibility: human_gate}
+  wbc: {role: predictor, family: laboratory, unit: 10^9/L, aggregation: [median], eligibility: enabled}
+  fio2: {role: ventilation_audit, family: ventilation_marker, unit: percent, aggregation: [], eligibility: audit_only}
+  peep: {role: ventilation_audit, family: ventilation_marker, unit: cmH2O, aggregation: [], eligibility: audit_only}
+  vt: {role: ventilation_audit, family: ventilation_marker, unit: mL, aggregation: [], eligibility: audit_only}
+  ventilator_mode: {role: ventilation_audit, family: ventilation_marker, unit: categorical, aggregation: [], eligibility: audit_only}
+  ventilator_mode_hamilton: {role: ventilation_audit, family: ventilation_marker, unit: categorical, aggregation: [], eligibility: audit_only}
+  oxygen_delivery_device: {role: ventilation_audit, family: ventilation_marker, unit: categorical, aggregation: [], eligibility: audit_only}
+  arterial_specimen_type: {role: arterial_specimen_audit, family: specimen_marker, unit: categorical, aggregation: [], eligibility: audit_only}
+non_predictor_fields:
+  identifiers: [subject_id, hadm_id, stay_id, site_id]
+  cohort: [age_years, service, discharge_location, supervised_eligible, exclusion_reasons]
+  outcome: [hospital_mortality]
+  time: [icu_intime, official_outtime, event_time, event_time_offset_us]
+  block_provenance: [observation_count, last_value, last_observation_time_h, information_cutoff_h]

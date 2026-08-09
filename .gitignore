@@ -14,5 +14,6 @@ venv/
 
 # Data
 *.csv
-**/data/
-
+*.parquet
+**/data/*
+!icu-data-platform-v2/asic/data/README.md

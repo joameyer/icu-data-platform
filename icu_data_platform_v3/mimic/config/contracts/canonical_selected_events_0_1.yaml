@@ -1,0 +1,37 @@
+artifact: mimic_iv_canonical_selected_event_contract
+contract_version: '0.1'
+status: human_approved_for_operator_executed_production_candidate
+grain: one_source_measurement_or_derived_rolling_balance_at_one_timestamp
+required_fields:
+  identifiers: [dataset_id, subject_id, hadm_id, stay_id, site_id]
+  time: [event_time, icu_intime, event_time_offset_us]
+  logical: [variable, role, family]
+  source: [source_table, itemid, source_value, source_unit, source_row_number]
+  normalized: [value, unit, plausibility_status, eligibility_status]
+  provenance: [source_file_id, conversion_id, rejection_reasons]
+timestamp:
+  canonical_timezone: timezone_naive_shifted_MIMIC_clinical_time
+  prohibit_UTC_localization_without_source_evidence: true
+  offset_formula: event_time_minus_official_icustays_intime
+  precision: integer_microseconds
+  source_precedence:
+    chart: charttime
+    lab: charttime
+    input: starttime
+    output: charttime
+allowed_range:
+  pre_admission_history_hours: 72
+  post_admission_end_inclusive: official_icustays_outtime
+normalization_order:
+  - parse_numeric_without_silent_coercion
+  - reject_nonfinite
+  - harmonize_unit
+  - apply_asic_equivalent_plausibility_rule
+  - mark_human_gated_semantics_ineligible
+preservation:
+  retain_rejected_selected_source_rows: true
+  retain_original_value_and_unit: true
+  retain_actual_observation_timestamp: true
+  never_impute_or_carry_forward: true
+  never_encode_or_scale: true
+deterministic_order: [stay_id, event_time_offset_us, variable, source_table, itemid, source_row_number]

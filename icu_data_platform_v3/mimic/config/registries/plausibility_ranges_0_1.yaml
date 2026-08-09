@@ -1,0 +1,37 @@
+artifact: mimic_iv_asic_equivalent_plausibility_registry
+registry_version: '0.1'
+status: human_approved_for_operator_executed_production_candidate
+policy:
+  apply_after_unit_harmonization: true
+  bounds_default_inclusive: true
+  no_power_of_ten_repair: true
+  nonfinite_is_invalid: true
+  absent_bound_means_no_bound: true
+  provenance: asic_v3_reviewed_cleaning_policy_0_2_and_legacy_invalid_value_rules
+ranges:
+  height_cm: {minimum: 120, maximum: 220}
+  weight_kg: {minimum: 20, maximum: 300, invalid_zero: true}
+  heart_rate: {minimum: 0, minimum_inclusive: false, maximum: 250}
+  map: {minimum: 0, minimum_inclusive: false, maximum: 250}
+  resp_rate: {minimum: 0, minimum_inclusive: false, maximum: 80}
+  spo2: {minimum: 30, maximum: 100}
+  core_temp: {minimum: 25, maximum: 45}
+  albumin: {minimum: 0, minimum_inclusive: false, maximum: 1000}
+  ast: {}
+  bilirubin_total: {}
+  ck: {}
+  creatinine: {minimum: 0, minimum_inclusive: false}
+  hemoglobin: {minimum: 0, minimum_inclusive: false, maximum: 25}
+  hematocrit: {minimum: 0, minimum_inclusive: false, maximum: 80}
+  inr: {minimum: 0, minimum_inclusive: false}
+  lactate_art: {minimum: 0, minimum_inclusive: false}
+  ldh: {}
+  lipase: {}
+  pao2: {minimum: 0, minimum_inclusive: false, maximum: 760}
+  paco2: {minimum: 0, minimum_inclusive: false, maximum: 150}
+  ph_art: {minimum: 6.8, maximum: 7.8}
+  platelets: {minimum: 0, minimum_inclusive: false, maximum: 2000}
+  urea: {}
+  wbc: {}
+  fluid_balance_24h: {}
+note: Empty ranges enforce finite numeric values only; they do not invent analysis-specific clipping.

@@ -1,0 +1,30 @@
+artifact: mimic_iv_privacy_and_lifecycle_contract
+contract_version: '0.1'
+status: human_approved_for_operator_executed_production_candidate
+production_boundary: authorized_cluster_only
+private:
+  - subject_id
+  - hadm_id
+  - stay_id
+  - source_file_paths
+  - source_row_numbers
+  - timestamps
+  - row_level_qc
+  - private_manifests
+public_allowed:
+  aggregate_counts_only: true
+  suppress_small_cells: true
+  minimum_public_cell_count: 10
+prohibited:
+  - production_data_in_repository
+  - identifiers_in_public_reports
+  - source_paths_in_public_reports
+  - overwrite_existing_artifacts
+  - mutable_latest_without_immutable_manifest
+current_authorization:
+  local_synthetic_execution: true
+  production_extraction: true
+  cluster_jobs: operator_executed_only
+  candidate_creation: run_scoped_nonrelease_only
+  release_creation: false
+  pointer_modification: false

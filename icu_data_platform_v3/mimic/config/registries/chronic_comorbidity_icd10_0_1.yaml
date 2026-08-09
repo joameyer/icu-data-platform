@@ -1,0 +1,21 @@
+artifact: mimic_iv_chronic_comorbidity_icd10_prefix_registry
+registry_version: '0.1'
+status: human_approved_for_operator_executed_production_candidate
+normalization: uppercase_remove_decimal_and_whitespace
+matching: normalized_code_starts_with_any_prefix
+timing_assumption: diagnosis_codes_treated_as_present_at_icu_admission
+phenotypes:
+  aids: [B20, B21, B22, B23, B24]
+  crf: [N18, N19]
+  cirrhosis: [K74, K703]
+  hepatic_failure: [K721, K729, K704, K711]
+  immunosuppression: [D80, D81, D82, D83, D84, D89]
+  leukemia_or_myeloma: [C91, C92, C93, C94, C95, C90]
+  lymphoma: [C81, C82, C83, C84, C85, C86, C88, C90]
+  metastatic_cancer: [C77, C78, C79]
+caveats:
+  crf: N18_and_N19_are_broader_than_confirmed_dialysis_dependent_renal_failure
+  c90_overlap: C90_intentionally_matches_two_phenotypes
+icd9:
+  status: human_gate
+  behavior_until_approved: preserve_normalized_codes_and_mark_phenotypes_unresolved

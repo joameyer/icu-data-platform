@@ -1,0 +1,32 @@
+artifact: asic_mimic_alignment_aggregate_evidence_contract
+artifact_version: '0.1'
+status: implemented_not_executed_on_production
+source:
+  dataset: MIMIC-IV 3.1
+  required_dictionaries: [d_items, d_labitems]
+  event_tables: [chartevents, labevents, inputevents, outputevents, procedureevents]
+  columns_per_event_table: [itemid, explicit_source_unit_column]
+  patient_identifier_columns_read: false
+  source_value_columns_read: false
+aggregation:
+  dictionary_presence_by_dictionary_and_item: true
+  dictionary_label_category_linksto_private_review: true
+  observed_counts_by_source_table_item_and_unit_private_review: true
+  public_summary_counts_only: true
+  raw_examples: false
+  patient_rows: false
+  source_paths_in_report: false
+memory:
+  arrow_csv_block_size_mib: 32
+  bounded_by_batch_plus_mapping_counters: true
+required_follow_up_evidence_not_yet_implemented_in_0_1_runner:
+  - same_specimen_arterial_venous_capillary_unspecified_counts_using_labevents_specimen_id_and_item_52033
+  - candidate_dictionary_label_search_for_currently_unmapped_medication_hemodynamic_score_and_therapy_concepts
+  - medication_amount_rate_concentration_and_exposure_unit_context_counts
+boundary:
+  modify_mimic_source: false
+  create_or_promote_release: false
+  modify_pointer: false
+  expand_extraction_profile: false
+  export_patient_rows: false
+  authorize_catalog_mapping: false

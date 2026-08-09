@@ -1,0 +1,43 @@
+artifact: chronic_dialysis_dependent_renal_failure_alignment_definition
+artifact_version: '0.1'
+status: definition_human_approved_source_mapping_pending
+analysis_source_variable: crf
+intended_definition: chronic_dialysis_dependent_renal_failure
+definition_decision_status: human_approved
+mapping_review_status: pending_human_review
+baseline_timing:
+  require_evidence_present_at_or_before_icu_admission: true
+  post_admission_or_future_evidence_ineligible: true
+direct_dependency_status_code_candidates_evaluated:
+  asic_icd10_gm:
+    codes: [Z99.2]
+    meaning: dependence_on_renal_dialysis
+    candidate_status: pending_source_coverage_and_notation_review
+  mimic_icd10_cm:
+    codes: [Z99.2]
+    meaning: dependence_on_renal_dialysis
+    candidate_status: pending_source_coverage_and_timing_review
+  mimic_icd9_cm:
+    codes: [V45.11]
+    meaning: renal_dialysis_status
+    candidate_status: pending_source_coverage_and_timing_review
+explicitly_ineligible_evidence:
+  broad_ckd_or_esrd_codes_without_dependency_status:
+    examples: [N18, N19]
+    reason: chronic_kidney_disease_or_renal_failure_does_not_establish_dialysis_dependence
+  acute_rrt_or_dialysis_procedures:
+    reason: acute_treatment_does_not_establish_preexisting_chronic_dialysis_dependence
+  post_admission_or_future_status:
+    reason: would_leak_future_or_acute_course_information_into_a_baseline_predictor
+current_platform_conflict:
+  registry: mimic/config/registries/chronic_comorbidity_icd10_0_1.yaml
+  current_crf_prefixes: [N18, N19]
+  disposition_for_analysis_projection: ineligible_broad_definition
+  current_profile_must_not_supply_analysis_crf: true
+negative_value_semantics:
+  false_allowed_only_after_complete_reviewed_code_system_and_timing_coverage: true
+  otherwise: null_blocked
+authorization:
+  definition_approved: true
+  source_mapping_approved: false
+  production_predictor_authorized: false

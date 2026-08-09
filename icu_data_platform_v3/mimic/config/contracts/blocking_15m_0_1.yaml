@@ -1,0 +1,29 @@
+artifact: mimic_iv_time_blocking_contract
+contract_version: '0.1'
+resolution_minutes: 15
+status: human_approved_for_operator_executed_production_candidate
+source_artifact: canonical_selected_events_0_1
+prohibited_sources: [blocked_8h, blocked_15m]
+intervals:
+  admission: '{0}'
+  post_admission: '((k-1)*delta, k*delta] for integer k >= 1'
+  pre_admission: '[-j*delta, -(j-1)*delta) for integer j >= 1'
+  pre_admission_history_hours: 72
+labels:
+  admission: admission_0h
+  post: right_boundary_hours
+  pre: separately_named_pre_boundary_hours
+extent:
+  basis: official_icustays_outtime
+  retain_empty_post_blocks: true
+  retain_empty_pre_blocks: true
+  retain_terminal_partial_post_block: true
+  terminal_end: actual_official_outtime
+aggregation:
+  deterministic_last_order: [event_time_offset_us, source_table, itemid, source_row_number]
+  predictors:
+    vital: [median, minimum, maximum]
+    laboratory: [median]
+    rolling_fluid_balance: [last]
+  support_for_every_numeric_variable: [observation_count, last_value, last_observation_time_h]
+  prohibited: [locf, imputation, encoding, scaling, interpolation, time_weighting]

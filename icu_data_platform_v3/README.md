@@ -17,6 +17,11 @@ The cluster deployment target is
 `/hpcwork/jrc_combine/joana/icu_data_platform` is v2 and must never be
 overwritten by this project.
 
+The reusable ASIC--MIMIC clinical-variable alignment catalog is owned by the
+top-level [`interoperability/`](interoperability/README.md) area. It covers the
+complete ASIC core-derived `0.2` schema and does not activate or expand any
+analysis-specific MIMIC extraction profile.
+
 ## Current phase
 
 The immutable harmonized (`20260806T111156Z`), cleaned

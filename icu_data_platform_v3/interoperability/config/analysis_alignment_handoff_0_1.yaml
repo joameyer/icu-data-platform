@@ -1,0 +1,83 @@
+artifact: platform_owned_analysis_alignment_handoff_export_contract
+artifact_version: '0.1'
+status: implemented_fail_closed_pending_required_evidence
+consumer_interface_specification:
+  owner: phase_aware_icu_mortality_prediction_v2
+  runtime_dependency: false
+  intake_requirement_sha256: fd8851179c64df2897d1abf594a0377952e15eba7b87896d827647f0e58b19a4
+  intake_documentation_sha256: e472540233813f752a71f0ab71ef3167136aec5f4de2d3e08e7319747d19531e
+  logical_features_0_2_sha256: e7401cf85698e5c9c93b775037ebb46598ab3dadc525b0be493207dbb179db8f
+  logical_output_count: 45
+  unique_source_concept_count: 35
+required_handoff_identity:
+  artifact: icu_data_platform_v3_asic_mimic_feature_alignment_handoff
+  artifact_version: '0.1'
+  datasets: [asic, mimic_iv]
+  source_lineage:
+    asic_core_derived_contract_version: '0.2'
+    asic_core_derived_release_id: 20260808T074305Z
+    mimic_version: '3.1'
+review_lifecycle:
+  exporter_may_emit_human_approved: false
+  incomplete_review_status: incomplete
+  incomplete_concept_status: blocked
+  pending_review_status: pending_human_review
+  pending_concept_status: review_ready
+  pending_allowed_only_when_all_required_hashes_present: true
+  pending_allowed_only_when_stage_a_evidence_passes: true
+  pending_allowed_only_when_unresolved_handoff_gate_count_is_zero: true
+  pending_allowed_only_when_every_concept_unresolved_gate_count_is_zero: true
+registry_hash_roles:
+  - alignment_registry
+  - asic_variable_dictionary
+  - mimic_variable_dictionary
+  - unit_conversion_registry
+  - asic_release_manifest
+  - mimic_input_manifest
+platform_inputs:
+  projection_registry: analysis_alignment_projection_0_1.csv
+  clinical_concept_registry: clinical_concepts_0_1.csv
+  mimic_source_mapping_registry: mimic_source_mappings_0_1.csv
+  unit_conversion_registry: unit_conversions_0_1.yaml
+  renal_definition_registry: chronic_dialysis_dependent_renal_failure_0_1.yaml
+  mimic_chronic_registry: ../../mimic/config/registries/chronic_comorbidity_icd10_0_1.yaml
+  expected_catalog_concept_count: 184
+  expected_projection_concept_count: 35
+external_manifest_validation:
+  asic_release_manifest:
+    artifact: asic_v3_core_derived_release
+    artifact_version: '0.2'
+    release_id: 20260808T074305Z
+    core_derived_contract_version: '0.2'
+  mimic_input_manifest:
+    artifact: mimic_iv_3_1_selected_layer_candidate
+    artifact_version: '0.1'
+    declared_release: MIMIC-IV 3.1
+  stage_a_evidence:
+    artifact: asic_mimic_alignment_cluster_private_aggregate_evidence
+    artifact_version: '0.1'
+    privacy: cluster_private_aggregate_item_and_unit_counts_no_patient_rows
+interface_mismatch:
+  mismatch_id: incomplete_status_not_representable_by_consumer_0_1
+  consumer_accepted_review_statuses: [pending_human_review, human_approved]
+  platform_required_incomplete_status: incomplete
+  smallest_consumer_adjustment: >-
+    Add incomplete to the accepted handoff status vocabulary, require blocked
+    concept status when review_status is incomplete, retain a failing intake
+    result, and report the supplied unresolved_gates rather than treating the
+    handoff as technically complete.
+privacy:
+  metadata_only: true
+  identifiers_included: false
+  patient_or_stay_rows_included: false
+  raw_examples_included: false
+  source_paths_or_filenames_included: false
+boundary:
+  analysis_repository_runtime_access: false
+  clinical_data_access_by_exporter: false
+  clinical_unit_conversion_by_exporter: false
+  extraction_profile_expansion: false
+  human_approval_emitted: false
+  release_created: false
+  pointer_modified: false
+  external_export_authorized: false

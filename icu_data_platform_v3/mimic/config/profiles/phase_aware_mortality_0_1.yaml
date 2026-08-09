@@ -1,0 +1,19 @@
+artifact: mimic_iv_extraction_profile
+profile_version: '0.1'
+profile_id: phase_aware_mortality_0_1
+status: approved_for_operator_executed_production_candidate
+contracts:
+  cohort: ../contracts/cohort_0_1.yaml
+  canonical_events: ../contracts/canonical_selected_events_0_1.yaml
+  blocked_15m: ../contracts/blocking_15m_0_1.yaml
+  blocked_8h: ../contracts/blocking_8h_0_1.yaml
+  privacy: ../contracts/privacy_lifecycle_0_1.yaml
+registries:
+  variables: ../registries/selected_variables_0_1.yaml
+  item_sources: ../registries/mimic_item_sources_0_1.yaml
+  ranges: ../registries/plausibility_ranges_0_1.yaml
+  chronic_icd10: ../registries/chronic_comorbidity_icd10_0_1.yaml
+analysis_handoff:
+  required_resolution: blocked_8h
+  immutable_manifest_required: true
+  allow_blocked_15m_as_8h_source: false

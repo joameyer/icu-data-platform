@@ -1,0 +1,10 @@
+{
+  "artifact": "legacy_alignment_regression_comparison",
+  "artifact_version": "0.1",
+  "automatic_catalog_changes_from_legacy": 0,
+  "comparison_row_count": 34,
+  "comparison_sha256": "a3bae31d47ae30871cca028a6f169520a04c55baef9f52ed816fd290e3444e6b",
+  "independent_draft_combined_sha256": "00bd2c753cffadececce089b6d34abe5c1831d61b2332d3327710d7f58f502ab",
+  "legacy_runtime_dependency": false,
+  "legacy_sha256": "a116d58c09299e27670afd33b3989c4c5f7253987bc3ab44a9383b98d018d3e7"
+}

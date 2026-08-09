@@ -1,0 +1,37 @@
+artifact: mimic_iv_cohort_contract
+contract_version: '0.1'
+status: human_approved_for_operator_executed_production_candidate
+dataset_release: MIMIC-IV_3.1
+age:
+  minimum_years_inclusive: 18
+  formula: anchor_age_plus_icu_intime_year_minus_anchor_year
+service:
+  included: [MED, CMED, OMED, NMED]
+  attribution: latest_transfertime_at_or_before_official_icu_intime
+  future_service_tolerance: prohibited
+discharge_location:
+  excluded_normalized: [HOSPICE, AGAINST ADVICE, OTHER FACILITY]
+  missing_is_excluded: false
+icu_stay:
+  selection: first_per_subject
+  order: [official_intime, stay_id]
+  extent_start: icustays.intime
+  extent_end: icustays.outtime
+  require_nonnegative_extent: true
+  minimum_length_of_stay: null
+outcome:
+  source: admissions.hospital_expire_flag
+  required_values: [0, 1]
+ventilation:
+  required: false
+  minimum_duration: null
+exclusion_precedence:
+  - invalid_or_missing_official_icu_time
+  - age_below_18_or_unresolved
+  - service_not_included_or_unresolved
+  - excluded_discharge_location
+  - not_first_icu_stay_per_subject
+  - nonbinary_or_missing_hospital_mortality
+preserve:
+  all_candidate_stays_with_eligibility_flags: true
+  every_exclusion_reason: true

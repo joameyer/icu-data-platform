@@ -1,0 +1,29 @@
+artifact: mimic_iv_3_1_production_candidate_execution
+artifact_version: '0.1'
+status: human_approved_for_operator_executed_nonrelease_candidate
+approval:
+  date: '2026-08-08'
+  role: data_owner
+  statement: >-
+    Given that this is independent from the other work, we can already apply it
+    to the cluster. Apply the computation of the MIMIC data layer in the stated
+    cluster repository against the stated MIMIC data root.
+profile: profiles/phase_aware_mortality_0_1.yaml
+paths:
+  source_root: /hpcwork/jrc_combine/joana/mimic/data
+  candidate_root: /hpcwork/jrc_combine/joana/icu_data_platform_v3/mimic/data/production_candidates
+  audit_root: /hpcwork/jrc_combine/joana/icu_data_platform_v3/mimic/data/production_audits
+execution:
+  csv_block_size_bytes: 67108864
+  sqlite_insert_batch_rows: 10000
+  parquet_batch_rows: 10000
+  parquet_compression: zstd
+  sqlite_temp_store: FILE
+authorized_actions:
+  read_mimic_iv_3_1_source: true
+  build_run_scoped_candidate: true
+  write_private_manifest_and_aggregate_audit: true
+  create_release: false
+  modify_pointer: false
+  export_row_level_data: false
+  train_model: false

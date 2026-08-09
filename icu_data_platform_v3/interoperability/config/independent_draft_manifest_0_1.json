@@ -1,0 +1,22 @@
+{
+  "artifact": "asic_mimic_alignment_independent_draft_manifest",
+  "artifact_version": "0.1",
+  "authoritative_inputs": [
+    "ASIC frozen harmonized schema/dictionary 0.2",
+    "ASIC reviewed core-derived contract 0.2 and release 20260808T074305Z",
+    "ASIC reviewed unit provenance 0.1/0.2",
+    "MIMIC-IV 3.1 original table/dictionary contracts",
+    "MIT-LCP official MIMIC code concepts",
+    "current icu_data_platform_v3 MIMIC contracts and implementation"
+  ],
+  "chronology": "created_before_legacy_variable_configuration_csv_was_opened",
+  "combined_sha256": "00bd2c753cffadececce089b6d34abe5c1831d61b2332d3327710d7f58f502ab",
+  "concept_count": 184,
+  "files": {
+    "clinical_concepts_0_1.csv": "c242186ded45708b24cc3229f94822fa2db49f6e5289064b48c026d585e9aa4a",
+    "mimic_source_mappings_0_1.csv": "8aef193234a317435a5552e8e4e20df6db150a600ec760b76c1518cf6aea70d1",
+    "unit_conversions_0_1.yaml": "42686520f1f46382b5eff3681ed754c795026881a1d8c5f5a05d959b321eace8"
+  },
+  "legacy_input_read": false,
+  "mapping_count": 73
+}

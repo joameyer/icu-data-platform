@@ -1,0 +1,57 @@
+artifact: mimic_iv_3_1_selected_source_registry
+registry_version: '0.1'
+status: human_approved_for_operator_executed_production_candidate
+chartevents:
+  heart_rate: {itemids: [220045], accepted_source_units: [bpm], conversion: identity}
+  map: {itemids: [220052, 220181, 225312], accepted_source_units: [mmHg], conversion: identity}
+  resp_rate: {itemids: [220210, 224690], accepted_source_units: [insp/min], conversion: identity}
+  spo2: {itemids: [220277], accepted_source_units: ['%'], conversion: identity}
+  core_temp:
+    sources:
+      - {itemids: [223762], accepted_source_units: [degC], conversion: identity}
+      - {itemids: [223761], accepted_source_units: [degF], conversion: fahrenheit_to_celsius}
+  height_cm:
+    sources:
+      - {itemids: [226730], accepted_source_units: [cm], conversion: identity}
+      - {itemids: [226707], accepted_source_units: [inch], conversion: inch_to_cm}
+  weight_kg: {itemids: [226512, 224639], accepted_source_units: [kg], conversion: identity}
+  fio2: {itemids: [223835], accepted_source_units: ['%'], conversion: identity, role: ventilation_audit}
+  peep: {itemids: [220339, 224700], accepted_source_units: [cmH2O], conversion: identity, role: ventilation_audit}
+  vt: {itemids: [224684, 224685, 224686], accepted_source_units: [mL], conversion: identity, role: ventilation_audit}
+  ventilator_mode: {itemids: [223849], value_kind: categorical, role: ventilation_audit}
+  ventilator_mode_hamilton: {itemids: [229314], value_kind: categorical, role: ventilation_audit}
+  oxygen_delivery_device: {itemids: [226732], value_kind: categorical, role: ventilation_audit}
+labevents:
+  arterial_specimen_type: {itemids: [52033], value_kind: categorical, role: arterial_specimen_audit}
+  albumin: {itemids: [50862], accepted_source_units: [g/dL], conversion: g_per_dL_to_dg_per_L}
+  ast: {itemids: [50878], accepted_source_units: [IU/L], conversion: identity}
+  bilirubin_total: {itemids: [50885], accepted_source_units: [mg/dL], conversion: bilirubin_mg_per_dL_to_umol_per_L}
+  ck: {itemids: [50910], accepted_source_units: [IU/L], conversion: identity}
+  creatinine: {itemids: [50912], accepted_source_units: [mg/dL], conversion: creatinine_mg_per_dL_to_umol_per_L}
+  hemoglobin:
+    itemids: [51222, 50811]
+    accepted_source_units: [g/dL]
+    conversion: hemoglobin_g_per_dL_to_mmol_per_L
+  hematocrit: {itemids: [51221, 50810], accepted_source_units: ['%'], conversion: identity}
+  inr: {itemids: [51237], conversion: identity}
+  lactate_art: {itemids: [50813], accepted_source_units: [mmol/L], conversion: identity, eligibility: human_gate_arterial_specimen}
+  ldh: {itemids: [50954], accepted_source_units: [IU/L], conversion: identity}
+  lipase: {itemids: [50956], accepted_source_units: [IU/L], conversion: identity, required_label_contains: Lipase}
+  pao2: {itemids: [50821], accepted_source_units: [mmHg], conversion: identity, eligibility: human_gate_arterial_specimen}
+  paco2: {itemids: [50818], accepted_source_units: [mmHg], conversion: identity, eligibility: human_gate_arterial_specimen}
+  ph_art: {itemids: [50820], conversion: identity, eligibility: human_gate_arterial_specimen}
+  platelets: {itemids: [51265], accepted_source_units: [K/uL], conversion: identity}
+  urea:
+    itemids: [51006]
+    accepted_source_units: [mg/dL]
+    source_quantity: BUN
+    target_unit: mmol/L_urea
+    conversion: bun_mg_per_dL_to_urea_mmol_per_L
+    eligibility: human_gate_unit_harmonization
+  wbc: {itemids: [51300, 51301, 51755], accepted_source_units: [K/uL], conversion: identity}
+derived:
+  fluid_balance_24h:
+    sources: [inputevents, outputevents]
+    eligibility: human_gate_rolling_definition
+    prohibited_legacy_computation: calendar_day_input_minus_output_with_missing_side_zero
+no_unlisted_itemids: true

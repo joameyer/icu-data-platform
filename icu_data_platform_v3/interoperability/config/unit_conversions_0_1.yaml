@@ -1,0 +1,522 @@
+artifact: asic_mimic_shared_unit_conversion_registry
+artifact_version: '0.1'
+status: proposed_alignment_contract_pending_human_gates
+execution_policy:
+  exact_unit_spelling_required: true
+  infer_unit_from_item_label: false
+  infer_unit_from_data_type: false
+  convert_before_plausibility: true
+  preserve_source_value_and_unit: true
+  contextual_conversion_requires_all_declared_context: true
+  unavailable_conversion_is_ineligible: true
+conversions:
+  identity_not_applicable:
+    conversion_id: identity_not_applicable
+    conversion_kind: identity
+    accepted_source_unit: not_applicable
+    shared_canonical_unit: not_applicable
+    source_to_canonical_scale: 1.0
+    source_to_canonical_offset: 0.0
+    exact_source_to_canonical_formula: y = x
+    inverse_formula: x = y
+    required_contextual_fields: []
+    constants_and_precision: exact
+    provenance_citation: categorical_or_boolean_identity_no_physical_unit
+    round_trip_support: true
+    test_examples: [{source_value: 1, canonical_value: 1}]
+    review_status: reviewed_structural
+  identity_day:
+    conversion_id: identity_day
+    conversion_kind: identity
+    accepted_source_unit: day
+    shared_canonical_unit: day
+    source_to_canonical_scale: 1.0
+    source_to_canonical_offset: 0.0
+    exact_source_to_canonical_formula: y = x
+    inverse_formula: x = y
+    required_contextual_fields: []
+    constants_and_precision: exact
+    provenance_citation: SI_compatible_identity
+    round_trip_support: true
+    test_examples: [{source_value: 2.5, canonical_value: 2.5}]
+    review_status: reviewed_structural
+  identity_cm:
+    conversion_id: identity_cm
+    conversion_kind: identity
+    accepted_source_unit: cm
+    shared_canonical_unit: cm
+    source_to_canonical_scale: 1.0
+    source_to_canonical_offset: 0.0
+    exact_source_to_canonical_formula: y = x
+    inverse_formula: x = y
+    required_contextual_fields: []
+    constants_and_precision: exact
+    provenance_citation: SI_prefix_identity
+    round_trip_support: true
+    test_examples: [{source_value: 172, canonical_value: 172}]
+    review_status: reviewed
+  inch_to_cm:
+    conversion_id: inch_to_cm
+    conversion_kind: scale
+    accepted_source_unit: inch
+    shared_canonical_unit: cm
+    source_to_canonical_scale: 2.54
+    source_to_canonical_offset: 0.0
+    exact_source_to_canonical_formula: y_cm = x_in * 2.54
+    inverse_formula: x_in = y_cm / 2.54
+    required_contextual_fields: []
+    constants_and_precision: international_inch_exactly_2.54_cm
+    provenance_citation: NIST_SP_811_international_inch
+    round_trip_support: true
+    test_examples: [{source_value: 70, canonical_value: 177.8, absolute_tolerance: 1.0e-12}]
+    review_status: reviewed
+  identity_kg:
+    conversion_id: identity_kg
+    conversion_kind: identity
+    accepted_source_unit: kg
+    shared_canonical_unit: kg
+    source_to_canonical_scale: 1.0
+    source_to_canonical_offset: 0.0
+    exact_source_to_canonical_formula: y = x
+    inverse_formula: x = y
+    required_contextual_fields: []
+    constants_and_precision: exact
+    provenance_citation: SI_identity
+    round_trip_support: true
+    test_examples: [{source_value: 80, canonical_value: 80}]
+    review_status: reviewed
+  identity_bpm:
+    conversion_id: identity_bpm
+    conversion_kind: identity
+    accepted_source_unit: bpm
+    shared_canonical_unit: beat_per_min
+    source_to_canonical_scale: 1.0
+    source_to_canonical_offset: 0.0
+    exact_source_to_canonical_formula: y_beat_per_min = x_bpm
+    inverse_formula: x_bpm = y_beat_per_min
+    required_contextual_fields: []
+    constants_and_precision: bpm_interpreted_as_beats_per_minute_for_heart_rate_only
+    provenance_citation: MIMIC_d_items_context_and_ASIC_dictionary_0_2
+    round_trip_support: true
+    test_examples: [{source_value: 88, canonical_value: 88}]
+    review_status: reviewed_for_heart_rate
+  identity_insp_per_min:
+    conversion_id: identity_insp_per_min
+    conversion_kind: identity
+    accepted_source_unit: insp/min
+    shared_canonical_unit: breath_per_min
+    source_to_canonical_scale: 1.0
+    source_to_canonical_offset: 0.0
+    exact_source_to_canonical_formula: y_breath_per_min = x_inspiration_per_min
+    inverse_formula: x_inspiration_per_min = y_breath_per_min
+    required_contextual_fields: []
+    constants_and_precision: respiration_event_context_only
+    provenance_citation: MIMIC_d_items_context_and_ASIC_dictionary_0_2
+    round_trip_support: true
+    test_examples: [{source_value: 18, canonical_value: 18}]
+    review_status: reviewed_for_respiratory_rate
+  identity_mmhg:
+    conversion_id: identity_mmhg
+    conversion_kind: identity
+    accepted_source_unit: mmHg
+    shared_canonical_unit: mmHg
+    source_to_canonical_scale: 1.0
+    source_to_canonical_offset: 0.0
+    exact_source_to_canonical_formula: y = x
+    inverse_formula: x = y
+    required_contextual_fields: []
+    constants_and_precision: exact_representation_identity
+    provenance_citation: MIMIC_dictionary_and_ASIC_dictionary_0_2
+    round_trip_support: true
+    test_examples: [{source_value: 80, canonical_value: 80}]
+    review_status: reviewed
+  identity_percent:
+    conversion_id: identity_percent
+    conversion_kind: identity
+    accepted_source_unit: '%'
+    shared_canonical_unit: percent
+    source_to_canonical_scale: 1.0
+    source_to_canonical_offset: 0.0
+    exact_source_to_canonical_formula: y_percent = x_percent
+    inverse_formula: x_percent = y_percent
+    required_contextual_fields: []
+    constants_and_precision: percent_scale_0_to_100
+    provenance_citation: MIMIC_dictionary_and_ASIC_dictionary_0_2
+    round_trip_support: true
+    test_examples: [{source_value: 97, canonical_value: 97}]
+    review_status: reviewed_except_FiO2_context
+  fraction_or_percent_to_percent:
+    conversion_id: fraction_or_percent_to_percent
+    conversion_kind: contextual
+    accepted_source_unit: '%'
+    shared_canonical_unit: percent
+    source_to_canonical_scale: null
+    source_to_canonical_offset: null
+    exact_source_to_canonical_formula: if 0.20 <= x <= 1 then 100*x; if 20 <= x <= 100 then x; otherwise ineligible
+    inverse_formula: unavailable_because_source_representation_is_not_unique
+    required_contextual_fields: [item_id, source_value, source_unit]
+    constants_and_precision: boundaries_from_official_MIMIC_ventilator_setting_concept
+    provenance_citation: https://github.com/MIT-LCP/mimic-code/blob/main/mimic-iv/concepts/measurement/ventilator_setting.sql
+    round_trip_support: false
+    test_examples: [{source_value: 0.4, canonical_value: 40}, {source_value: 40, canonical_value: 40}]
+    review_status: unresolved_human_gate_contextual_FiO2
+  degc_to_deg_c:
+    conversion_id: degc_to_deg_c
+    conversion_kind: identity
+    accepted_source_unit: degC
+    shared_canonical_unit: deg_C
+    source_to_canonical_scale: 1.0
+    source_to_canonical_offset: 0.0
+    exact_source_to_canonical_formula: y_deg_C = x_degC
+    inverse_formula: x_degC = y_deg_C
+    required_contextual_fields: []
+    constants_and_precision: notation_only
+    provenance_citation: MIMIC_dictionary_and_ASIC_dictionary_0_2
+    round_trip_support: true
+    test_examples: [{source_value: 37, canonical_value: 37}]
+    review_status: reviewed
+  fahrenheit_to_celsius:
+    conversion_id: fahrenheit_to_celsius
+    conversion_kind: affine
+    accepted_source_unit: degF
+    shared_canonical_unit: deg_C
+    source_to_canonical_scale: 0.5555555555555556
+    source_to_canonical_offset: -17.77777777777778
+    exact_source_to_canonical_formula: y_deg_C = (x_deg_F - 32) * 5 / 9
+    inverse_formula: x_deg_F = y_deg_C * 9 / 5 + 32
+    required_contextual_fields: []
+    constants_and_precision: exact_rational_5_over_9_with_32_degree_origin
+    provenance_citation: NIST_temperature_conversion
+    round_trip_support: true
+    test_examples: [{source_value: 32, canonical_value: 0, absolute_tolerance: 1.0e-12}, {source_value: 98.6, canonical_value: 37, absolute_tolerance: 1.0e-12}]
+    review_status: reviewed
+  identity_cmh2o:
+    conversion_id: identity_cmh2o
+    conversion_kind: identity
+    accepted_source_unit: cmH2O
+    shared_canonical_unit: cmH2O
+    source_to_canonical_scale: 1.0
+    source_to_canonical_offset: 0.0
+    exact_source_to_canonical_formula: y = x
+    inverse_formula: x = y
+    required_contextual_fields: []
+    constants_and_precision: exact_representation_identity
+    provenance_citation: MIMIC_dictionary_and_ASIC_dictionary_0_2
+    round_trip_support: true
+    test_examples: [{source_value: 8, canonical_value: 8}]
+    review_status: conditional_on_measurement_versus_setting_semantics
+  identity_ml:
+    conversion_id: identity_ml
+    conversion_kind: identity
+    accepted_source_unit: mL
+    shared_canonical_unit: mL
+    source_to_canonical_scale: 1.0
+    source_to_canonical_offset: 0.0
+    exact_source_to_canonical_formula: y = x
+    inverse_formula: x = y
+    required_contextual_fields: []
+    constants_and_precision: exact_representation_identity
+    provenance_citation: MIMIC_dictionary_and_ASIC_dictionary_0_2
+    round_trip_support: true
+    test_examples: [{source_value: 450, canonical_value: 450}]
+    review_status: conditional_on_measurement_versus_setting_semantics
+  g_per_dl_to_dg_per_l:
+    conversion_id: g_per_dl_to_dg_per_l
+    conversion_kind: scale
+    accepted_source_unit: g/dL
+    shared_canonical_unit: dg_per_L
+    source_to_canonical_scale: 100.0
+    source_to_canonical_offset: 0.0
+    exact_source_to_canonical_formula: y_dg_per_L = x_g_per_dL * 100
+    inverse_formula: x_g_per_dL = y_dg_per_L / 100
+    required_contextual_fields: []
+    constants_and_precision: exact_metric_prefix_and_volume_conversion
+    provenance_citation: reviewed_ASIC_0_2_unit_contract_and_dimensional_analysis
+    round_trip_support: true
+    test_examples: [{source_value: 4, canonical_value: 400}]
+    review_status: reviewed
+  iu_per_l_to_u_per_l:
+    conversion_id: iu_per_l_to_u_per_l
+    conversion_kind: identity
+    accepted_source_unit: IU/L
+    shared_canonical_unit: U_per_L
+    source_to_canonical_scale: 1.0
+    source_to_canonical_offset: 0.0
+    exact_source_to_canonical_formula: y_U_per_L = x_IU_per_L
+    inverse_formula: x_IU_per_L = y_U_per_L
+    required_contextual_fields: []
+    constants_and_precision: IU_and_U_treated_as_dictionary_synonyms_for_reported_enzyme_activity
+    provenance_citation: reviewed_ASIC_0_2_unit_contract_and_MIMIC_dictionary
+    round_trip_support: true
+    test_examples: [{source_value: 42, canonical_value: 42}]
+    review_status: reviewed_for_listed_enzyme_items
+  identity_mmol_per_l:
+    conversion_id: identity_mmol_per_l
+    conversion_kind: identity
+    accepted_source_unit: mmol/L
+    shared_canonical_unit: mmol_per_L
+    source_to_canonical_scale: 1.0
+    source_to_canonical_offset: 0.0
+    exact_source_to_canonical_formula: y = x
+    inverse_formula: x = y
+    required_contextual_fields: []
+    constants_and_precision: notation_only
+    provenance_citation: MIMIC_dictionary_and_ASIC_dictionary_0_2
+    round_trip_support: true
+    test_examples: [{source_value: 4.2, canonical_value: 4.2}]
+    review_status: reviewed_subject_to_specimen_gate_for_arterial_concepts
+  bilirubin_mg_per_dl_to_umol_per_l:
+    conversion_id: bilirubin_mg_per_dl_to_umol_per_l
+    conversion_kind: molar
+    accepted_source_unit: mg/dL
+    shared_canonical_unit: umol_per_L
+    source_to_canonical_scale: 17.104
+    source_to_canonical_offset: 0.0
+    exact_source_to_canonical_formula: y_umol_per_L = x_mg_per_dL * 17.104
+    inverse_formula: x_mg_per_dL = y_umol_per_L / 17.104
+    required_contextual_fields: [analyte_identity_total_bilirubin]
+    constants_and_precision: factor_17.104_as_frozen_in_current_MIMIC_profile
+    provenance_citation: mimic/config/registries/mimic_item_sources_0_1.yaml
+    round_trip_support: true
+    test_examples: [{source_value: 1, canonical_value: 17.104}]
+    review_status: reviewed_current_profile
+  creatinine_mg_per_dl_to_umol_per_l:
+    conversion_id: creatinine_mg_per_dl_to_umol_per_l
+    conversion_kind: molar
+    accepted_source_unit: mg/dL
+    shared_canonical_unit: umol_per_L
+    source_to_canonical_scale: 88.4
+    source_to_canonical_offset: 0.0
+    exact_source_to_canonical_formula: y_umol_per_L = x_mg_per_dL * 88.4
+    inverse_formula: x_mg_per_dL = y_umol_per_L / 88.4
+    required_contextual_fields: [analyte_identity_creatinine]
+    constants_and_precision: factor_88.4_as_frozen_in_current_MIMIC_profile
+    provenance_citation: mimic/config/registries/mimic_item_sources_0_1.yaml
+    round_trip_support: true
+    test_examples: [{source_value: 1, canonical_value: 88.4}]
+    review_status: reviewed_current_profile
+  hemoglobin_g_per_dl_to_mmol_per_l:
+    conversion_id: hemoglobin_g_per_dl_to_mmol_per_l
+    conversion_kind: molar
+    accepted_source_unit: g/dL
+    shared_canonical_unit: mmol_per_L
+    source_to_canonical_scale: 0.6207324643078833
+    source_to_canonical_offset: 0.0
+    exact_source_to_canonical_formula: y_mmol_per_L = x_g_per_dL / 1.611
+    inverse_formula: x_g_per_dL = y_mmol_per_L * 1.611
+    required_contextual_fields: [analyte_identity_hemoglobin, stated_equivalent_basis]
+    constants_and_precision: divisor_1.611_as_frozen_in_current_MIMIC_profile
+    provenance_citation: mimic/config/registries/mimic_item_sources_0_1.yaml
+    round_trip_support: true
+    test_examples: [{source_value: 16.11, canonical_value: 10, absolute_tolerance: 1.0e-12}]
+    review_status: reviewed_current_profile_with_equivalent_basis_caveat
+  identity_ph:
+    conversion_id: identity_ph
+    conversion_kind: identity
+    accepted_source_unit: units
+    shared_canonical_unit: pH
+    source_to_canonical_scale: 1.0
+    source_to_canonical_offset: 0.0
+    exact_source_to_canonical_formula: y_pH = x_reported_pH
+    inverse_formula: x_reported_pH = y_pH
+    required_contextual_fields: []
+    constants_and_precision: MIMIC_valueuom_units_spelling_requires_dictionary_confirmation
+    provenance_citation: MIMIC_d_labitems_item_50820
+    round_trip_support: true
+    test_examples: [{source_value: 7.4, canonical_value: 7.4}]
+    review_status: pending_exact_unit_spelling_and_arterial_specimen_gate
+  ratio_to_dimensionless:
+    conversion_id: ratio_to_dimensionless
+    conversion_kind: identity
+    accepted_source_unit: ratio
+    shared_canonical_unit: dimensionless_ratio
+    source_to_canonical_scale: 1.0
+    source_to_canonical_offset: 0.0
+    exact_source_to_canonical_formula: y_dimensionless = x_ratio
+    inverse_formula: x_ratio = y_dimensionless
+    required_contextual_fields: []
+    constants_and_precision: representation_identity
+    provenance_citation: MIMIC_d_labitems_item_51237_and_ASIC_dictionary_0_2
+    round_trip_support: true
+    test_examples: [{source_value: 1.2, canonical_value: 1.2}]
+    review_status: pending_exact_MIMIC_valueuom_spelling
+  k_per_ul_to_10e9_per_l:
+    conversion_id: k_per_ul_to_10e9_per_l
+    conversion_kind: identity
+    accepted_source_unit: K/uL
+    shared_canonical_unit: 10e9_per_L
+    source_to_canonical_scale: 1.0
+    source_to_canonical_offset: 0.0
+    exact_source_to_canonical_formula: y_10e9_per_L = x_K_per_uL
+    inverse_formula: x_K_per_uL = y_10e9_per_L
+    required_contextual_fields: []
+    constants_and_precision: K_per_uL_equals_10e9_per_L
+    provenance_citation: https://github.com/MIT-LCP/mimic-code/blob/main/mimic-iv/concepts/measurement/blood_differential.sql
+    round_trip_support: true
+    test_examples: [{source_value: 8.5, canonical_value: 8.5}]
+    review_status: reviewed
+  number_per_ul_to_10e9_per_l:
+    conversion_id: number_per_ul_to_10e9_per_l
+    conversion_kind: scale
+    accepted_source_unit: '#/uL'
+    shared_canonical_unit: 10e9_per_L
+    source_to_canonical_scale: 0.001
+    source_to_canonical_offset: 0.0
+    exact_source_to_canonical_formula: y_10e9_per_L = x_number_per_uL / 1000
+    inverse_formula: x_number_per_uL = y_10e9_per_L * 1000
+    required_contextual_fields: []
+    constants_and_precision: 1000_cells_per_uL_equals_1e9_cells_per_L
+    provenance_citation: https://github.com/MIT-LCP/mimic-code/blob/main/mimic-iv/concepts/measurement/blood_differential.sql
+    round_trip_support: true
+    test_examples: [{source_value: 1600, canonical_value: 1.6}]
+    review_status: reviewed
+  identity_seconds:
+    conversion_id: identity_seconds
+    conversion_kind: identity
+    accepted_source_unit: sec
+    shared_canonical_unit: s
+    source_to_canonical_scale: 1.0
+    source_to_canonical_offset: 0.0
+    exact_source_to_canonical_formula: y_s = x_sec
+    inverse_formula: x_sec = y_s
+    required_contextual_fields: []
+    constants_and_precision: notation_only
+    provenance_citation: MIMIC_dictionary_and_ASIC_dictionary_0_2
+    round_trip_support: true
+    test_examples: [{source_value: 31, canonical_value: 31}]
+    review_status: reviewed
+  identity_pg_per_ml:
+    conversion_id: identity_pg_per_ml
+    conversion_kind: identity
+    accepted_source_unit: pg/mL
+    shared_canonical_unit: pg_per_mL
+    source_to_canonical_scale: 1.0
+    source_to_canonical_offset: 0.0
+    exact_source_to_canonical_formula: y = x
+    inverse_formula: x = y
+    required_contextual_fields: []
+    constants_and_precision: notation_only
+    provenance_citation: MIMIC_dictionary_and_ASIC_dictionary_0_2
+    round_trip_support: true
+    test_examples: [{source_value: 1200, canonical_value: 1200}]
+    review_status: pending_assay_identity_for_BNP_family
+  identity_ng_per_ml:
+    conversion_id: identity_ng_per_ml
+    conversion_kind: identity
+    accepted_source_unit: ng/mL
+    shared_canonical_unit: ng_per_mL
+    source_to_canonical_scale: 1.0
+    source_to_canonical_offset: 0.0
+    exact_source_to_canonical_formula: y = x
+    inverse_formula: x = y
+    required_contextual_fields: []
+    constants_and_precision: notation_only
+    provenance_citation: MIMIC_dictionary_and_ASIC_dictionary_0_2
+    round_trip_support: true
+    test_examples: [{source_value: 0.04, canonical_value: 0.04}]
+    review_status: pending_assay_subtype_gate
+  bun_mg_per_dl_to_urea_mmol_per_l:
+    conversion_id: bun_mg_per_dl_to_urea_mmol_per_l
+    conversion_kind: molar
+    accepted_source_unit: mg/dL
+    shared_canonical_unit: mmol_per_L
+    source_to_canonical_scale: 0.3570153516601214
+    source_to_canonical_offset: 0.0
+    exact_source_to_canonical_formula: y_urea_mmol_per_L = x_BUN_mg_per_dL / 2.801
+    inverse_formula: x_BUN_mg_per_dL = y_urea_mmol_per_L * 2.801
+    required_contextual_fields: [source_quantity_equals_blood_urea_nitrogen, target_quantity_equals_urea]
+    constants_and_precision: divisor_2.801_as_frozen_in_current_MIMIC_profile
+    provenance_citation: mimic/config/registries/mimic_item_sources_0_1.yaml
+    round_trip_support: true
+    test_examples: [{source_value: 28.01, canonical_value: 10, absolute_tolerance: 1.0e-12}]
+    review_status: unresolved_human_gate_BUN_to_urea
+  crp_mg_per_l_to_nmol_per_l_unavailable:
+    conversion_id: crp_mg_per_l_to_nmol_per_l_unavailable
+    conversion_kind: unavailable
+    accepted_source_unit: mg/L
+    shared_canonical_unit: nmol_per_L
+    source_to_canonical_scale: null
+    source_to_canonical_offset: null
+    exact_source_to_canonical_formula: unavailable_without_approved_CRP_molecular_entity_and_molar_mass_basis
+    inverse_formula: unavailable
+    required_contextual_fields: [assay_molecular_entity, approved_molar_mass]
+    constants_and_precision: none_approved
+    provenance_citation: clinical_unit_review_required
+    round_trip_support: false
+    test_examples: []
+    review_status: unresolved_blocking
+  ckmb_mass_to_activity_unavailable:
+    conversion_id: ckmb_mass_to_activity_unavailable
+    conversion_kind: unavailable
+    accepted_source_unit: ng/mL
+    shared_canonical_unit: U_per_L
+    source_to_canonical_scale: null
+    source_to_canonical_offset: null
+    exact_source_to_canonical_formula: unavailable_mass_concentration_is_not_enzyme_activity
+    inverse_formula: unavailable
+    required_contextual_fields: []
+    constants_and_precision: none
+    provenance_citation: dimensional_analysis
+    round_trip_support: false
+    test_examples: []
+    review_status: rejected_non_equivalent_quantity
+  d_dimer_assay_conversion_unavailable:
+    conversion_id: d_dimer_assay_conversion_unavailable
+    conversion_kind: unavailable
+    accepted_source_unit: ng/mL
+    shared_canonical_unit: ng_per_mL
+    source_to_canonical_scale: null
+    source_to_canonical_offset: null
+    exact_source_to_canonical_formula: identity_only_after_FEU_or_DDU_and_unit_basis_are_confirmed
+    inverse_formula: unavailable_until_assay_basis_confirmed
+    required_contextual_fields: [assay_basis_FEU_or_DDU]
+    constants_and_precision: FEU_DDU_factor_not_assumed
+    provenance_citation: ASIC_dictionary_0_2_assay_caveat
+    round_trip_support: false
+    test_examples: []
+    review_status: unresolved_blocking
+  timestamp_pair_to_days:
+    conversion_id: timestamp_pair_to_days
+    conversion_kind: contextual
+    accepted_source_unit: timestamp_pair
+    shared_canonical_unit: day
+    source_to_canonical_scale: null
+    source_to_canonical_offset: null
+    exact_source_to_canonical_formula: y_day = (end_timestamp - start_timestamp).total_seconds / 86400
+    inverse_formula: unavailable_without_start_timestamp
+    required_contextual_fields: [start_timestamp, end_timestamp]
+    constants_and_precision: 86400_seconds_per_day
+    provenance_citation: platform_elapsed_time_contract
+    round_trip_support: false
+    test_examples: [{source_value: one_day_timestamp_pair, canonical_value: 1}]
+    review_status: reviewed_formula_pending_concept_specific_semantics
+  timestamp_offset_to_min:
+    conversion_id: timestamp_offset_to_min
+    conversion_kind: contextual
+    accepted_source_unit: timestamp
+    shared_canonical_unit: min
+    source_to_canonical_scale: null
+    source_to_canonical_offset: null
+    exact_source_to_canonical_formula: y_min = (event_time - official_icustays_intime).total_seconds / 60
+    inverse_formula: event_time = official_intime + y_min * 60 seconds
+    required_contextual_fields: [event_time, official_icustays_intime]
+    constants_and_precision: exact_microsecond_offset_then_float_minutes
+    provenance_citation: mimic/config/contracts/canonical_selected_events_0_1.yaml
+    round_trip_support: false
+    test_examples: [{source_value: timestamp_context, canonical_value: contextual}]
+    review_status: reviewed_formula
+  minutes_to_hours:
+    conversion_id: minutes_to_hours
+    conversion_kind: scale
+    accepted_source_unit: min
+    shared_canonical_unit: h
+    source_to_canonical_scale: 0.016666666666666666
+    source_to_canonical_offset: 0.0
+    exact_source_to_canonical_formula: y_h = x_min / 60
+    inverse_formula: x_min = y_h * 60
+    required_contextual_fields: []
+    constants_and_precision: exact_rational_1_over_60
+    provenance_citation: asic/config/derivation/reviewed_core_derived_contract_0_2.yaml
+    round_trip_support: true
+    test_examples: [{source_value: 90, canonical_value: 1.5}]
+    review_status: reviewed
