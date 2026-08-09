@@ -1,0 +1,35 @@
+contract: ../contract.yaml
+
+paths:
+  source_pooled: ../../../data/production/pooled
+  output_pooled: ../../../data/mock/pooled
+  manifest: ../../../data/mock/mock_generation_manifest.json
+
+sampling:
+  seed: 42
+  stays_per_hospital: 100
+
+protected_columns:
+  static:
+    - Pseudo-ID
+    - Liegedauer_ICU
+    - hid
+  dynamic:
+    - Pseudo-ID
+    - Zeit_ab_Aufnahme
+    - hid
+    - timeidx
+
+static_shuffle_blocks:
+  - name: height_weight_bmi
+    columns:
+      - clusterKoerpergewicht
+      - clusterKoerpergroesse
+      - BMI
+      - weightKg
+      - heightcm
+  - name: outcomes
+    columns:
+      - 'Entlassgrund_(verlegt_intern,_verlegt_extern,_verstorben)'
+      - Sterblichkeit
+      - KH-Sterblichkeit

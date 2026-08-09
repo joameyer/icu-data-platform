@@ -1,0 +1,216 @@
+contract_version: '1.3'
+dataset: asic_translated
+expected_hospital_codes: [0, 2, 3, 4, 6, 7, 8]
+
+producer:
+  pooled_contract_version: '1.2'
+  translation_policy_version: '1.3'
+  compatible_generator_versions: ['0.6.3']
+  documentation: asic/docs/pooled_to_translated.md
+
+manifest:
+  filename: translation_manifest.json
+  artifact: asic_translated
+  audit_status: pass
+  required_checks:
+    input_schemas_match_contract: true
+    row_counts_preserved: true
+    source_order_preserved: true
+    translated_column_order_matches_registry: true
+    stay_id_hid_and_time_values_preserved: true
+    translated_names_unique: true
+    approved_merge_conflict_policies_applied: true
+    approved_categorical_value_mappings_applied: true
+    unmapped_non_missing_values_in_approved_mappings: 0
+    approved_categorical_missing_sentinels_normalized: true
+    approved_numeric_missing_sentinels_normalized: true
+    approved_hospital_specific_semantic_splits_applied: true
+    semantic_split_source_values_preserved: true
+    categorical_values_recoded: true
+    unit_corrections_applied: false
+    invalid_values_masked: false
+
+identifiers:
+  stay_id_column: stay_id_global
+  canonical_hospital_id_column: hospital_id
+  source_hospital_code_column: hospital_code_source
+
+time:
+  relative_time_column: minutes_since_icu_admission
+  anchored_time_column: anchored_time_since_icu_admission
+
+downstream:
+  preserve_all_input_columns: true
+  preserve_row_count_and_order: true
+  preserve_identifiers_and_time_keys: true
+  value_changes_require_approved_cleaning_rules: true
+
+tables:
+  static:
+    filename: static.parquet
+    columns:
+      - name: stay_id_global
+        arrow_type: {production: large_string, mock: string}
+      - {name: hospital_id, arrow_type: string}
+      - {name: hospital_code_source, arrow_type: double}
+      - {name: cluster_id, arrow_type: int8}
+      - {name: time_since_study_start, arrow_type: double}
+      - name: study_implementation_phase
+        arrow_type: {production: int8, mock: double}
+      - {name: sex, arrow_type: large_string}
+      - name: age_group
+        arrow_type: {production: large_string, mock: string}
+      - {name: weight_kg, arrow_type: double}
+      - {name: height_cm, arrow_type: double}
+      - {name: weight_group, arrow_type: large_string}
+      - name: height_group
+        arrow_type: {production: large_string, mock: string}
+      - {name: bmi_group, arrow_type: large_string}
+      - {name: hosp_los, arrow_type: double}
+      - {name: icu_los, arrow_type: double}
+      - {name: icu_readmit, arrow_type: double}
+      - {name: discharge_status, arrow_type: large_string}
+      - {name: death_status, arrow_type: large_string}
+      - {name: hospital_mortality_reported, arrow_type: bool}
+      - name: icd10_codes
+        arrow_type: {production: large_string, mock: string}
+      - {name: dialysis_free_days, arrow_type: double}
+      - {name: vent_free_days, arrow_type: double}
+
+  dynamic:
+    filename: dynamic.parquet
+    columns:
+      - name: stay_id_global
+        arrow_type: {production: large_string, mock: string}
+      - {name: hospital_id, arrow_type: string}
+      - {name: hospital_code_source, arrow_type: int32}
+      - {name: minutes_since_icu_admission, arrow_type: float}
+      - {name: anchored_time_since_icu_admission, arrow_type: 'timestamp[us]'}
+      - {name: heart_rate, arrow_type: float}
+      - {name: sbp, arrow_type: float}
+      - {name: map, arrow_type: float}
+      - {name: dbp, arrow_type: float}
+      - {name: resp_rate, arrow_type: float}
+      - {name: spont_resp_rate, arrow_type: float}
+      - {name: core_temp, arrow_type: float}
+      - {name: spo2, arrow_type: float}
+      - {name: sao2, arrow_type: float}
+      - {name: scvo2, arrow_type: float}
+      - {name: cvp, arrow_type: float}
+      - {name: spap, arrow_type: float}
+      - {name: mpap, arrow_type: float}
+      - {name: dpap, arrow_type: float}
+      - {name: pcwp, arrow_type: float}
+      - {name: cardiac_output_bolus, arrow_type: float}
+      - {name: cardiac_output_cont, arrow_type: float}
+      - {name: cardiac_index_bolus, arrow_type: float}
+      - {name: cardiac_index_cont, arrow_type: float}
+      - {name: stroke_volume_bolus, arrow_type: float}
+      - {name: stroke_volume_cont, arrow_type: float}
+      - {name: stroke_index_bolus, arrow_type: float}
+      - {name: stroke_index_cont, arrow_type: float}
+      - {name: svri, arrow_type: float}
+      - {name: pvri, arrow_type: float}
+      - {name: gedvi, arrow_type: float}
+      - {name: evlwi, arrow_type: float}
+      - {name: fluid_balance_24h, arrow_type: float}
+      - {name: fio2, arrow_type: float}
+      - {name: fio2_set, arrow_type: float}
+      - {name: feo2, arrow_type: float}
+      - {name: peep, arrow_type: float}
+      - {name: peep_set, arrow_type: float}
+      - {name: insp_pressure, arrow_type: float}
+      - {name: delta_p_computed, arrow_type: float}
+      - {name: delta_p_reported, arrow_type: float}
+      - {name: compliance, arrow_type: float}
+      - {name: ie_ratio, arrow_type: float}
+      - {name: ie_ratio_set, arrow_type: float}
+      - {name: vt, arrow_type: float}
+      - {name: vt_spontaneous, arrow_type: float}
+      - {name: vt_per_kg, arrow_type: float}
+      - {name: vt_per_kg_ideal_body_weight, arrow_type: float}
+      - {name: vt_per_ideal_bw_total, arrow_type: float}
+      - {name: etco2, arrow_type: float}
+      - {name: pf_ratio, arrow_type: float}
+      - {name: ph_art, arrow_type: float}
+      - {name: pao2, arrow_type: float}
+      - {name: paco2, arrow_type: float}
+      - {name: bicarbonate_art, arrow_type: float}
+      - {name: base_excess_art, arrow_type: float}
+      - {name: lactate_art, arrow_type: float}
+      - {name: hemoglobin, arrow_type: float}
+      - {name: hematocrit, arrow_type: float}
+      - {name: wbc, arrow_type: float}
+      - {name: platelets, arrow_type: float}
+      - {name: lymph_abs, arrow_type: float}
+      - {name: lymph_pct, arrow_type: float}
+      - {name: inr, arrow_type: float}
+      - {name: ptt, arrow_type: float}
+      - {name: d_dimer, arrow_type: float}
+      - {name: albumin, arrow_type: float}
+      - {name: bilirubin_total, arrow_type: float}
+      - {name: urea, arrow_type: float}
+      - {name: creatinine, arrow_type: float}
+      - {name: ast, arrow_type: float}
+      - {name: alt, arrow_type: float}
+      - {name: ldh, arrow_type: float}
+      - {name: amylase, arrow_type: float}
+      - {name: lipase, arrow_type: float}
+      - {name: ck, arrow_type: float}
+      - {name: ck_mb, arrow_type: float}
+      - {name: troponin, arrow_type: float}
+      - {name: bnp, arrow_type: float}
+      - {name: ntprobnp, arrow_type: float}
+      - {name: crp, arrow_type: float}
+      - {name: pct, arrow_type: float}
+      - {name: il6, arrow_type: float}
+      - {name: norepinephrine_iv_cont, arrow_type: float}
+      - {name: epinephrine_iv_cont, arrow_type: float}
+      - {name: dobutamine_iv_cont, arrow_type: float}
+      - {name: milrinone_iv_cont, arrow_type: float}
+      - {name: levosimendan_iv_cont, arrow_type: float}
+      - {name: vasopressin_iv_cont, arrow_type: float}
+      - {name: terlipressin_iv_bolus, arrow_type: float}
+      - {name: propofol_iv_cont, arrow_type: float}
+      - {name: midazolam_iv_cont, arrow_type: float}
+      - {name: dexmedetomidine_iv_cont, arrow_type: float}
+      - {name: clonidine_iv_cont, arrow_type: float}
+      - {name: fentanyl_iv_cont, arrow_type: float}
+      - {name: sufentanil_iv_cont, arrow_type: float}
+      - {name: morphine_iv_cont, arrow_type: float}
+      - {name: ketanest_iv_cont, arrow_type: float}
+      - {name: rocuronium_iv_bolus, arrow_type: float}
+      - {name: furosemide_iv_cont, arrow_type: float}
+      - {name: hydrocortisone_iv_bolus, arrow_type: float}
+      - {name: dexamethasone_iv_bolus, arrow_type: float}
+      - {name: prednisolone_iv_bolus, arrow_type: float}
+      - name: ards_diagnosis_app
+        arrow_type: {production: int8, mock: double}
+      - {name: ecmo, arrow_type: float}
+      - {name: ecmo_o2, arrow_type: float}
+      - {name: extracorp_blood_flow, arrow_type: float}
+      - {name: extracorp_o2_flow, arrow_type: float}
+      - {name: position_therapy, arrow_type: float}
+      - {name: inhaled_no, arrow_type: float}
+      - {name: inhaled_iloprost, arrow_type: float}
+      - {name: isoflurane_inh, arrow_type: float}
+      - {name: sevoflurane_inh, arrow_type: float}
+      - {name: fludrocortisone_po_bolus, arrow_type: float}
+      - {name: therapy_read_confirmation_utc, arrow_type: float}
+      - {name: severity_read_confirmation, arrow_type: float}
+      - {name: sofa_score_without_gcs, arrow_type: float}
+      - {name: sofa_score_unspecified, arrow_type: float}
+      - {name: sofa_blood, arrow_type: float}
+      - {name: sofa_liver, arrow_type: float}
+      - {name: sofa_respiratory, arrow_type: float}
+      - {name: sofa_respiratory_calculated, arrow_type: float}
+      - {name: sofa_renal, arrow_type: float}
+      - {name: sofa_cns, arrow_type: float}
+      - {name: sofa_total_score, arrow_type: float}
+      - {name: isofa_cardiovascular, arrow_type: float}
+      - {name: isofa_liver, arrow_type: float}
+      - {name: isofa_respiratory, arrow_type: float}
+      - {name: isofa_renal, arrow_type: float}
+      - {name: isofa_thrombocyte, arrow_type: float}
+      - {name: isofa_cns, arrow_type: float}
+      - {name: isofa_total_score, arrow_type: float}

@@ -1,0 +1,193 @@
+contract_version: '1.2'
+dataset: asic_pooled
+expected_hospital_codes: [0, 2, 3, 4, 6, 7, 8]
+
+identifiers:
+  stay_id_column: Pseudo-ID
+  hospital_id_column: hid
+
+time:
+  relative_time_column: Zeit_ab_Aufnahme
+  anchored_time_column: timeidx
+
+tables:
+  static:
+    filename: static.parquet
+    columns:
+      - name: Pseudo-ID
+        arrow_type: {production: large_string, mock: string}
+      - {name: Cluster-ID, arrow_type: int8}
+      - {name: Zeit_seit_Studienbeginn, arrow_type: double}
+      - name: Phase
+        arrow_type: {production: int8, mock: double}
+      - name: clusterGeschlecht
+        arrow_type: {production: large_string, mock: string}
+      - name: clusterKoerpergewicht
+        arrow_type: {production: large_string, mock: string}
+      - name: clusterKoerpergroesse
+        arrow_type: {production: large_string, mock: string}
+      - name: BMI
+        arrow_type: {production: large_string, mock: string}
+      - {name: Liegedauer_KH, arrow_type: double}
+      - {name: Liegedauer_ICU, arrow_type: double}
+      - {name: Wiederaufnahme_ICU, arrow_type: double}
+      - name: clusterAlter
+        arrow_type: {production: large_string, mock: string}
+      - name: 'Entlassgrund_(verlegt_intern,_verlegt_extern,_verstorben)'
+        arrow_type: {production: large_string, mock: string}
+      - name: Sterblichkeit
+        arrow_type: {production: large_string, mock: string}
+      - name: ICD-10_Codes
+        arrow_type: {production: large_string, mock: string}
+      - {name: weightKg, arrow_type: double}
+      - {name: heightcm, arrow_type: double}
+      - name: KH-Sterblichkeit
+        arrow_type: {production: large_string, mock: string}
+      - {name: hid, arrow_type: double}
+      - {name: 'Dialyse_(dialysefreie_Tage)', arrow_type: double}
+      - {name: Beatmungsfreie_Tage, arrow_type: double}
+
+  dynamic:
+    filename: dynamic.parquet
+    columns:
+      - {name: '24h-Bilanz_(Fluessigkeiten-Einfuhr_vs_-Ausfuhr)', arrow_type: float}
+      - {name: AF, arrow_type: float}
+      - {name: AF_spontan, arrow_type: float}
+      - name: ARDS_Diagnose_App
+        arrow_type: {production: int8, mock: double}
+      - {name: ARDS_Diagnose_App_duplicated_0, arrow_type: float}
+      - {name: Albumin, arrow_type: float}
+      - {name: Amylase, arrow_type: float}
+      - {name: BE_arteriell, arrow_type: float}
+      - {name: BNP, arrow_type: float}
+      - {name: Bicarbonat_arteriell, arrow_type: float}
+      - {name: Bilirubin_ges., arrow_type: float}
+      - {name: CK, arrow_type: float}
+      - {name: CK-MB, arrow_type: float}
+      - {name: CRP, arrow_type: float}
+      - {name: Clonidin_intravenoes_kontinuierlich, arrow_type: float}
+      - {name: Compliance, arrow_type: float}
+      - {name: Creatinkinase, arrow_type: float}
+      - {name: D-Dimere, arrow_type: float}
+      - {name: DAP, arrow_type: float}
+      - {name: DPAP, arrow_type: float}
+      - {name: DeltaP, arrow_type: float}
+      - {name: Dexamethason_intravenoes_bolusweise, arrow_type: float}
+      - {name: Dexmedetomidin_intravenoes_kontinuierlich, arrow_type: float}
+      - {name: Dobutamin_intravenoes_kontinuierlich, arrow_type: float}
+      - {name: ECMO, arrow_type: float}
+      - {name: ECMO_FiO2, arrow_type: float}
+      - {name: EVLWI, arrow_type: float}
+      - {name: Epinephrin_intravenoes_kontinuierlich, arrow_type: float}
+      - {name: Extrakorporaler_Blutfluss, arrow_type: float}
+      - {name: 'Extrakorporaler_Gasfluss_(O2)', arrow_type: float}
+      - {name: FeO2, arrow_type: float}
+      - {name: Fentanyl_intravenoes_kontinuierlich, arrow_type: float}
+      - {name: FiO2, arrow_type: float}
+      - {name: FiO2_eingestellt, arrow_type: float}
+      - {name: Fludrocortison_peroral_bolusweise, arrow_type: float}
+      - {name: Furosemid_intravenoes_kontinuierlich, arrow_type: float}
+      - {name: GEDVI, arrow_type: float}
+      - {name: GOT, arrow_type: float}
+      - {name: GPT, arrow_type: float}
+      - {name: 'Gaszusammensetzung_(%O2)', arrow_type: float}
+      - {name: HF, arrow_type: float}
+      - {name: 'HI_(Bolus)', arrow_type: float}
+      - {name: 'HI_(kontinuierlich)', arrow_type: float}
+      - {name: 'HZV_(Bolus)', arrow_type: float}
+      - {name: 'HZV_(kontinuierlich)', arrow_type: float}
+      - {name: Haematokrit, arrow_type: float}
+      - {name: Haemoglobin, arrow_type: float}
+      - {name: Harnstoff, arrow_type: float}
+      - {name: 'Horowitz-Quotient_(ohne_Temp-Korrektur)', arrow_type: float}
+      - {name: Hydrocortison_intravenoes_bolusweise, arrow_type: float}
+      - {name: 'I:E', arrow_type: float}
+      - {name: 'I:E_eingestellt', arrow_type: float}
+      - {name: IL-6, arrow_type: float}
+      - {name: INR, arrow_type: float}
+      - {name: Inhalatives_Iloprost, arrow_type: float}
+      - {name: Inhalatives_NO, arrow_type: float}
+      - {name: Interleukin_6, arrow_type: float}
+      - {name: Isofluran_inhalativ, arrow_type: float}
+      - {name: Ketanest_intravenoes_kontinuierlich, arrow_type: float}
+      - {name: Koerperkerntemperatur, arrow_type: float}
+      - {name: Kreatinin, arrow_type: float}
+      - {name: Körpertemperatur, arrow_type: float}
+      - {name: LDH, arrow_type: float}
+      - {name: Lagerungstherapie, arrow_type: float}
+      - {name: Laktat_arteriell, arrow_type: float}
+      - {name: LesebestaetigugnTherapie_utc, arrow_type: float}
+      - {name: LesebestaetigungSchweregrad, arrow_type: float}
+      - {name: LesebestaetigungTherapie_utc, arrow_type: float}
+      - {name: Leukozyten, arrow_type: float}
+      - {name: Levosimendan_intravenoes_kontinuierlich, arrow_type: float}
+      - {name: Lipase, arrow_type: float}
+      - {name: Lymphocyten, arrow_type: float}
+      - {name: Lymphozyten_absolut, arrow_type: float}
+      - {name: Lymphozyten_prozentual, arrow_type: float}
+      - {name: MAP, arrow_type: float}
+      - {name: MPAP, arrow_type: float}
+      - {name: Midazolam_intravenoes_kontinuierlich, arrow_type: float}
+      - {name: Milrinon_intravenoes_kontinuierlich, arrow_type: float}
+      - {name: Morphin_intravenoes_kontinuierlich, arrow_type: float}
+      - {name: NT-proBNP, arrow_type: float}
+      - {name: NT-pro_BNP, arrow_type: float}
+      - {name: Norepinephrin_intravenoes_kontinuierlich, arrow_type: float}
+      - {name: 'Organversagen:_SOFA_Score_ohne_GCS', arrow_type: float}
+      - {name: PCT, arrow_type: float}
+      - {name: PCWP, arrow_type: float}
+      - {name: PEEP, arrow_type: float}
+      - {name: PEEP_eingestellt, arrow_type: float}
+      - {name: PVRI, arrow_type: float}
+      - {name: P_EI, arrow_type: float}
+      - {name: Prednisolon_intravenoes_bolusweise, arrow_type: float}
+      - {name: Propofol_intravenoes_kontinuierlich, arrow_type: float}
+      - name: Pseudo-ID
+        arrow_type: {production: large_string, mock: string}
+      - {name: Rocuronium_intravenoes_bolusweise, arrow_type: float}
+      - {name: SAP, arrow_type: float}
+      - {name: SOFA, arrow_type: float}
+      - {name: SOFA.Punkte_Blut, arrow_type: float}
+      - {name: SOFA.Punkte_Leber, arrow_type: float}
+      - {name: SOFA.Punkte_Lunge, arrow_type: float}
+      - {name: 'SOFA.Punkte_Lunge_(cal.)', arrow_type: float}
+      - {name: SOFA.Punkte_Niere, arrow_type: float}
+      - {name: SOFA.Punkte_ZNS, arrow_type: float}
+      - {name: SOFA.SOFA_Gesamt, arrow_type: float}
+      - {name: SPAP, arrow_type: float}
+      - {name: 'SVI_(Bolus)', arrow_type: float}
+      - {name: 'SVI_(kontinuierlich)', arrow_type: float}
+      - {name: SVRI, arrow_type: float}
+      - {name: 'SV_(Bolus)', arrow_type: float}
+      - {name: 'SV_(kontinuierlich)', arrow_type: float}
+      - {name: SaO2, arrow_type: float}
+      - {name: Sevofluran_inhalativ, arrow_type: float}
+      - {name: SpO2, arrow_type: float}
+      - {name: Sufentanil_intravenoes_kontinuierlich, arrow_type: float}
+      - {name: SzvO2, arrow_type: float}
+      - {name: Terlipressin_intravenoes_bolusweise, arrow_type: float}
+      - {name: Thrombozyten, arrow_type: float}
+      - {name: Troponin, arrow_type: float}
+      - {name: Vasopressin_intravenoes_kontinuierlich, arrow_type: float}
+      - {name: Vt, arrow_type: float}
+      - {name: Vt_per_kg, arrow_type: float}
+      - {name: Vt_spontan, arrow_type: float}
+      - {name: ZVD, arrow_type: float}
+      - {name: Zeit_ab_Aufnahme, arrow_type: float}
+      - {name: deltaP, arrow_type: float}
+      - {name: etCO2, arrow_type: float}
+      - {name: hid, arrow_type: int32}
+      - {name: iSOFA.HKL, arrow_type: float}
+      - {name: iSOFA.Leber, arrow_type: float}
+      - {name: iSOFA.Lunge, arrow_type: float}
+      - {name: iSOFA.Niere, arrow_type: float}
+      - {name: iSOFA.Thrombo, arrow_type: float}
+      - {name: iSOFA.ZNS, arrow_type: float}
+      - {name: iSOFA.iSOFA_Gesamt, arrow_type: float}
+      - {name: individuelles_Tidalvolumen_pro_kg_idealem_Koerpergewicht, arrow_type: float}
+      - {name: 'pH_Wert_(ohne_Temp-Korrektur)_arteriell', arrow_type: float}
+      - {name: pH_arteriell, arrow_type: float}
+      - {name: pTT, arrow_type: float}
+      - {name: 'paCO2_(ohne_Temp-Korrektur)', arrow_type: float}
+      - {name: 'paO2_(ohne_Temp-Korrektur)', arrow_type: float}
+      - {name: timeidx, arrow_type: 'timestamp[us]'}

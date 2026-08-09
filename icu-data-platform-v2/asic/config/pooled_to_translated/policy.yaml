@@ -1,0 +1,588 @@
+policy_version: '1.3'
+status: approved_for_pooled_to_translated
+source_contract_version: '1.2'
+documentation: asic/docs/pooled_to_translated.md
+
+rules:
+  preserve_every_source_row: true
+  coalesce_only_approved_merge_groups: true
+  fail_on_unresolved_nonmissing_merge_conflict: true
+  drop_only_after_all_missing_check: true
+  recode_only_approved_categorical_values: true
+  fail_on_unmapped_nonmissing_approved_categorical_value: true
+  apply_approved_categorical_missing_sentinels: true
+  apply_approved_numeric_missing_sentinels: true
+  apply_approved_hospital_specific_semantic_splits: true
+  translated_names_are_unique_within_table: true
+  translated_names_use_english_snake_case: true
+  derived_columns_are_additive: true
+  apply_value_recoding: true
+  apply_unit_correction: false
+  apply_invalid_value_masking: false
+
+translations:
+  static:
+    Pseudo-ID: stay_id_global
+    Cluster-ID: cluster_id
+    Zeit_seit_Studienbeginn: time_since_study_start
+    Phase: study_implementation_phase
+    clusterGeschlecht: sex
+    clusterKoerpergewicht: weight_group
+    clusterKoerpergroesse: height_group
+    BMI: bmi_group
+    Liegedauer_KH: hosp_los
+    Liegedauer_ICU: icu_los
+    Wiederaufnahme_ICU: icu_readmit
+    clusterAlter: age_group
+    'Entlassgrund_(verlegt_intern,_verlegt_extern,_verstorben)': discharge_status
+    Sterblichkeit: death_status
+    ICD-10_Codes: icd10_codes
+    weightKg: weight_kg
+    heightcm: height_cm
+    KH-Sterblichkeit: hospital_mortality_reported
+    hid: hospital_code_source
+    'Dialyse_(dialysefreie_Tage)': dialysis_free_days
+    Beatmungsfreie_Tage: vent_free_days
+
+  dynamic:
+    '24h-Bilanz_(Fluessigkeiten-Einfuhr_vs_-Ausfuhr)': fluid_balance_24h
+    AF: resp_rate
+    AF_spontan: spont_resp_rate
+    ARDS_Diagnose_App: ards_diagnosis_app
+    ARDS_Diagnose_App_duplicated_0: null
+    Albumin: albumin
+    Amylase: amylase
+    BE_arteriell: base_excess_art
+    BNP: bnp
+    Bicarbonat_arteriell: bicarbonate_art
+    Bilirubin_ges.: bilirubin_total
+    CK: ck
+    CK-MB: ck_mb
+    CRP: crp
+    Clonidin_intravenoes_kontinuierlich: clonidine_iv_cont
+    Compliance: compliance
+    Creatinkinase: ck
+    D-Dimere: d_dimer
+    DAP: dbp
+    DPAP: dpap
+    DeltaP: delta_p_computed
+    Dexamethason_intravenoes_bolusweise: dexamethasone_iv_bolus
+    Dexmedetomidin_intravenoes_kontinuierlich: dexmedetomidine_iv_cont
+    Dobutamin_intravenoes_kontinuierlich: dobutamine_iv_cont
+    ECMO: ecmo
+    ECMO_FiO2: ecmo_o2
+    EVLWI: evlwi
+    Epinephrin_intravenoes_kontinuierlich: epinephrine_iv_cont
+    Extrakorporaler_Blutfluss: extracorp_blood_flow
+    'Extrakorporaler_Gasfluss_(O2)': extracorp_o2_flow
+    FeO2: feo2
+    Fentanyl_intravenoes_kontinuierlich: fentanyl_iv_cont
+    FiO2: fio2
+    FiO2_eingestellt: fio2_set
+    Fludrocortison_peroral_bolusweise: fludrocortisone_po_bolus
+    Furosemid_intravenoes_kontinuierlich: furosemide_iv_cont
+    GEDVI: gedvi
+    GOT: ast
+    GPT: alt
+    'Gaszusammensetzung_(%O2)': ecmo_o2
+    HF: heart_rate
+    'HI_(Bolus)': cardiac_index_bolus
+    'HI_(kontinuierlich)': cardiac_index_cont
+    'HZV_(Bolus)': cardiac_output_bolus
+    'HZV_(kontinuierlich)': cardiac_output_cont
+    Haematokrit: hematocrit
+    Haemoglobin: hemoglobin
+    Harnstoff: urea
+    'Horowitz-Quotient_(ohne_Temp-Korrektur)': pf_ratio
+    Hydrocortison_intravenoes_bolusweise: hydrocortisone_iv_bolus
+    'I:E': ie_ratio
+    'I:E_eingestellt': ie_ratio_set
+    IL-6: il6
+    INR: inr
+    Inhalatives_Iloprost: inhaled_iloprost
+    Inhalatives_NO: inhaled_no
+    Interleukin_6: il6
+    Isofluran_inhalativ: isoflurane_inh
+    Ketanest_intravenoes_kontinuierlich: ketanest_iv_cont
+    Koerperkerntemperatur: core_temp
+    Kreatinin: creatinine
+    Körpertemperatur: core_temp
+    LDH: ldh
+    Lagerungstherapie: position_therapy
+    Laktat_arteriell: lactate_art
+    LesebestaetigugnTherapie_utc: therapy_read_confirmation_utc
+    LesebestaetigungSchweregrad: severity_read_confirmation
+    LesebestaetigungTherapie_utc: therapy_read_confirmation_utc
+    Leukozyten: wbc
+    Levosimendan_intravenoes_kontinuierlich: levosimendan_iv_cont
+    Lipase: lipase
+    Lymphocyten: lymph_pct
+    Lymphozyten_absolut: lymph_abs
+    Lymphozyten_prozentual: lymph_pct
+    MAP: map
+    MPAP: mpap
+    Midazolam_intravenoes_kontinuierlich: midazolam_iv_cont
+    Milrinon_intravenoes_kontinuierlich: milrinone_iv_cont
+    Morphin_intravenoes_kontinuierlich: morphine_iv_cont
+    NT-proBNP: ntprobnp
+    NT-pro_BNP: ntprobnp
+    Norepinephrin_intravenoes_kontinuierlich: norepinephrine_iv_cont
+    'Organversagen:_SOFA_Score_ohne_GCS': sofa_score_without_gcs
+    PCT: pct
+    PCWP: pcwp
+    PEEP: peep
+    PEEP_eingestellt: peep_set
+    PVRI: pvri
+    P_EI: insp_pressure
+    Prednisolon_intravenoes_bolusweise: prednisolone_iv_bolus
+    Propofol_intravenoes_kontinuierlich: propofol_iv_cont
+    Pseudo-ID: stay_id_global
+    Rocuronium_intravenoes_bolusweise: rocuronium_iv_bolus
+    SAP: sbp
+    SOFA: sofa_score_unspecified
+    SOFA.Punkte_Blut: sofa_blood
+    SOFA.Punkte_Leber: sofa_liver
+    SOFA.Punkte_Lunge: sofa_respiratory
+    'SOFA.Punkte_Lunge_(cal.)': sofa_respiratory_calculated
+    SOFA.Punkte_Niere: sofa_renal
+    SOFA.Punkte_ZNS: sofa_cns
+    SOFA.SOFA_Gesamt: sofa_total_score
+    SPAP: spap
+    'SVI_(Bolus)': stroke_index_bolus
+    'SVI_(kontinuierlich)': stroke_index_cont
+    SVRI: svri
+    'SV_(Bolus)': stroke_volume_bolus
+    'SV_(kontinuierlich)': stroke_volume_cont
+    SaO2: sao2
+    Sevofluran_inhalativ: sevoflurane_inh
+    SpO2: spo2
+    Sufentanil_intravenoes_kontinuierlich: sufentanil_iv_cont
+    SzvO2: scvo2
+    Terlipressin_intravenoes_bolusweise: terlipressin_iv_bolus
+    Thrombozyten: platelets
+    Troponin: troponin
+    Vasopressin_intravenoes_kontinuierlich: vasopressin_iv_cont
+    Vt: vt
+    Vt_per_kg: vt_per_kg
+    Vt_spontan: vt_spontaneous
+    ZVD: cvp
+    Zeit_ab_Aufnahme: minutes_since_icu_admission
+    deltaP: delta_p_reported
+    etCO2: etco2
+    hid: hospital_code_source
+    iSOFA.HKL: isofa_cardiovascular
+    iSOFA.Leber: isofa_liver
+    iSOFA.Lunge: isofa_respiratory
+    iSOFA.Niere: isofa_renal
+    iSOFA.Thrombo: isofa_thrombocyte
+    iSOFA.ZNS: isofa_cns
+    iSOFA.iSOFA_Gesamt: isofa_total_score
+    individuelles_Tidalvolumen_pro_kg_idealem_Koerpergewicht: vt_per_kg_ideal_body_weight
+    'pH_Wert_(ohne_Temp-Korrektur)_arteriell': ph_art
+    pH_arteriell: ph_art
+    pTT: ptt
+    'paCO2_(ohne_Temp-Korrektur)': paco2
+    'paO2_(ohne_Temp-Korrektur)': pao2
+    timeidx: anchored_time_since_icu_admission
+
+hospital_specific_semantic_splits:
+  uk00_vt_per_ideal_bw_total:
+    table: dynamic
+    source_column: individuelles_Tidalvolumen_pro_kg_idealem_Koerpergewicht
+    base_target_name: vt_per_kg_ideal_body_weight
+    new_target_name: vt_per_ideal_bw_total
+    selected_hospital_codes: [0]
+    status: approved_semantic_split
+    action: move_selected_hospital_values
+    reason: >-
+      UK00 values are predominantly on an absolute-volume-like scale
+      (approximately 200-700 mL) and mostly match 6 times predicted body
+      weight, rather than representing a per-kg measure. Move them to a
+      separately named field without changing values. Retain the original
+      per-kg target for all other hospitals; exact provenance remains
+      unresolved.
+
+translated_output_groups:
+  static:
+    identifiers_and_study_timing:
+      - stay_id_global
+      - hospital_id
+      - hospital_code_source
+      - cluster_id
+      - time_since_study_start
+      - study_implementation_phase
+    demographics:
+      - sex
+      - age_group
+      - weight_kg
+      - height_cm
+      - weight_group
+      - height_group
+      - bmi_group
+    stay_and_outcomes:
+      - hosp_los
+      - icu_los
+      - icu_readmit
+      - discharge_status
+      - death_status
+      - hospital_mortality_reported
+      - icd10_codes
+      - dialysis_free_days
+      - vent_free_days
+
+  dynamic:
+    identifiers_and_time:
+      - stay_id_global
+      - hospital_id
+      - hospital_code_source
+      - minutes_since_icu_admission
+      - anchored_time_since_icu_admission
+    physiological_values:
+      - heart_rate
+      - sbp
+      - map
+      - dbp
+      - resp_rate
+      - spont_resp_rate
+      - core_temp
+      - spo2
+      - sao2
+      - scvo2
+      - cvp
+      - spap
+      - mpap
+      - dpap
+      - pcwp
+      - cardiac_output_bolus
+      - cardiac_output_cont
+      - cardiac_index_bolus
+      - cardiac_index_cont
+      - stroke_volume_bolus
+      - stroke_volume_cont
+      - stroke_index_bolus
+      - stroke_index_cont
+      - svri
+      - pvri
+      - gedvi
+      - evlwi
+      - fluid_balance_24h
+    mechanical_ventilation:
+      - fio2
+      - fio2_set
+      - feo2
+      - peep
+      - peep_set
+      - insp_pressure
+      - delta_p_computed
+      - delta_p_reported
+      - compliance
+      - ie_ratio
+      - ie_ratio_set
+      - vt
+      - vt_spontaneous
+      - vt_per_kg
+      - vt_per_kg_ideal_body_weight
+      - vt_per_ideal_bw_total
+      - etco2
+      - pf_ratio
+    laboratory_values:
+      - ph_art
+      - pao2
+      - paco2
+      - bicarbonate_art
+      - base_excess_art
+      - lactate_art
+      - hemoglobin
+      - hematocrit
+      - wbc
+      - platelets
+      - lymph_abs
+      - lymph_pct
+      - inr
+      - ptt
+      - d_dimer
+      - albumin
+      - bilirubin_total
+      - urea
+      - creatinine
+      - ast
+      - alt
+      - ldh
+      - amylase
+      - lipase
+      - ck
+      - ck_mb
+      - troponin
+      - bnp
+      - ntprobnp
+      - crp
+      - pct
+      - il6
+    intravenous_medications:
+      - norepinephrine_iv_cont
+      - epinephrine_iv_cont
+      - dobutamine_iv_cont
+      - milrinone_iv_cont
+      - levosimendan_iv_cont
+      - vasopressin_iv_cont
+      - terlipressin_iv_bolus
+      - propofol_iv_cont
+      - midazolam_iv_cont
+      - dexmedetomidine_iv_cont
+      - clonidine_iv_cont
+      - fentanyl_iv_cont
+      - sufentanil_iv_cont
+      - morphine_iv_cont
+      - ketanest_iv_cont
+      - rocuronium_iv_bolus
+      - furosemide_iv_cont
+      - hydrocortisone_iv_bolus
+      - dexamethasone_iv_bolus
+      - prednisolone_iv_bolus
+    other_therapy_and_review_fields:
+      - ards_diagnosis_app
+      - ecmo
+      - ecmo_o2
+      - extracorp_blood_flow
+      - extracorp_o2_flow
+      - position_therapy
+      - inhaled_no
+      - inhaled_iloprost
+      - isoflurane_inh
+      - sevoflurane_inh
+      - fludrocortisone_po_bolus
+      - therapy_read_confirmation_utc
+      - severity_read_confirmation
+    sofa:
+      - sofa_score_without_gcs
+      - sofa_score_unspecified
+      - sofa_blood
+      - sofa_liver
+      - sofa_respiratory
+      - sofa_respiratory_calculated
+      - sofa_renal
+      - sofa_cns
+      - sofa_total_score
+    isofa:
+      - isofa_cardiovascular
+      - isofa_liver
+      - isofa_respiratory
+      - isofa_renal
+      - isofa_thrombocyte
+      - isofa_cns
+      - isofa_total_score
+
+planned_additive_fields:
+  static:
+    hospital_id:
+      source: Pseudo-ID suffix, verified against hid
+      rule: format source hospital code as asic_UKNN
+      status: contract_approved
+  dynamic:
+    hospital_id:
+      source: Pseudo-ID suffix, verified against hid
+      rule: format source hospital code as asic_UKNN
+      status: contract_approved
+
+column_relationships:
+  creatine_kinase:
+    table: dynamic
+    source_columns: [CK, Creatinkinase]
+    old_shared_name: ck
+    target_name: ck
+    status: approved_merge
+    conflict_policy: fail_if_both_nonmissing_and_unequal
+    allowed_nonmissing_hospitals:
+      CK: [0, 3, 4, 6, 7, 8]
+      Creatinkinase: [2]
+  delta_p_case_variants:
+    table: dynamic
+    source_columns: [DeltaP, deltaP]
+    old_shared_name: null
+    status: unresolved_do_not_merge
+  extracorporeal_oxygen:
+    table: dynamic
+    source_columns: [ECMO_FiO2, 'Gaszusammensetzung_(%O2)']
+    old_shared_name: ecmo_o2
+    target_name: ecmo_o2
+    status: approved_merge
+    conflict_policy: fail_if_both_nonmissing_and_unequal
+    allowed_nonmissing_hospitals:
+      ECMO_FiO2: [2]
+      'Gaszusammensetzung_(%O2)': [0, 3, 4, 6, 7, 8]
+  interleukin_6:
+    table: dynamic
+    source_columns: [IL-6, Interleukin_6]
+    old_shared_name: il6
+    target_name: il6
+    status: approved_merge
+    conflict_policy: fail_if_both_nonmissing_and_unequal
+    allowed_nonmissing_hospitals:
+      IL-6: [0, 3, 4, 6, 7, 8]
+      Interleukin_6: [2]
+  lymphocyte_percentage:
+    table: dynamic
+    source_columns: [Lymphocyten, Lymphozyten_prozentual]
+    old_shared_name: lymph_pct
+    target_name: lymph_pct
+    status: approved_merge
+    conflict_policy: fail_if_both_nonmissing_and_unequal
+    allowed_nonmissing_hospitals:
+      Lymphocyten: [2]
+      Lymphozyten_prozentual: [0, 3, 4, 6, 7, 8]
+  nt_probnp:
+    table: dynamic
+    source_columns: [NT-proBNP, NT-pro_BNP]
+    old_shared_name: ntprobnp
+    target_name: ntprobnp
+    status: approved_merge
+    conflict_policy: fail_if_both_nonmissing_and_unequal
+  sofa_unspecified:
+    table: dynamic
+    source_columns: ['Organversagen:_SOFA_Score_ohne_GCS', SOFA]
+    old_shared_name: sofa
+    status: unresolved_do_not_merge
+  therapy_confirmation_typo_variants:
+    table: dynamic
+    source_columns: [LesebestaetigugnTherapie_utc, LesebestaetigungTherapie_utc]
+    old_shared_name: null
+    target_name: therapy_read_confirmation_utc
+    status: approved_merge
+    conflict_policy: binary_or_fail_on_nonbinary
+  body_temperature_naming_variants:
+    table: dynamic
+    source_columns: [Koerperkerntemperatur, Körpertemperatur]
+    old_shared_name: core_temp
+    target_name: core_temp
+    status: approved_merge
+    conflict_policy: fail_if_both_nonmissing_and_unequal
+  arterial_ph_naming_variants:
+    table: dynamic
+    source_columns:
+      - 'pH_Wert_(ohne_Temp-Korrektur)_arteriell'
+      - pH_arteriell
+    old_shared_name: ph_art
+    target_name: ph_art
+    status: approved_merge
+    conflict_policy: fail_if_both_nonmissing_and_unequal
+    allowed_nonmissing_hospitals:
+      'pH_Wert_(ohne_Temp-Korrektur)_arteriell': [0]
+      pH_arteriell: [2, 3, 4, 6, 7, 8]
+
+drop_rules:
+  static: {}
+  dynamic:
+    ARDS_Diagnose_App_duplicated_0:
+      status: approved_drop
+      precondition: all_missing
+      reason: confirmed empty duplicate artifact
+
+categorical_value_inventory_required:
+  static:
+    - Phase
+    - clusterGeschlecht
+    - clusterKoerpergewicht
+    - clusterKoerpergroesse
+    - BMI
+    - Wiederaufnahme_ICU
+    - clusterAlter
+    - 'Entlassgrund_(verlegt_intern,_verlegt_extern,_verstorben)'
+    - Sterblichkeit
+    - KH-Sterblichkeit
+  dynamic:
+    - ARDS_Diagnose_App
+    - ECMO
+    - Lagerungstherapie
+    - LesebestaetigungSchweregrad
+    - LesebestaetigungTherapie_utc
+
+categorical_value_mappings:
+  static:
+    sex:
+      status: approved_mapping
+      normalization: strip_upper
+      output_arrow_type: large_string
+      values:
+        M: male
+        W: female
+    weight_group:
+      status: approved_mapping
+      normalization: strip
+      output_arrow_type: large_string
+      values:
+        '<65': '<65'
+        '65-75': '65-75'
+        '76-250': '76-250'
+        '-1': null
+    bmi_group:
+      status: approved_mapping
+      normalization: strip_upper
+      output_arrow_type: large_string
+      values:
+        L: underweight
+        M: normal_weight
+        P: overweight
+        '1': obesity_class_1
+        '2': obesity_class_2
+        '3': obesity_class_3
+        X: null
+        NAN: null
+    discharge_status:
+      status: approved_mapping
+      normalization: strip_lower
+      output_arrow_type: large_string
+      values:
+        verlegt: transferred
+        verstorben: died
+    death_status:
+      status: approved_mapping
+      normalization: strip_upper
+      output_arrow_type: large_string
+      values:
+        '0': discharged_alive
+        ICU: died_in_icu
+        KH: died_in_hospital
+        NAN: null
+    hospital_mortality_reported:
+      status: approved_mapping
+      normalization: strip_lower
+      output_arrow_type: boolean
+      values:
+        'false': false
+        'true': true
+  dynamic: {}
+
+numeric_missing_sentinels:
+  static:
+    hosp_los:
+      status: approved_missing_sentinel
+      values: [-1]
+      reason: >-
+        Negative hospital length of stay is impossible. The production audit
+        found 5,164 occurrences, all at UK08, where -1 encodes unavailable
+        hospital length of stay.
+    dialysis_free_days:
+      status: approved_missing_sentinel
+      values: [-1]
+      reason: Negative free-day counts are impossible; -1 encodes missing data.
+    vent_free_days:
+      status: approved_missing_sentinel
+      values: [-1]
+      reason: Negative free-day counts are impossible; -1 encodes missing data.
+  dynamic: {}
+
+semantic_review_required:
+  static:
+    Zeit_seit_Studienbeginn: unit and exact definition unknown
+    Phase: ASIC implementation-phase code meanings remain undocumented; preserve 0/1/2
+    Cluster-ID: relationship to hospital and study design requires confirmation
+    Sterblichkeit: source concept retained; approved downstream mortality consolidation is separate
+    KH-Sterblichkeit: source concept retained; approved downstream mortality consolidation is separate
+  dynamic:
+    ARDS_Diagnose_App: application-derived meaning and codes require confirmation
+    LesebestaetigungSchweregrad: meaning and encoding require confirmation
+    LesebestaetigungTherapie_utc: meaning and apparent numeric encoding require confirmation
+    SOFA: unspecified score source; keep separate
+    'Organversagen:_SOFA_Score_ohne_GCS': score explicitly excludes GCS; keep separate
+    SOFA.SOFA_Gesamt: reported-versus-derived status unresolved
+    iSOFA.iSOFA_Gesamt: reported-versus-derived status unresolved

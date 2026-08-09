@@ -1,0 +1,35 @@
+dataset_context: production
+contract: ../pooled/contract.yaml
+translation_policy: ../pooled_to_translated/policy.yaml
+translated_contract: ../translated/contract.yaml
+data_quality_policy: ../translated/data_quality_audit.yaml
+
+paths:
+  pooled: ../../data/production/pooled
+  translated: ../../data/production/translated
+  cleaned: ../../data/production/cleaned
+  reports: ../../reports/production
+
+audit:
+  batch_size: 100000
+  check_duplicate_dynamic_keys: true
+  time_anchor: '2020-01-01 00:00:00'
+  time_tolerance_seconds: 0.0
+
+pooled_to_translated:
+  batch_size: 100000
+
+categorical_inventory:
+  batch_size: 100000
+  max_distinct_values_per_column: 1000
+
+translated_audit:
+  batch_size: 100000
+  check_duplicate_dynamic_keys: true
+  time_anchor: '2020-01-01 00:00:00'
+  time_tolerance_seconds: 0.0
+
+cross_hospital_audit:
+  batch_size: 100000
+  quantile_sample_size_per_hospital_variable: 20000
+  max_examples: 10

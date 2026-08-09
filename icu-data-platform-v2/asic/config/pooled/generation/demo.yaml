@@ -1,0 +1,10 @@
+contract: ../contract.yaml
+
+paths:
+  source_pooled: ../../../data/production/pooled
+  output_pooled: ../../../data/demo/pooled
+  manifest: ../../../data/demo/demo_generation_manifest.json
+
+sampling:
+  seed: 42
+  stays_per_hospital: 100

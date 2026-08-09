@@ -1,0 +1,726 @@
+policy_version: '1.10'
+status: approved_for_read_only_audit
+translated_contract_version: '1.3'
+documentation: asic/docs/cross_hospital_data_quality.md
+
+scope:
+  profile_every_numeric_translated_field: true
+  profile_exclusions:
+    static: [hospital_code_source, cluster_id]
+    dynamic:
+      - hospital_code_source
+      - minutes_since_icu_admission
+  hospital_column: hospital_id
+  stay_id_column: stay_id_global
+
+distribution_screen:
+  # These reproduce the thresholds used by the legacy ASIC pipeline. Quantiles
+  # are exact until the per-hospital/variable sample cap and deterministic
+  # bottom-k estimates thereafter.
+  minimum_non_missing_values: 20
+  minimum_hospitals: 4
+  hospital_metric_iqr_fence_factor: 1.5
+  metrics: [min, median, iqr, max, range_width]
+  additional_metrics: [finite_rate]
+
+# Broad, read-only discovery of possible decimal-place or factor-entry errors.
+# Every dynamic field with both a legacy hard minimum and maximum is scanned.
+# Only raw out-of-range values are tested, and no candidate is written.
+scale_entry_discovery:
+  source: bounded_legacy_invalid_value_rules
+  factors: [10, 100, 1000]
+  minimum_finite_values_for_pattern: 20
+  rare_candidate_max_fraction: 0.01
+  systematic_candidate_min_fraction: 0.20
+
+# Bounded second-pass evidence for review-selected, uniquely recoverable
+# candidates in fields where temporal or same-row physiology can help a human
+# reviewer.
+# Known systematic site-wide findings remain in targeted_scale_audits instead.
+candidate_context_audit:
+  windows_hours: [1, 4, 8]
+  maximum_candidate_rows: 100000
+  fields:
+    - column: core_temp
+      excluded_hospitals: []
+      related_fields: []
+      relationship: none
+
+    - column: evlwi
+      excluded_hospitals: []
+      related_fields: []
+      relationship: none
+    - column: ph_art
+      excluded_hospitals: []
+      related_fields: []
+      relationship: none
+    - column: fio2
+      # UK03 is a known site-wide fraction-to-percent hypothesis, not an
+      # isolated entry-error candidate.
+      excluded_hospitals: [asic_UK03]
+      related_fields: [fio2_set]
+      relationship: compare_related_field
+    - column: map
+      excluded_hospitals: []
+      related_fields: [sbp, dbp]
+      relationship: map_from_sbp_dbp
+    - column: spo2
+      excluded_hospitals: []
+      related_fields: [sao2]
+      relationship: compare_related_field
+    - column: sao2
+      excluded_hospitals: []
+      related_fields: [spo2]
+      relationship: compare_related_field
+    - column: scvo2
+      excluded_hospitals: []
+      # Existing relationship_audits compare ScvO2 separately with both SaO2
+      # and SpO2; temporal context here does not choose either as equivalent.
+      related_fields: []
+      relationship: none
+
+# Cross-table, read-only test of the hypothesis that UK00's source-labelled
+# per-ideal-body-weight field is actually the absolute 6 mL/kg PBW target.
+# PBW is a test formula, not confirmed source metadata, and no value is changed.
+predicted_body_weight_tidal_volume_audit:
+  id: uk00_ardsnet_pbw_tidal_volume_formula_review
+  hospital: asic_UK00
+  sex_column: sex
+  height_column: height_cm
+  actual_weight_column: weight_kg
+  vt_column: vt
+  vt_per_kg_column: vt_per_kg
+  target_absolute_vt_column: vt_per_ideal_bw_total
+  male_value: male
+  female_value: female
+  male_intercept_kg: 50.0
+  female_intercept_kg: 45.5
+  height_coefficient_kg_per_cm: 0.91
+  height_center_cm: 152.4
+  target_ml_per_kg_pbw: 6.0
+  plausible_height_min_cm: 120.0
+  plausible_height_max_cm: 220.0
+  plausible_actual_weight_min_kg: 20.0
+  plausible_actual_weight_max_kg: 300.0
+  absolute_tolerance_ml: 0.01
+  normalized_tolerance_ml_per_kg: 0.01
+  approval_status: hypothesis_only_not_approved
+  evidence: UK00's production median 412.476 mL equals 6 times ARDSNet PBW for a 173 cm male, and its maximum 587.196 mL equals 6 times PBW for a 205 cm male. Row-level static-to-dynamic testing is required before assigning this meaning.
+
+legacy_sources:
+  - file: hpc-icu-data-platform/src/icu_data_platform/sources/asic/qc/dynamic_checks.py
+    symbols:
+      - find_non_numeric_value_issues
+      - numeric_distribution_summary
+      - flag_cross_hospital_distribution_issues
+  - file: hpc-icu-data-platform/src/icu_data_platform/sources/asic/harmonize/dynamic.py
+    symbols:
+      - SEMANTIC_TARGET_VARIABLES
+      - INVALID_VALUE_RULES
+      - apply_dynamic_semantic_harmonization
+      - apply_dynamic_invalid_value_cleaning
+  - file: hpc-icu-data-platform/src/icu_data_platform/sources/asic/harmonize/static.py
+    symbols: [MINUS_ONE_TO_NA_COLUMNS]
+
+legacy_coverage:
+  invalid_value_rule_count: 44
+  expanded_v2_invalid_value_check_count: 47
+  targeted_semantic_finding_count: 5
+  static_minus_one_sentinel_count: 6
+
+legacy_raw_numeric_parsing:
+  auditability_at_translated_boundary: unavailable_after_upstream_numeric_coercion
+  hospital: asic_UK04
+  missing_strings:
+    - storniert
+    - storno
+    - kein material
+    - falsches mater.
+    - falsches mater
+    - fal.volumen
+    - geronnen
+    - entfällt
+    - entfaellt
+    - folgt
+  threshold_rules:
+    less_than_value: 0
+    greater_than_value: threshold_number
+  decimal_comma_converted_to_decimal_point: true
+  ie_ratio_parsing:
+    accepted_separators: [':', '/']
+    calculation: numerator_divided_by_denominator
+    zero_denominator: missing
+  requirement: >-
+    The translated audit verifies numeric Arrow types, missing values, and
+    infinities. It cannot reconstruct original strings that pooling or numeric
+    coercion already discarded. Raw-value parsing must be re-audited upstream
+    if the original hospital files become available.
+
+legacy_static_minus_one_sentinels:
+  - {column: weight_group, value: '-1', value_kind: string}
+  - {column: hosp_los, value: -1, value_kind: numeric}
+  - {column: icu_los, value: -1, value_kind: numeric}
+  - {column: icu_readmit, value: -1, value_kind: numeric}
+  - {column: dialysis_free_days, value: -1, value_kind: numeric}
+  - {column: vent_free_days, value: -1, value_kind: numeric}
+
+# These are the 44 rules from legacy INVALID_VALUE_RULES. A rule may map to
+# more than one v2 field where the old pipeline had merged distinct sources.
+legacy_invalid_value_rules:
+  - legacy_name: albumin
+    columns: [albumin]
+    invalid_zero: true
+    description: Albumin concentrations cannot be exactly zero.
+  - legacy_name: cardiac_index_bolus
+    columns: [cardiac_index_bolus]
+    hard_min: 0
+    hard_max: 15
+    invalid_zero: true
+    description: Cardiac index must be greater than 0 and at most 15 L/min/m2.
+  - legacy_name: cardiac_index_cont
+    columns: [cardiac_index_cont]
+    hard_min: 0
+    hard_max: 15
+    invalid_zero: true
+    description: Cardiac index must be greater than 0 and at most 15 L/min/m2.
+  - legacy_name: cardiac_output_bolus
+    columns: [cardiac_output_bolus]
+    hard_min: 0
+    hard_max: 25
+    invalid_zero: true
+    description: Cardiac output must be greater than 0 and at most 25 L/min.
+  - legacy_name: cardiac_output_cont
+    columns: [cardiac_output_cont]
+    hard_min: 0
+    hard_max: 25
+    invalid_zero: true
+    description: Cardiac output must be greater than 0 and at most 25 L/min.
+  - legacy_name: compliance
+    columns: [compliance]
+    hard_min: 0
+    hard_max: 300
+    invalid_zero: true
+    description: Respiratory-system compliance must be greater than 0 and at most 300.
+  - legacy_name: core_temp
+    columns: [core_temp]
+    hard_min: 25
+    hard_max: 45
+    description: Core temperature outside 25-45 C is physiologically implausible.
+  - legacy_name: creatinine
+    columns: [creatinine]
+    invalid_zero: true
+    description: Creatinine cannot be exactly zero.
+  - legacy_name: cvp
+    columns: [cvp]
+    hard_min: -20
+    hard_max: 60
+    description: CVP outside -20 to 60 mmHg is uninterpretable.
+  - legacy_name: dbp
+    columns: [dbp]
+    hard_min: 0
+    hard_max: 200
+    invalid_zero: true
+    description: Diastolic blood pressure must be greater than 0 and at most 200 mmHg.
+  - legacy_name: delta_p
+    columns: [delta_p_computed, delta_p_reported]
+    hard_min: 0
+    hard_max: 60
+    description: Driving pressure below 0 or above 60 cmH2O is invalid.
+  - legacy_name: evlwi
+    columns: [evlwi]
+    hard_min: 0
+    hard_max: 80
+    invalid_zero: true
+    description: EVLWI must be greater than 0 and at most 80.
+  - legacy_name: fio2
+    columns: [fio2]
+    hard_min: 20
+    hard_max: 100
+    description: FiO2 is expected in percent and within 20-100.
+  - legacy_name: gedvi
+    columns: [gedvi]
+    hard_min: 0
+    hard_max: 2000
+    invalid_zero: true
+    description: GEDVI must be greater than 0 and at most 2000.
+  - legacy_name: heart_rate
+    columns: [heart_rate]
+    hard_min: 0
+    hard_max: 250
+    invalid_zero: true
+    description: Heart rate must be greater than 0 and at most 250 bpm.
+  - legacy_name: hematocrit
+    columns: [hematocrit]
+    hard_min: 0
+    hard_max: 80
+    invalid_zero: true
+    description: Hematocrit must be greater than 0 and at most 80.
+  - legacy_name: hemoglobin
+    columns: [hemoglobin]
+    hard_min: 0
+    hard_max: 25
+    invalid_zero: true
+    description: Hemoglobin must be greater than 0 and at most 25 in harmonized units.
+  - legacy_name: ie_ratio
+    columns: [ie_ratio]
+    hard_min: 0
+    hard_max: 10
+    invalid_zero: true
+    description: I:E or E:I ratios must be greater than 0 and at most 10.
+  - legacy_name: inr
+    columns: [inr]
+    hard_min: 0
+    hard_max: 15
+    invalid_zero: true
+    description: INR must be greater than 0 and at most 15.
+  - legacy_name: insp_pressure
+    columns: [insp_pressure]
+    hard_min: 0
+    hard_max: 80
+    description: Inspiratory pressure must be within 0-80 cmH2O.
+  - legacy_name: lactate_art
+    columns: [lactate_art]
+    hard_min: 0
+    hard_max: 30
+    invalid_zero: true
+    description: Arterial lactate must be greater than 0 and at most 30 mmol/L.
+  - legacy_name: map
+    columns: [map]
+    hard_min: 0
+    hard_max: 250
+    invalid_zero: true
+    description: MAP must be greater than 0 and at most 250 mmHg.
+  - legacy_name: paco2
+    columns: [paco2]
+    hard_min: 0
+    hard_max: 150
+    invalid_zero: true
+    description: PaCO2 must be greater than 0 and at most 150 mmHg.
+  - legacy_name: pao2
+    columns: [pao2]
+    hard_min: 0
+    hard_max: 760
+    invalid_zero: true
+    description: PaO2 must be greater than 0 and at most 760 mmHg.
+  - legacy_name: pap_dias
+    columns: [dpap]
+    hard_min: 0
+    hard_max: 100
+    invalid_zero: true
+    description: Diastolic PAP must be greater than 0 and at most 100 mmHg.
+  - legacy_name: pap_mean
+    columns: [mpap]
+    hard_min: 0
+    hard_max: 100
+    invalid_zero: true
+    description: Mean PAP must be greater than 0 and at most 100 mmHg.
+  - legacy_name: pap_sys
+    columns: [spap]
+    hard_min: 0
+    hard_max: 150
+    invalid_zero: true
+    description: Systolic PAP must be greater than 0 and at most 150 mmHg.
+  - legacy_name: pcwp
+    columns: [pcwp]
+    hard_min: 0
+    hard_max: 50
+    invalid_zero: true
+    description: PCWP must be greater than 0 and at most 50 mmHg.
+  - legacy_name: peep
+    columns: [peep]
+    hard_min: 0
+    hard_max: 30
+    description: PEEP must be within 0-30 cmH2O.
+  - legacy_name: pf_ratio
+    columns: [pf_ratio]
+    hard_min: 0
+    hard_max: 2500
+    invalid_zero: true
+    description: PaO2/FiO2 must be greater than 0 and at most 2500.
+  - legacy_name: ph_art
+    columns: [ph_art]
+    hard_min: 6.8
+    hard_max: 7.8
+    description: Arterial pH must be within 6.8-7.8.
+  - legacy_name: platelets
+    columns: [platelets]
+    hard_min: 0
+    hard_max: 2000
+    invalid_zero: true
+    description: Platelets must be greater than 0 and at most 2000.
+  - legacy_name: ptt
+    columns: [ptt]
+    hard_min: 0
+    hard_max: 300
+    invalid_zero: true
+    description: PTT must be greater than 0 and at most 300 seconds.
+  - legacy_name: resp_rate
+    columns: [resp_rate]
+    hard_min: 0
+    hard_max: 80
+    invalid_zero: true
+    description: Respiratory rate must be greater than 0 and at most 80 breaths/min.
+  - legacy_name: sao2
+    columns: [sao2]
+    hard_min: 50
+    hard_max: 100
+    description: SaO2 must be within 50-100 percent.
+  - legacy_name: sbp
+    columns: [sbp]
+    hard_min: 0
+    hard_max: 300
+    invalid_zero: true
+    description: Systolic blood pressure must be greater than 0 and at most 300 mmHg.
+  - legacy_name: scvo2
+    columns: [scvo2]
+    hard_min: 20
+    hard_max: 100
+    description: ScvO2 must be within 20-100 percent.
+  - legacy_name: sofa
+    columns: [sofa_score_without_gcs, sofa_score_unspecified]
+    hard_min: 0
+    hard_max: 24
+    description: The two v2 fields were merged as legacy SOFA; values must be within 0-24.
+  - legacy_name: spo2
+    columns: [spo2]
+    hard_min: 30
+    hard_max: 100
+    description: SpO2 must be within 30-100 percent.
+  - legacy_name: stroke_index_cont
+    columns: [stroke_index_cont]
+    hard_min: 0
+    hard_max: 100
+    invalid_zero: true
+    description: Continuous stroke index must be greater than 0 and at most 100.
+  - legacy_name: stroke_volume_cont
+    columns: [stroke_volume_cont]
+    hard_min: 0
+    hard_max: 300
+    invalid_zero: true
+    description: Continuous stroke volume must be greater than 0 and at most 300 mL.
+  - legacy_name: svri
+    columns: [svri]
+    hard_min: 0
+    hard_max: 10000
+    invalid_zero: true
+    description: SVRI must be greater than 0 and at most 10000.
+  - legacy_name: vt
+    columns: [vt, vt_per_ideal_bw_total]
+    hard_min: 0
+    hard_max: 2000
+    invalid_zero: true
+    description: Delivered or PBW-target tidal volume must be greater than 0 and at most 2000 mL.
+  - legacy_name: vt_per_kg_ibw
+    columns: [vt_per_kg_ideal_body_weight]
+    hard_min: 0
+    hard_max: 30
+    invalid_zero: true
+    description: Tidal volume per kg ideal body weight must be greater than 0 and at most 30 mL/kg.
+
+known_legacy_semantic_findings:
+  - id: uk04_etco2_pa_scale
+    column: etco2
+    hospital: asic_UK04
+    prior_classification: deterministic_unit_conversion
+    prior_action: divide_by_7.50062
+    conversion_divisor: 7.50062
+    current_verification: compare_observed_and_candidate_converted_distribution_to_peers
+    decision: manual_review_required
+  - id: uk06_vt_per_kg_mixed_scales
+    column: vt_per_kg_ideal_body_weight
+    hospital: asic_UK06
+    prior_classification: site_specific_invalid_variable
+    prior_action: set_site_values_missing
+    current_verification: all_target_site_values_missing
+    decision: manual_review_if_values_present
+  - id: uk03_norepinephrine_off_scale
+    column: norepinephrine_iv_cont
+    hospital: asic_UK03
+    prior_classification: site_specific_invalid_variable_unresolved_unit
+    prior_action: set_site_values_missing
+    current_verification: all_target_site_values_missing
+    decision: manual_review_if_values_present
+  - id: uk08_clonidine_off_scale
+    column: clonidine_iv_cont
+    hospital: asic_UK08
+    prior_classification: site_specific_invalid_variable_unresolved_unit
+    prior_action: set_site_values_missing
+    current_verification: all_target_site_values_missing
+    decision: manual_review_if_values_present
+  - id: ie_ratio_direction_unresolved
+    column: ie_ratio
+    hospital: all
+    prior_classification: unresolved_i_to_e_versus_e_to_i_definition
+    prior_action: retain_pending_metadata_and_exclude_from_analysis
+    current_verification: report_each_hospital_median_and_reciprocal
+    decision: manual_review_required
+
+# The hypotheses below were generated from the reviewed demo report. They are
+# evaluated in memory only and are not approved transformations. Candidate
+# profiles are evidence to review again on complete production data.
+targeted_scale_audits:
+  - id: uk03_fio2_fraction_to_percent_candidate
+    column: fio2
+    hospital: asic_UK03
+    operation: multiply
+    factor: 100
+    expected_min: 20
+    expected_max: 100
+    evidence: Demo median 0.40 versus peer medians 35-43; multiplying by 100 puts the distribution on the percent scale.
+    approval_status: hypothesis_only_not_approved
+  - id: uk04_etco2_legacy_divisor_candidate
+    column: etco2
+    hospital: asic_UK04
+    operation: divide
+    factor: 7.50062
+    expected_min: 0
+    expected_max: 100
+    evidence: Demo median 292.523 becomes 39.000 and matches peer medians 36-44 using the exact legacy divisor.
+    approval_status: hypothesis_only_not_approved
+  - id: uk03_norepinephrine_divide_100_candidate
+    column: norepinephrine_iv_cont
+    hospital: asic_UK03
+    operation: divide
+    factor: 100
+    evidence: Demo median 5.556 becomes 0.05556 and aligns with peer medians 0.05-0.10.
+    approval_status: hypothesis_only_not_approved
+  - id: uk03_hematocrit_fraction_to_percent_candidate
+    column: hematocrit
+    hospital: asic_UK03
+    operation: multiply
+    factor: 100
+    expected_min: 0
+    expected_max: 80
+    evidence: Demo median 0.235 versus peer medians 24-29 indicates a fraction-versus-percent scale.
+    approval_status: hypothesis_only_not_approved
+  - id: uk00_lymph_pct_fraction_to_percent_candidate
+    column: lymph_pct
+    hospital: asic_UK00
+    operation: multiply
+    factor: 100
+    expected_min: 0
+    expected_max: 100
+    evidence: Demo median 0.1225 versus peer medians 6-10 indicates a fraction-versus-percent scale.
+    approval_status: hypothesis_only_not_approved
+  - id: uk08_albumin_peer_scale_candidate
+    column: albumin
+    hospital: asic_UK08
+    operation: divide
+    factor: 100
+    peer_hospitals: [asic_UK00, asic_UK02, asic_UK03, asic_UK04, asic_UK07]
+    evidence: Dividing by 100 is an empirical numerical-alignment probe only; it moves the demo median 29942.8 near selected peer medians 339-414, but source and target physical units are unconfirmed.
+    approval_status: empirical_alignment_only_not_unit_conversion
+  - id: uk03_d_dimer_peer_scale_candidate
+    column: d_dimer
+    hospital: asic_UK03
+    operation: multiply
+    factor: 1000
+    peer_hospitals: [asic_UK00, asic_UK02, asic_UK07]
+    evidence: Demo median 2.46 becomes 2460, within the broad peer raw-scale distribution; only 19 demo values are available.
+    approval_status: hypothesis_only_not_approved
+  - id: uk08_d_dimer_peer_scale_candidate
+    column: d_dimer
+    hospital: asic_UK08
+    operation: multiply
+    factor: 1000
+    peer_hospitals: [asic_UK00, asic_UK02, asic_UK07]
+    evidence: Demo median 6.61 becomes 6610, comparable with peer raw-scale medians 1535-5696.
+    approval_status: hypothesis_only_not_approved
+  - id: uk03_troponin_peer_scale_candidate
+    column: troponin
+    hospital: asic_UK03
+    operation: divide
+    factor: 1000
+    evidence: Demo median 79.45 becomes 0.07945, comparable with peer raw-scale medians 0.042-0.21.
+    approval_status: hypothesis_only_not_approved
+  - id: uk06_vt_per_kg_mixed_scale_candidate
+    column: vt_per_kg
+    hospital: asic_UK06
+    operation: divide_when_above
+    factor: 1000
+    threshold: 1000
+    expected_min: 0
+    expected_max: 30
+    evidence: This source field did not exist in the legacy translation registry. In production it is exactly equal to vt_per_kg_ideal_body_weight on every both-present UK06 row. The legacy pipeline classified the latter field as having unrecoverable mixed scales and set the complete UK06 site/field pair missing; it did not approve or implement division by 1000. This thresholded candidate remains an exploratory audit only, not a proposed cleaning rule.
+    approval_status: hypothesis_only_not_approved
+  - id: uk06_vt_per_kg_ideal_body_weight_mixed_scale_candidate
+    column: vt_per_kg_ideal_body_weight
+    hospital: asic_UK06
+    operation: divide_when_above
+    factor: 1000
+    threshold: 1000
+    expected_min: 0
+    expected_max: 30
+    peer_hospitals: [asic_UK02, asic_UK03, asic_UK04, asic_UK07, asic_UK08]
+    evidence: The legacy pipeline explicitly classified this UK06 field as having unrecoverable mixed scales and set the complete site/field pair missing. No divide-by-1000 recovery or post-conversion validation was documented. Production contains 55,344 values above 1000 and 434 values outside 0-30 even after the thresholded hypothetical conversion, so this remains an exploratory audit and the preserved legacy action is site-wide masking unless a new rule is explicitly approved. UK00 is excluded from peers because its source-labelled per-ideal-body-weight field has absolute-volume-like values inconsistent with that label.
+    approval_status: hypothesis_only_not_approved
+
+# These rules audit isolated row-level scale-entry errors within a hospital.
+# A value is a recovery candidate only when the raw value is outside the
+# inclusive recovery window and the explicitly transformed value falls inside
+# it. Candidate values are reported but never written by this audit.
+row_level_scale_entry_audits:
+  - id: ph_art_divide_100_entry_error_candidate
+    column: ph_art
+    operation: divide
+    factor: 100
+    recovery_min: 6.8
+    recovery_max: 7.8
+    evidence: An isolated arterial pH such as 745 is outside the physiologic pH window while 745 divided by 100 is 7.45. The rule is row-level and must not be interpreted as a hospital-wide unit conversion.
+    approval_status: audit_candidate_pending_demo_and_production_review
+
+targeted_comparison_audits:
+  - id: albumin_unit_review
+    column: albumin
+    reason: Peer raw medians are 339-414 while UK08 is 29943; canonical units must be established before correction.
+    approval_status: unresolved_requires_production_review
+  - id: d_dimer_unit_review
+    column: d_dimer
+    reason: Hospitals separate into approximately single-unit and thousand-unit scales.
+    approval_status: unresolved_requires_production_review
+  - id: troponin_unit_review
+    column: troponin
+    reason: UK03 is approximately 1000-fold above most peers and assays may use different reporting units.
+    approval_status: unresolved_requires_production_review
+  - id: sufentanil_definition_review
+    column: sufentanil_iv_cont
+    reason: UK00 median is 0.0005 versus 10-15 elsewhere; this may combine unit and weight-normalization differences.
+    approval_status: unresolved_requires_metadata
+  - id: propofol_definition_review
+    column: propofol_iv_cont
+    reason: UK08 median is 1.62 versus 100-300 elsewhere, suggesting different dose definitions.
+    approval_status: unresolved_requires_metadata
+  - id: ketanest_definition_review
+    column: ketanest_iv_cont
+    reason: UK08 median is 1.5 versus 100 at reporting peers, suggesting different dose definitions.
+    approval_status: unresolved_requires_metadata
+  - id: morphine_definition_review
+    column: morphine_iv_cont
+    reason: UK08 median is 35.3 while peers range from 0.4 to 10, without a confirmed common unit.
+    approval_status: unresolved_requires_metadata
+  - id: clonidine_mixed_scale_review
+    column: clonidine_iv_cont
+    reason: UK08 Q1 overlaps peer values but its median and upper quartile are much larger, so one multiplier may be unsafe.
+    approval_status: unresolved_requires_distribution_review
+  - id: vt_per_kg_definition_review
+    column: vt_per_kg
+    reason: UK06 has mixed scales and the relation to the ideal-body-weight field must be measured row by row.
+    approval_status: unresolved_requires_row_relationship_review
+  - id: vt_per_kg_ideal_body_weight_definition_review
+    column: vt_per_kg_ideal_body_weight
+    reason: UK00 values have been losslessly moved to vt_per_ideal_bw_total; the remaining field still includes the UK06 values that the legacy pipeline classified as unrecoverable mixed-scale, so source meaning must be verified by hospital.
+    approval_status: unresolved_requires_row_relationship_review
+  - id: vt_per_ideal_bw_total_definition_review
+    column: vt_per_ideal_bw_total
+    reason: UK00 values were separated because their scale is absolute-volume-like and nearly all equal 6 times predicted body weight, but their exact upstream provenance remains undocumented.
+    approval_status: unresolved_requires_source_metadata
+  - id: urea_unit_review
+    column: urea
+    reason: UK08 has a substantially higher demo median than peers; metadata or production evidence is required before inferring a unit conversion.
+    approval_status: unresolved_requires_metadata_or_production_review
+  - id: scvo2_definition_review
+    column: scvo2
+    reason: UK02 and UK07 have saturation distributions near arterial or peripheral oxygen saturation, while UK00 appears central-venous-like; row-level comparisons are required.
+    approval_status: unresolved_requires_row_relationship_review
+
+targeted_bucket_audits:
+  - id: uk06_vt_per_kg_scale_buckets
+    column: vt_per_kg
+    hospital: asic_UK06
+    cut_points: [0, 30, 100, 1000]
+    reason: Quantify the apparent mixed modes without superseding the legacy conclusion that the equivalent UK06 per-ideal-body-weight field was unrecoverable.
+  - id: uk06_vt_per_kg_ideal_body_weight_scale_buckets
+    column: vt_per_kg_ideal_body_weight
+    hospital: asic_UK06
+    cut_points: [0, 30, 100, 1000]
+    reason: Quantify the field that the legacy pipeline classified as unrecoverable mixed-scale and masked site-wide.
+  - id: uk00_vt_per_ideal_bw_total_scale_buckets
+    column: vt_per_ideal_bw_total
+    hospital: asic_UK00
+    cut_points: [0, 30, 200, 700]
+    reason: Quantify absolute-volume-like values that are inconsistent with the source field's per-ideal-body-weight label; this does not prove that the field is mislabeled or equivalent to vt.
+  - id: uk08_clonidine_scale_buckets
+    column: clonidine_iv_cont
+    hospital: asic_UK08
+    cut_points: [0, 0.15, 0.5, 5]
+    reason: Determine whether peer-scale and high-scale values coexist.
+
+targeted_review_coverage:
+  scale_hypothesis_count: 11
+  row_level_scale_entry_audit_count: 1
+  comparison_audit_count: 13
+  bucket_audit_count: 4
+  cross_table_formula_audit_count: 1
+
+relationship_audits:
+  - id: computed_driving_pressure_formula
+    table: dynamic
+    fields: [delta_p_computed, insp_pressure, peep]
+    formula: delta_p_computed_equals_insp_pressure_minus_peep
+    absolute_tolerance: 0.001
+  - id: computed_vs_reported_driving_pressure
+    table: dynamic
+    fields: [delta_p_computed, delta_p_reported]
+    formula: compare_only_no_equivalence_requirement
+    absolute_tolerance: 0.01
+  - id: dialysis_vs_vent_free_days
+    table: static
+    fields: [dialysis_free_days, vent_free_days]
+    formula: compare_only_no_equivalence_requirement
+    absolute_tolerance: 0
+  - id: sofa_unspecified_vs_total
+    table: dynamic
+    fields: [sofa_score_unspecified, sofa_total_score]
+    formula: compare_only_definition_unresolved
+    absolute_tolerance: 0
+  - id: sofa_respiratory_reported_vs_calculated
+    table: dynamic
+    fields: [sofa_respiratory, sofa_respiratory_calculated]
+    formula: compare_only_definition_unresolved
+    absolute_tolerance: 0
+  - id: isofa_total_vs_component_sum
+    table: dynamic
+    fields:
+      - isofa_total_score
+      - isofa_cardiovascular
+      - isofa_liver
+      - isofa_respiratory
+      - isofa_renal
+      - isofa_thrombocyte
+      - isofa_cns
+    formula: isofa_total_equals_sum_of_six_components_when_all_present
+    absolute_tolerance: 0
+  - id: vt_per_kg_vs_ideal_body_weight_field
+    table: dynamic
+    fields: [vt_per_kg, vt_per_kg_ideal_body_weight]
+    formula: compare_only_definition_unresolved
+    absolute_tolerance: 0.001
+  - id: uk00_vt_vs_ideal_body_weight_field
+    table: dynamic
+    fields: [vt, vt_per_ideal_bw_total]
+    formula: compare_only_definition_unresolved
+    absolute_tolerance: 0.001
+    hospital_scope: [asic_UK00]
+  - id: scvo2_vs_sao2
+    table: dynamic
+    fields: [scvo2, sao2]
+    formula: compare_only_definition_unresolved
+    absolute_tolerance: 0.001
+  - id: scvo2_vs_spo2
+    table: dynamic
+    fields: [scvo2, spo2]
+    formula: compare_only_definition_unresolved
+    absolute_tolerance: 0.001
+
+availability_audits:
+  - id: isofa_expected_only_at_uk00
+    columns:
+      - isofa_cardiovascular
+      - isofa_liver
+      - isofa_respiratory
+      - isofa_renal
+      - isofa_thrombocyte
+      - isofa_cns
+      - isofa_total_score
+    expected_non_missing_hospitals: [asic_UK00]
+    provenance: user-confirmed; generation method remains unresolved
