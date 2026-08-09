@@ -1,0 +1,80 @@
+harmonized_0_2_build_policy_version: '0.1'
+status: approved_after_frozen_contract_for_nonpublishable_candidate
+
+input:
+  harmonized_release_id: 20260806T111156Z
+  harmonized_contract_version: '0.1'
+  releases_directory: harmonized/releases
+  static_weight_reference_cleaned_release_id: 20260806T114234Z
+  cleaned_releases_directory: cleaned/releases
+  static_weight_reference_reason: >-
+    The approved UK00 vasopressin conversion audit used the immutable cleaned
+    0.1 static weight field. This narrowly preserves the exact audited weight
+    linkage while every other clinical input comes from harmonized release
+    0.1; no cleaned dynamic value is used.
+
+target_contract:
+  version: '0.2'
+  directory: contracts/harmonized_schema_dictionary/0.2
+  freeze_policy: reviewed_unit_schema_dictionary_freeze_0_2.yaml
+  freeze_policy_sha256: 5d8e3133437f7924cf5c10ec4b316f974bf7631b298173b977dc5dd834c5419e
+
+reviewed_decisions:
+  unit_and_semantic_splits: reviewed_unit_decisions_0_2.yaml
+  unit_and_semantic_splits_sha256: 90244e357fb8334e00469e527964170ac165f16d8a2c05e7e35e35c9b3edf3b0
+  medication_value_semantics: reviewed_medication_value_semantics_0_2.yaml
+  medication_value_semantics_sha256: 62a7f305e53e4789b2c2d2a7d1d1a4435a3e8010913383ccd1a0dd6879c94c9c
+
+expected:
+  static_rows: 16054
+  dynamic_rows: 24069379
+  static_clinical_variables: 23
+  dynamic_clinical_variables: 139
+  provenance_fields_per_table: 5
+  unit_conversion_rules: 9
+  semantic_split_rules: 9
+  medication_or_therapy_variables: 34
+  current_negative_medication_values_preserved: 201
+
+execution:
+  source_hospital_field: hospital_id
+  source_stay_field: stay_id_global
+  static_weight_field: weight_kg
+  preserve_source_row_order: true
+  preserve_every_input_column: true
+  route_split_source_unchanged_to_parallel_target: true
+  set_split_canonical_missing_for_source_hospital: true
+  set_parallel_target_missing_for_other_hospitals: true
+  preserve_zero_and_null_independently: true
+  preserve_negative_medication_values: true
+  require_complete_nonzero_weight_linkage: true
+  allow_cleaning: false
+  allow_derivation: false
+
+streaming:
+  rows_per_batch: 50000
+  parquet_compression: zstd
+
+outputs:
+  candidate_directory_name: harmonized_0_2_candidates
+  build_review_directory_name: harmonized_0_2_build
+  candidate_artifact_version: '0.1'
+  status: frozen_contract_0_2_nonpublishable_requires_complete_audit
+
+boundary:
+  read_released_harmonized_0_1: true
+  read_cleaned_0_1_static_weight_reference: true
+  read_cleaned_0_1_dynamic: false
+  read_frozen_contract_0_2: true
+  modify_harmonized_0_1_release: false
+  modify_cleaned_0_1_release: false
+  modify_derived_0_1_release: false
+  overwrite_outputs: false
+  filter_rows: false
+  filter_stays: false
+  drop_input_columns: false
+  apply_cleaning: false
+  apply_derivation: false
+  update_release_pointer: false
+  publish: false
+  authorize_external_data_export: false

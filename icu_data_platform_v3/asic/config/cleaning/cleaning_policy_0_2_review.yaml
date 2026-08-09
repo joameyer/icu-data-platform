@@ -1,0 +1,62 @@
+cleaning_policy_0_2_review_version: '0.1'
+status: complete_candidate_policy_pending_data_owner_approval
+
+inputs:
+  harmonized_release_id: 20260807T112402Z
+  harmonized_contract_version: '0.2'
+  harmonized_promotion_policy: ../unit_resolution/reviewed_harmonized_0_2_promotion_20260807T112402Z.yaml
+  harmonized_promotion_policy_sha256: 72e969c6b010c5d4b4b8bb48abdd90ca576c8b25664f57888b8ad0245d3a31d5
+  frozen_contract_version: '0.2'
+  frozen_contract_directory: harmonized_schema_dictionary/0.2
+  baseline_cleaning_policy: cleaning_policy.yaml
+  baseline_cleaning_policy_sha256: d4b8b8ed02bc68208c66e8faa8c506aff8a2f8946f6cca5acaef7ab4f7dd9856
+  candidate_unit_decisions: ../unit_resolution/candidate_unit_decisions_0_2.yaml
+  candidate_unit_decisions_sha256: ad7c032e84aaf70225b45619e3c53a35294387fc08d04c40c5707d78d2b45109
+  reviewed_unit_decisions: ../unit_resolution/reviewed_unit_decisions_0_2.yaml
+  reviewed_unit_decisions_sha256: 90244e357fb8334e00469e527964170ac165f16d8a2c05e7e35e35c9b3edf3b0
+  reviewed_medication_semantics: ../unit_resolution/reviewed_medication_value_semantics_0_2.yaml
+  reviewed_medication_semantics_sha256: 62a7f305e53e4789b2c2d2a7d1d1a4435a3e8010913383ccd1a0dd6879c94c9c
+  frozen_contract_policy: ../unit_resolution/reviewed_unit_schema_dictionary_freeze_0_2.yaml
+  frozen_contract_policy_sha256: 5d8e3133437f7924cf5c10ec4b316f974bf7631b298173b977dc5dd834c5419e
+
+proposed_policy:
+  version: '0.2'
+  replay_every_cleaning_0_1_rule: true
+  preserve_cleaning_0_1_rule_semantics: true
+  apply_general_negative_medication_rule: true
+  negative_medication_rule_id: mask_negative_medication_or_therapy_value
+  explicit_zero_remains_zero: true
+  null_remains_null: true
+  activate_all_twelve_unit_aware_range_dispositions: true
+  preserve_rows_and_stays: true
+  preserve_columns: true
+  create_derived_variables: false
+  perform_time_blocking: false
+
+expected:
+  static_rows: 16054
+  dynamic_rows: 24069379
+  baseline_legacy_applied_rule_count: 34
+  baseline_additional_scalar_rule_count: 15
+  baseline_list_rule_count: 1
+  baseline_hospital_mask_rule_count: 1
+  medication_or_therapy_variable_count: 34
+  currently_audited_negative_medication_value_count: 201
+  priority_range_variable_count: 12
+  historical_outside_legacy_range_count: 10021
+  clinical_rows_read_by_review: 0
+
+outputs:
+  review_directory_name: cleaning_policy_0_2_review
+  artifact_version: '0.1'
+
+boundary:
+  write_reports_only: true
+  read_clinical_rows: false
+  activate_policy_0_2: false
+  build_cleaned_candidate: false
+  modify_harmonized_release: false
+  modify_existing_cleaned_release: false
+  modify_existing_derived_release: false
+  filter_rows_or_stays: false
+  authorize_external_data_export: false

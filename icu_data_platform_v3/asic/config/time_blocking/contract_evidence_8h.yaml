@@ -1,0 +1,275 @@
+time_blocking_contract_evidence_policy_version: '0.1'
+status: human_approved_for_read_only_contract_evidence
+
+approval:
+  role: data_owner
+  recorded_date: '2026-08-08'
+  scope: >-
+    Run one consolidated bounded-memory read-only cluster audit for the proposed
+    admission-aligned 8-hour time-blocking contract. This approval does not
+    authorize blocked data, candidates, releases, promotion, carry-forward,
+    imputation, cohort filtering, or external export.
+
+input:
+  core_derived_release_id: 20260808T074305Z
+  core_derived_contract_version: '0.2'
+  cleaned_release_id: 20260807T154100Z
+  harmonized_release_id: 20260807T112402Z
+  current_pointer: derived/current_release.json
+  releases_directory: derived/releases
+  expected_static_rows: 16054
+  expected_dynamic_rows: 24069379
+  expected_static_columns: 37
+  expected_dynamic_columns: 147
+  expected_negative_time_rows: 247977
+
+lineage_contracts:
+  core_derived_contract:
+    path: ../derivation/reviewed_core_derived_contract_0_2.yaml
+    sha256: bfc7599a5eebce483b03ef73d5dd013c41bc9d0dc17aca899d173a43555ef3a6
+  core_derived_promotion:
+    path: ../derivation/reviewed_core_derived_0_2_promotion_20260808T074305Z.yaml
+    sha256: d8a15bb1bdba12c48e4c0ae4f48f2ac9610f666392561e1755cbb2c5db69a494
+  baseline_schema_dictionary:
+    path: ../harmonization/reviewed_schema_dictionary_freeze_0_1.yaml
+    sha256: 33c4813048f1a12acc137bd24d4003ef953f57524d4a76d0488938eecd48b7a0
+  unit_decisions:
+    path: ../unit_resolution/reviewed_unit_decisions_0_2.yaml
+    sha256: 90244e357fb8334e00469e527964170ac165f16d8a2c05e7e35e35c9b3edf3b0
+  unit_schema_dictionary:
+    path: ../unit_resolution/reviewed_unit_schema_dictionary_freeze_0_2.yaml
+    sha256: 5d8e3133437f7924cf5c10ec4b316f974bf7631b298173b977dc5dd834c5419e
+  categorical_decisions:
+    path: ../harmonization/reviewed_categorical_decisions_0_1.yaml
+    sha256: 013b6a01e07b947cb7ed56a1f0b0a24a7ab870b0cfcd0f5a56d34c28f8f9c53c
+  medication_semantics:
+    path: ../unit_resolution/reviewed_medication_value_semantics_0_2.yaml
+    sha256: 62a7f305e53e4789b2c2d2a7d1d1a4435a3e8010913383ccd1a0dd6879c94c9c
+  cleaning_policy:
+    path: ../cleaning/reviewed_cleaning_policy_0_2.yaml
+    sha256: 061c0db1f7a87a5061b358efed246bae0088be0f32db001feb98ba9f4a462ebc
+
+time_policy:
+  resolution_minutes: 480
+  resolution_label: 8h
+  admission_label: 0h
+  admission_interval: singleton_zero
+  post_admission_intervals: right_closed
+  post_admission_examples: ['(0,8]', '(8,16]', '(16,24]']
+  pre_admission_intervals: left_closed_right_open
+  pre_admission_examples: ['[-8,0)', '[-16,-8)']
+  retain_negative_rows: true
+  retain_admission_row_for_every_static_stay: true
+  retain_empty_intervening_blocks: true
+  retain_terminal_partial_block: true
+  terminal_completeness_name: is_full_by_recording_extent_proxy
+  prediction_time_field: omitted
+  carry_forward: prohibited
+
+registry:
+  groups:
+    key:
+      - stay_id_global
+      - stay_id_local
+      - hospital_id
+    time:
+      - minutes_since_icu_admission
+      - hours_since_icu_admission
+      - anchored_time_since_icu_admission
+    operational_provenance:
+      - __v3_source_file_id
+      - __v3_source_file_order
+      - __v3_source_row_number
+      - __v3_source_order
+      - __v3_source_schema_variant_id
+    numeric_measurement:
+      - albumin
+      - alt
+      - amylase
+      - ast
+      - base_excess_art
+      - bicarbonate_art
+      - bilirubin_total
+      - bnp
+      - cardiac_index_bolus
+      - cardiac_index_cont
+      - cardiac_output_bolus
+      - cardiac_output_cont
+      - ck
+      - ck_mb
+      - compliance
+      - core_temp
+      - creatinine
+      - crp
+      - cvp
+      - d_dimer
+      - dbp
+      - delta_p_reported
+      - dpap
+      - ecmo_o2
+      - etco2
+      - evlwi
+      - extracorp_blood_flow
+      - extracorp_o2_flow
+      - feo2
+      - fio2
+      - fio2_set
+      - gedvi
+      - heart_rate
+      - hematocrit
+      - hemoglobin
+      - ie_ratio
+      - ie_ratio_set
+      - il6
+      - inr
+      - insp_pressure
+      - lactate_art
+      - ldh
+      - lipase
+      - lymph_abs
+      - lymph_pct
+      - map
+      - mpap
+      - ntprobnp
+      - paco2
+      - pao2
+      - pct
+      - pcwp
+      - peep
+      - peep_set
+      - pf_ratio
+      - ph_art
+      - platelets
+      - ptt
+      - pvri
+      - resp_rate
+      - sao2
+      - sbp
+      - scvo2
+      - spap
+      - spo2
+      - spont_resp_rate
+      - stroke_index_bolus
+      - stroke_index_cont
+      - stroke_volume_bolus
+      - stroke_volume_cont
+      - svri
+      - troponin
+      - urea
+      - vt
+      - vt_per_ideal_bw_total
+      - vt_per_kg_ideal_body_weight
+      - vt_spontaneous
+      - wbc
+      - delta_p_computed
+    medication_or_therapy:
+      - clonidine_iv_cont
+      - dexamethasone_iv_bolus
+      - dexmedetomidine_iv_cont
+      - dobutamine_iv_cont
+      - epinephrine_iv_cont
+      - fentanyl_iv_cont
+      - fludrocortisone_po_bolus
+      - furosemide_iv_cont
+      - hydrocortisone_iv_bolus
+      - inhaled_iloprost
+      - inhaled_no
+      - isoflurane_inh
+      - ketanest_iv_cont
+      - levosimendan_iv_cont
+      - midazolam_iv_cont
+      - milrinone_iv_cont
+      - morphine_iv_cont
+      - norepinephrine_iv_cont
+      - prednisolone_iv_bolus
+      - propofol_iv_cont
+      - rocuronium_iv_bolus
+      - sevoflurane_inh
+      - sufentanil_iv_cont
+      - terlipressin_iv_bolus
+      - vasopressin_iv_cont
+      - clonidine_iv_cont_weight_normalized
+      - epinephrine_iv_cont_absolute
+      - hydrocortisone_iv_bolus_source_uk08
+      - ketanest_iv_cont_weight_normalized
+      - morphine_iv_cont_weight_normalized
+      - norepinephrine_iv_cont_absolute
+      - prednisolone_iv_bolus_source_uk02
+      - propofol_iv_cont_weight_normalized
+      - sufentanil_iv_cont_source_uk00
+    score:
+      - isofa_cardiovascular
+      - isofa_cns
+      - isofa_liver
+      - isofa_renal
+      - isofa_respiratory
+      - isofa_thrombocyte
+      - isofa_total_score
+      - sofa_blood
+      - sofa_cns
+      - sofa_liver
+      - sofa_renal
+      - sofa_respiratory
+      - sofa_respiratory_calculated
+      - sofa_score_unspecified
+      - sofa_score_without_gcs
+      - sofa_total_score
+    rolling_value:
+      - fluid_balance_24h
+    boolean:
+      - ecmo
+      - delta_p_computed_out_of_range
+    categorical_or_composite:
+      - ards_diagnosis_app
+      - position_therapy
+      - severity_read_confirmation
+      - therapy_read_confirmation_utc
+  analysis_ineligible:
+    - ards_diagnosis_app
+    - feo2
+    - ie_ratio
+    - ie_ratio_set
+    - severity_read_confirmation
+    - stroke_volume_bolus
+    - hydrocortisone_iv_bolus_source_uk08
+    - prednisolone_iv_bolus_source_uk02
+    - sufentanil_iv_cont_source_uk00
+  conditionally_ineligible:
+    - vt_per_kg_ideal_body_weight
+  observed_dose_total_candidates:
+    - dexamethasone_iv_bolus
+    - fludrocortisone_po_bolus
+    - hydrocortisone_iv_bolus
+    - inhaled_iloprost
+    - prednisolone_iv_bolus
+    - rocuronium_iv_bolus
+    - terlipressin_iv_bolus
+  canonical_last_observation_outputs:
+    - last_observation_value
+    - last_observation_time_h
+    - last_observation_age_h
+
+streaming:
+  primary_rows_per_batch: 50000
+  verification_rows_per_batch: 131071
+  require_contiguous_dynamic_stays: true
+  require_hospital_scoped_contiguous_source_order_from_one: true
+
+outputs:
+  private_directory_name: time_blocking_8h_contract_evidence
+  review_directory_name: time_blocking_8h_contract_evidence
+  private_artifact_version: '0.1'
+  review_artifact_version: '0.1'
+
+boundary:
+  read_released_core_derived_data: true
+  modify_core_derived_release: false
+  write_blocked_rows: false
+  create_time_blocking_candidate: false
+  create_time_blocking_release: false
+  modify_current_release_pointer: false
+  filter_rows_or_stays: false
+  apply_carry_forward_or_imputation: false
+  create_analysis_cohort: false
+  expose_identifiers_or_row_examples: false
+  authorize_external_data_export: false

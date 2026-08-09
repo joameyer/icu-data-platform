@@ -1,0 +1,210 @@
+time_blocking_contract_version: '0.1'
+status: human_approved_and_frozen_for_local_implementation_and_tests_only
+
+approval:
+  role: data_owner
+  recorded_date: '2026-08-08'
+  statement: >-
+    I approve the ASIC v3 8-hour time-blocking contract using evidence run
+    20260808T114902Z, with medication dose totals deferred, and authorize
+    local implementation and tests only.
+
+evidence:
+  run_id: 20260808T114902Z
+  artifact: asic_v3_time_blocking_8h_contract_evidence_review
+  artifact_version: '0.1'
+  review_relative_path: review/time_blocking_8h_contract_evidence/20260808T114902Z.json
+  review_sha256: 10f58702c772775c591e2c645ac08f9008db556fa1ea934a7e0cc906f830e125
+  expected_overall_status: pending_human_review
+  expected_technical_blocking_finding_count: 0
+  expected_dynamic_rows: 24069379
+  expected_static_rows: 16054
+  expected_negative_time_rows: 247977
+  expected_total_grid_blocks: 777756
+  expected_empty_grid_blocks: 10348
+  expected_terminal_partial_blocks: 14855
+  expected_terminal_partial_source_rows: 236070
+  require_cross_batch_assignment_reproducible: true
+
+immutable_inputs:
+  evidence_policy: contract_evidence_8h.yaml
+  evidence_policy_sha256: 033b2a53f851d75ab4dd7445f6ce6c7369d180e9e8fbdff67521c7e55c67687c
+  core_derived_release_id: 20260808T074305Z
+  core_derived_contract_version: '0.2'
+  cleaned_release_id: 20260807T154100Z
+  harmonized_release_id: 20260807T112402Z
+
+time_index:
+  resolution_minutes: 480
+  resolution_label: 8h
+  origin: exact_icu_admission_elapsed_minute_zero
+  assignment_input: minutes_since_icu_admission
+  pre_admission_interval: left_closed_right_open
+  pre_admission_index_formula: floor_minutes_divided_by_resolution
+  pre_admission_label_formula: pre_abs_index_times_resolution_hours
+  admission_interval: singleton_zero
+  admission_index: 0
+  admission_label: 0h
+  post_admission_interval: left_open_right_closed
+  post_admission_index_formula: ceil_minutes_divided_by_resolution
+  post_admission_label_formula: index_times_resolution_hours
+  exact_positive_boundary_belongs_to_endpoint_label: true
+  retain_every_negative_row: true
+  retain_admission_row_for_every_static_stay: true
+  retain_empty_intervening_blocks: true
+  retain_terminal_partial_block: true
+  completion_basis: maximum_observed_recording_extent_proxy
+  completion_field: is_full_by_recording_extent_proxy
+  terminal_field: is_terminal_by_recording_extent_proxy
+  available_through_field: available_through_h
+  information_cutoff_field: information_cutoff_h
+  prediction_time_field: omitted
+  output_order: source_hospital_then_source_stay_then_signed_block_index
+  artificial_anchor: '2020-01-01 00:00:00'
+  artificial_time_has_real_calendar_meaning: false
+
+last_observation:
+  value_output_suffix: last_observation_value
+  time_output_suffix: last_observation_time_h
+  age_output_suffix: last_observation_age_h
+  select: final_non_missing_value_within_block
+  chronological_order: minutes_since_icu_admission_ascending
+  tie_break: hospital_scoped_source_order_ascending
+  require_source_file_order_and_source_row_number_non_missing: true
+  no_observation_value: null
+  age_formula: information_cutoff_h_minus_last_observation_time_h
+  terminal_partial_cutoff: actual_available_through_h
+  other_block_cutoff: nominal_block_end_h
+  carry_forward: prohibited
+
+aggregation_families:
+  numeric_measurement:
+    operations:
+      - observation_count
+      - mean
+      - median
+      - minimum
+      - maximum
+      - last_observation_value
+      - last_observation_time_h
+      - last_observation_age_h
+  medication_or_therapy:
+    operations:
+      - observation_count
+      - observed_zero_count
+      - observed_positive_count
+      - mean
+      - median
+      - minimum
+      - maximum
+      - last_observation_value
+      - last_observation_time_h
+      - last_observation_age_h
+    observed_dose_total: prohibited_and_deferred
+    administration_count: prohibited_and_deferred
+    time_weighted_exposure: prohibited_and_deferred
+  score:
+    operations:
+      - observation_count
+      - median
+      - minimum
+      - maximum
+      - last_observation_value
+      - last_observation_time_h
+      - last_observation_age_h
+  rolling_value:
+    variables: [fluid_balance_24h]
+    operations:
+      - observation_count
+      - last_observation_value
+      - last_observation_time_h
+      - last_observation_age_h
+    sum: prohibited_overlapping_rolling_window
+    mean: prohibited_without_separate_approval
+  boolean:
+    operations:
+      - observation_count
+      - observed_true_count
+      - observed_false_count
+      - any_true
+      - all_true
+      - last_observation_value
+      - last_observation_time_h
+      - last_observation_age_h
+  position_therapy:
+    source_representation: numeric_dimensionless_proportion
+    operations:
+      - observation_count
+      - median
+      - minimum
+      - maximum
+      - last_observation_value
+      - last_observation_time_h
+      - last_observation_age_h
+    boolean_coercion: prohibited
+  therapy_read_confirmation_utc:
+    source_representation: fixed_position_nullable_boolean_pair
+    component_operations:
+      - observation_count
+      - observed_true_count
+      - observed_false_count
+      - last_observation_value
+      - last_observation_time_h
+      - last_observation_age_h
+    pair_state_counts:
+      - false_false
+      - false_true
+      - false_null
+      - true_false
+      - true_true
+      - true_null
+      - null_false
+      - null_true
+      - null_null
+    coalescence_or_consensus: prohibited
+
+registry_policy:
+  registry_source: exact_147_field_registry_from_evidence_policy
+  exclude_key_time_and_operational_provenance_from_feature_aggregation: true
+  analysis_ineligible_action: dictionary_and_accounting_only
+  conditionally_ineligible_action: dictionary_and_accounting_only
+  static_fields_action: reference_exact_source_static_through_manifest_lineage
+  copy_static_table: false
+  repeat_static_on_blocks: false
+  keep_reported_and_computed_driving_pressure_separate: true
+  keep_sofa_and_isofa_variants_separate: true
+
+missingness:
+  observed_zero_is_observation: true
+  observed_false_is_observation: true
+  null_means_unavailable_or_unobserved: true
+  source_rows_without_variable_value_are_distinct_from_empty_blocks: true
+  null_to_zero: prohibited
+  zero_to_null: prohibited
+  interpolation: prohibited
+  imputation: prohibited
+  carry_forward: prohibited
+
+artifact_contract:
+  resolution_directory: derived/time_blocking/8h
+  candidate_directory: derived/time_blocking/8h/candidates
+  release_directory: derived/time_blocking/8h/releases
+  current_release_pointer: derived/time_blocking/8h/current_release.json
+  block_file: blocks.parquet
+  stay_summary_file: stay_block_summary.parquet
+  dictionary_parquet: blocked_variable_dictionary.parquet
+  dictionary_markdown: blocked_variable_dictionary.md
+  candidate_manifest: candidate_manifest.json
+  source_static_representation: manifest_reference_only
+
+boundary:
+  local_implementation_and_tests_authorized: true
+  production_candidate_authorized: false
+  production_audit_authorized: false
+  production_release_promotion_authorized: false
+  modify_core_derived_release: false
+  modify_any_current_release_pointer: false
+  filter_rows_or_stays: false
+  create_analysis_cohort: false
+  apply_carry_forward_or_imputation: false
+  authorize_external_data_export: false

@@ -1,0 +1,112 @@
+derivation_contract_review_policy_version: '0.1'
+status: approved_for_consolidated_read_only_derivation_review
+
+input:
+  cleaned_release_id: 20260806T114234Z
+  cleaned_promotion_policy: ../cleaning/reviewed_cleaned_promotion_20260806T114234Z.yaml
+  cleaned_promotion_policy_sha256: 2de2981953a345183ae900134eabd09accfe730567a36deba3e53ac6eeecd972
+  expected_static_rows: 16054
+  expected_dynamic_rows: 24069379
+
+candidate_recipes:
+  exact_elapsed_hours:
+    input: minutes_since_icu_admission
+    output: hours_since_icu_admission
+    formula: minutes_since_icu_admission_divided_by_60
+    output_type: float64
+    output_unit: h
+    preserve_input: true
+
+  computed_driving_pressure:
+    inspiratory_pressure_input: insp_pressure
+    peep_input: peep
+    reported_comparison: delta_p_reported
+    output: delta_p_computed
+    formula: insp_pressure_minus_peep
+    output_type: float64
+    output_unit: cmH2O
+    candidate_valid_min: 0
+    candidate_valid_max: 60
+    reported_field_remains_separate: true
+    source_inputs_remain_available: true
+
+  mortality:
+    detailed_status_input: death_status
+    reported_hospital_input: hospital_mortality_reported
+    discharge_status_audit_only_input: discharge_status
+    hospital_output: hospital_mortality
+    icu_output: icu_mortality
+    conflict_output: mortality_source_conflict
+    detailed_status_implications:
+      discharged_alive: {hospital_mortality: false, icu_mortality: false}
+      died_in_icu: {hospital_mortality: true, icu_mortality: true}
+      died_in_hospital: {hospital_mortality: true, icu_mortality: false}
+    detailed_missing_fallback:
+      reported_false: {hospital_mortality: false, icu_mortality: false}
+      reported_true: {hospital_mortality: true, icu_mortality: null}
+      reported_missing: {hospital_mortality: null, icu_mortality: null}
+    disagreement_action:
+      hospital_mortality: set_missing
+      icu_mortality: set_missing
+      mortality_source_conflict: true
+    preserve_all_source_fields: true
+    discharge_status_affects_output: false
+
+  observed_ventilation_support:
+    time_input: minutes_since_icu_admission
+    marker_inputs: [fio2, peep, vt, vt_per_kg_ideal_body_weight]
+    timestamp_supported_when: any_marker_non_missing
+    maximum_continuity_gap_hours: 8
+    gap_is_inclusive: true
+    minimum_episode_duration_hours: 24
+    duration_is_inclusive: true
+    use_direct_cleaned_timestamps: true
+    sort_supported_timestamps_within_stay_by_elapsed_time: true
+    candidate_icu_episode_window: nonnegative_minutes_since_icu_admission
+    preserve_negative_time_source_rows: true
+    claim_ground_truth_ventilation: false
+    filter_stays_or_rows: false
+    proposed_static_outputs:
+      - {name: ventilation_supported_timestamp_count, physical_type: int64, unit: count}
+      - {name: ventilation_episode_count, physical_type: int32, unit: count}
+      - {name: maximum_observed_ventilation_episode_hours, physical_type: float64, unit: h}
+      - {name: observed_mechanical_ventilation_ge_24h, physical_type: bool, unit: not_applicable}
+      - {name: icu_recording_extent_hours, physical_type: float64, unit: h}
+
+explicit_separations:
+  preserve_reported_and_computed_driving_pressure_separately: true
+  preserve_sofa_variants_separately: true
+  preserve_isofa_variants_separately: true
+  do_not_compute_or_coalesce_sofa_or_isofa: true
+  mortality_sources_remain_available: true
+  ventilation_flag_is_not_a_cohort_filter: true
+
+deferred_recipes:
+  time_blocking:
+    status: deferred_requires_named_resolution_and_aggregation_contract
+    generate_during_core_derivation: false
+  analysis_cohorts:
+    status: deferred_analysis_specific
+    generate_during_core_derivation: false
+
+streaming:
+  rows_per_batch: 50000
+
+outputs:
+  private_directory_name: derivation_contract_review
+  review_directory_name: derivation_contract_review
+  private_artifact_version: '0.1'
+  review_artifact_version: '0.1'
+
+boundary:
+  read_released_cleaned_rows: true
+  modify_cleaned_release: false
+  write_clinical_data: false
+  write_reports_only: true
+  derive_output_values_for_aggregate_evidence_only: true
+  publish_derived_contract: false
+  build_derived_candidate: false
+  apply_time_blocking: false
+  filter_rows: false
+  filter_stays: false
+  authorize_external_data_export: false

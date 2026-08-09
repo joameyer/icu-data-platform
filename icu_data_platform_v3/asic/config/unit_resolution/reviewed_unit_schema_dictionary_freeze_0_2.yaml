@@ -1,0 +1,94 @@
+reviewed_unit_schema_dictionary_freeze_version: '0.2'
+status: human_approved_exact_unit_schema_and_dictionary
+
+approval:
+  dataset_context: production
+  approved_utc_date: '2026-08-07'
+  reviewer_role: data_owner
+  source_review_run_id: 20260807T101321Z
+  source_review_generated_at_utc: '2026-08-07T10:14:15+00:00'
+  approval_statement: >-
+    I approve and freeze the ASIC v3 harmonized schema and variable dictionary
+    contract 0.2 described by amendment review 20260807T101415Z, including the
+    reviewed medication zero/null semantics and general negative medication
+    cleaning rule.
+  reference_correction:
+    original_approval_reference: 20260807T101415Z
+    original_reference_interpretation: generated_timestamp_without_punctuation
+    corrected_source_review_run_id: 20260807T101321Z
+    corrected_source_review_generated_at_utc: '2026-08-07T10:14:15+00:00'
+    evidence: >-
+      The data owner supplied the sanitized immutable-review index showing that
+      run 20260807T101321Z was generated at the originally cited timestamp and
+      has 139 dynamic variables, 34 medication variables, and 201 audited
+      negative medication values. No contract 0.2 output existed.
+
+immutable_inputs:
+  schema_amendment_policy: schema_dictionary_amendment.yaml
+  schema_amendment_policy_sha256: f0c0e3fe7d9176bf84447eb22c1e1ebbd8409fe5faa2ff3b04e7a398b48c081c
+  reviewed_unit_decisions: reviewed_unit_decisions_0_2.yaml
+  reviewed_unit_decisions_sha256: 90244e357fb8334e00469e527964170ac165f16d8a2c05e7e35e35c9b3edf3b0
+  reviewed_medication_value_semantics: reviewed_medication_value_semantics_0_2.yaml
+  reviewed_medication_value_semantics_sha256: 62a7f305e53e4789b2c2d2a7d1d1a4435a3e8010913383ccd1a0dd6879c94c9c
+  baseline_contract_version: '0.1'
+  contract_version: '0.2'
+  source_review_artifact_version: '0.1'
+  source_private_artifact_version: '0.1'
+
+expected_review_metrics:
+  static_variable_count: 23
+  dynamic_variable_count: 139
+  clinical_variable_count: 162
+  reviewed_unit_update_count: 72
+  approved_conversion_count: 9
+  semantic_split_count: 9
+  resolved_semantic_split_count: 6
+  unresolved_source_scale_variable_count: 3
+  analysis_eligible_variable_count: 152
+  analysis_ineligible_variable_count: 9
+  conditionally_ineligible_variable_count: 1
+  medication_variable_count: 34
+  approved_general_negative_medication_rule_count: 1
+  audited_negative_medication_value_count: 201
+  clinical_rows_read: 0
+  technical_blocking_finding_count: 0
+
+resolved_human_finding:
+  check: ordered_schema_dictionary_0_2_approved
+
+dictionary_contract:
+  static_variable_count: 23
+  dynamic_variable_count: 139
+  clinical_variable_count: 162
+  operational_provenance_field_count_per_table: 5
+  medication_variable_count: 34
+  semantic_split_variable_count: 9
+  unresolved_source_scale_variable_count: 3
+  medication_valid_min_inclusive: 0.0
+  medication_negative_cleaning_rule: mask_negative_medication_or_therapy_value
+  expected_current_negative_medication_mask_count: 201
+
+operational_provenance_fields:
+  - {name: __v3_source_file_id, physical_type: string}
+  - {name: __v3_source_file_order, physical_type: int32}
+  - {name: __v3_source_row_number, physical_type: int64}
+  - {name: __v3_source_order, physical_type: int64}
+  - {name: __v3_source_schema_variant_id, physical_type: string}
+
+output:
+  directory: contracts/harmonized_schema_dictionary/0.2
+  review_directory: schema_dictionary_freeze
+  freeze_artifact_version: '0.2'
+
+freeze_boundary:
+  read_clinical_rows: false
+  modify_frozen_contract_0_1: false
+  modify_schema_amendment_evidence: false
+  copy_approved_schema_dictionary_bytes_exactly: true
+  generate_clinical_data: false
+  activate_unit_conversions: false
+  activate_semantic_splits: false
+  activate_cleaning_rule: false
+  authorize_harmonized_0_2_build_implementation: true
+  authorize_publication: false
+  authorize_external_data_export: false

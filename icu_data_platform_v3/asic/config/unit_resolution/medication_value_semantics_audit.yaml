@@ -1,0 +1,55 @@
+medication_value_semantics_audit_policy_version: '0.1'
+status: approved_for_complete_read_only_zero_missing_audit
+
+input:
+  cleaned_release_id: 20260806T114234Z
+  expected_static_rows: 16054
+  expected_dynamic_rows: 24069379
+  reviewed_unit_decisions: reviewed_unit_decisions_0_2.yaml
+  reviewed_unit_decisions_sha256: 90244e357fb8334e00469e527964170ac165f16d8a2c05e7e35e35c9b3edf3b0
+  derivation_contract_review_policy: ../derivation/contract_review.yaml
+  derivation_contract_review_policy_sha256: b3330c7ddb7fb61d1f5f516a1697ed82dfbf0663029dea5cf46f2afe4a32aa17
+
+scope:
+  expected_hospital_count: 8
+  expected_source_medication_variable_count: 25
+  expected_semantic_split_count: 9
+  expected_proposed_medication_variable_count: 34
+  expected_medication_conversion_scope_count: 4
+  require_exact_null_zero_positive_negative_nonfinite_accounting: true
+  require_every_hospital_variable_profile: true
+  require_all_missing_hospital_variable_classification: true
+  require_zero_and_positive_coexistence_classification: true
+  require_conversion_zero_null_conservation: true
+  require_semantic_split_zero_null_conservation: true
+  require_weight_linkage_for_nonzero_weight_dependent_conversion: true
+  prohibit_patient_rows_identifiers_raw_tokens_and_filenames_in_reports: true
+
+streaming:
+  rows_per_batch: 50000
+
+boundary:
+  read_released_cleaned_data: true
+  read_static_weight_for_approved_weight_linked_conversion: true
+  read_reviewed_unit_decisions: true
+  modify_harmonized_release: false
+  modify_cleaned_release: false
+  modify_derived_release: false
+  write_clinical_data: false
+  write_reports_only: true
+  activate_unit_conversions: false
+  activate_semantic_splits: false
+  impute_null_as_zero: false
+  convert_zero_to_null: false
+  infer_inactive_medication_from_null: false
+  apply_carry_forward: false
+  filter_rows_or_stays: false
+  include_patient_rows_or_identifiers_in_reports: false
+  authorize_external_data_export: false
+
+reporting:
+  private_directory_name: medication_value_semantics_audit
+  review_directory_name: medication_value_semantics_audit
+  private_artifact_version: '0.1'
+  review_artifact_version: '0.1'
+

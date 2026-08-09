@@ -1,0 +1,163 @@
+reviewed_consolidated_decisions_version: '0.1'
+status: approved_partial_pending_categorical_and_schema_freeze
+
+evidence:
+  candidate_run_id: 20260806T074852Z
+  consolidated_audit_run_id: 20260806T092818Z
+  consolidated_audit_technical_blocking_finding_count: 0
+
+activation:
+  existing_candidate_is_immutable: true
+  apply_only_when_building_a_new_harmonized_candidate: true
+  categorical_contract_approved: false
+  ordered_union_schema_approved: false
+  variable_dictionary_approved: false
+  publication_approved: false
+
+# Units below are the reviewed physical representations for the harmonized
+# layer. A percentage is represented in percentage points (for example, 40),
+# not as a fraction (0.40).
+approved_units:
+  static:
+    height_measurements_cm: cm
+    time_since_study_start: day
+    weight_kg: kg
+    hosp_los: day
+    icu_los: day
+    dialysis_free_days: day
+    vent_free_days: day
+  dynamic:
+    cardiac_output_bolus: L_per_min
+    cardiac_output_cont: L_per_min
+    extracorp_blood_flow: L_per_min
+    extracorp_o2_flow: L_per_min
+    cardiac_index_bolus: L_per_min_per_m2
+    cardiac_index_cont: L_per_min_per_m2
+    heart_rate: beat_per_min
+    resp_rate: breath_per_min
+    spont_resp_rate: breath_per_min
+    delta_p_reported: cmH2O
+    insp_pressure: cmH2O
+    peep: cmH2O
+    peep_set: cmH2O
+    core_temp: deg_C
+    ie_ratio: dimensionless_ratio
+    ie_ratio_set: dimensionless_ratio
+    ecmo_o2: percent
+    feo2: percent
+    fio2: percent
+    fio2_set: percent
+    sao2: percent
+    scvo2: percent
+    spo2: percent
+    vt_per_kg: mL_per_kg
+    vt_per_kg_ideal_body_weight: mL_per_kg
+    fluid_balance_24h: mL
+    stroke_volume_bolus: mL
+    stroke_volume_cont: mL
+    vt: mL
+    vt_per_ideal_bw_total: mL
+    vt_spontaneous: mL
+    compliance: mL_per_cmH2O
+    stroke_index_bolus: mL_per_m2
+    stroke_index_cont: mL_per_m2
+    minutes_since_icu_admission: min
+    cvp: mmHg
+    dbp: mmHg
+    dpap: mmHg
+    etco2: mmHg
+    map: mmHg
+    mpap: mmHg
+    paco2: mmHg
+    pao2: mmHg
+    pcwp: mmHg
+    pf_ratio: mmHg
+    sbp: mmHg
+    spap: mmHg
+    ph_art: pH
+
+approved_hospital_conversions:
+  - decision_id: UK04-ETCO2-PA-TO-MMHG
+    hospital: asic_UK04
+    table: dynamic
+    variable: etco2
+    operation: divide
+    factor: 7.50062
+    output_unit: mmHg
+  - decision_id: UK03-FIO2-FRACTION-TO-PERCENT
+    hospital: asic_UK03
+    table: dynamic
+    variable: fio2
+    operation: multiply
+    factor: 100
+    output_unit: percent
+  - decision_id: UK03-HEMATOCRIT-FRACTION-TO-PERCENT
+    hospital: asic_UK03
+    table: dynamic
+    variable: hematocrit
+    operation: multiply
+    factor: 100
+    output_unit: percent
+  - decision_id: UK00-LYMPH-FRACTION-TO-PERCENT
+    hospital: asic_UK00
+    table: dynamic
+    variable: lymph_pct
+    operation: multiply
+    factor: 100
+    output_unit: percent
+
+unresolved_unit_policy:
+  action: preserve_value_without_conversion
+  unit: unresolved
+  analysis_eligible: false
+  distribution_alignment_is_not_unit_evidence: true
+  applies_to_all_numeric_variables_not_listed_under_approved_units: true
+
+analysis_restrictions:
+  - variables: [ie_ratio, ie_ratio_set]
+    scope: all_hospitals
+    analysis_eligible: false
+    reason: ratio_direction_i_to_e_versus_e_to_i_unresolved
+  - variables: [vt_per_kg, vt_per_kg_ideal_body_weight]
+    scope: [asic_UK06]
+    analysis_eligible: false
+    reason: mixed_scale_requires_cleaned_layer_policy
+
+semantic_decisions:
+  driving_pressure:
+    decision: keep_reported_and_future_computed_variables_separate
+    source_backed_harmonized_variable: delta_p_reported
+    future_derived_variable: delta_p_computed
+  sofa_and_isofa:
+    decision: preserve_reported_calculated_and_isofa_variables_separately
+    floating_point_component_sum_tolerance: 1.0e-12
+  oxygen_saturations:
+    decision: keep_scvo2_sao2_and_spo2_separate
+  free_day_variables:
+    decision: keep_dialysis_free_days_and_vent_free_days_separate
+  uk00_tidal_volume_semantic_split:
+    decision: keep_separate
+    variable: vt_per_ideal_bw_total
+    unit: mL
+    must_not_merge_with: [vt, vt_per_kg_ideal_body_weight]
+
+cleaning_boundary:
+  invalid_range_variable_decisions: 42
+  row_level_scale_rule_decisions: 1
+  action: defer_all_to_cleaned_layer
+  apply_physiologic_masking_during_harmonization: false
+  apply_row_level_power_of_ten_correction_during_harmonization: false
+
+globally_all_missing_columns:
+  action: preserve_with_explicit_all_missing_dictionary_flag
+  variables:
+    - feo2
+    - severity_read_confirmation
+    - sofa_score_without_gcs
+    - stroke_volume_bolus
+
+remaining_human_gates:
+  categorical_domain_contract: pending
+  ordered_union_schema_freeze: pending
+  variable_dictionary_freeze: pending
+  release_publication: pending

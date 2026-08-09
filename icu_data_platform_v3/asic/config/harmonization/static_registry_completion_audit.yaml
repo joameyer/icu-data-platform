@@ -1,0 +1,77 @@
+static_registry_completion_audit_policy_version: '0.1'
+status: approved_for_read_only_static_registry_completion_audit
+
+registry_review_basis_run_id: 20260805T104417Z
+required_registry_private_artifact_version: '0.3'
+required_registry_review_artifact_version: '0.3'
+expected_production_static_occurrence_count: 130
+
+decision_sources:
+  inventory_policy: ../inventory/policy.yaml
+  inventory_policy_sha256: 1f77a7a64bb2b2672cf4f0836a9eeb7a72759431759113584464828ac3f63cd4
+  reviewed_static_decisions: reviewed_static_decisions_0_3.yaml
+  reviewed_static_decisions_sha256: b173c99dd403b7d5731fe986b549563ee1302141c9d9afc8efb1106eba56a595
+  reviewed_icd10_contract: reviewed_icd10_contract_0_2.yaml
+  reviewed_icd10_contract_sha256: b672ba8841a8388e0507748b88c4411a4cbfc01e56160bc585856863a7791de9
+  schema_token_policy: ../schema_tokens/policy.yaml
+  schema_token_policy_sha256: eaf7004da381d5a449149da70da3b295df3c43896dec208cab68d87ef972e49f
+  reviewed_schema_rules_sha256: fbea97309e4be2a8636455967b8dd308c80a7b038c334d6fef01c3727847b483
+  candidate_contract: candidate_contract.yaml
+  candidate_contract_sha256: 6734613734c5d275311bce7b33fac177537bb3139a472d16c93a8e8d8f3f011e
+
+approved_hospitals:
+  - asic_UK00
+  - asic_UK01
+  - asic_UK02
+  - asic_UK03
+  - asic_UK04
+  - asic_UK06
+  - asic_UK07
+  - asic_UK08
+
+# This is a proposal only. Targets absent from the evidence are omitted; any
+# evidence target absent from this list is appended deterministically and
+# reported as a blocker.
+proposed_order:
+  - stay_id_global
+  - stay_id_local
+  - hospital_id
+  - cluster_id
+  - time_since_study_start
+  - study_implementation_phase
+  - sex
+  - age_group
+  - height_group
+  - height_measurements_cm
+  - weight_group
+  - weight_kg
+  - bmi_group
+  - hosp_los
+  - icu_los
+  - icu_readmit
+  - discharge_status
+  - death_status
+  - hospital_mortality_reported
+  - dialysis_free_days
+  - vent_free_days
+  - icd10_codes_source_text
+  - icd10_codes
+  - hospital_code_source
+
+scope:
+  allow_private_registry_review_reads: true
+  allow_policy_and_decision_registry_reads: true
+  allow_raw_data_reads: false
+  allow_ingested_data_reads: false
+  allow_value_transforms: false
+  allow_harmonized_artifact_writes: false
+  allow_hospital_concatenation: false
+  allow_registry_freeze: false
+  allow_union_schema_freeze: false
+  allow_variable_dictionary_approval: false
+
+reporting:
+  private_artifact_version: '0.1'
+  review_artifact_version: '0.1'
+  private_directory_mode: '0700'
+  private_file_mode: '0600'

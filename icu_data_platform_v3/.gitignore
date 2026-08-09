@@ -1,0 +1,26 @@
+# Protected and generated ASIC artifacts
+asic/data/*
+!asic/data/README.md
+asic/reports/
+asic/runs/
+mimic/data/*
+!mimic/data/README.md
+mimic/reports/
+mimic/runs/
+*.parquet
+
+# Python build and test products
+*.egg-info/
+build/
+dist/
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+env/
+venv/
+
+# Notebook and editor products
+.ipynb_checkpoints/
+.DS_Store
+.vscode/

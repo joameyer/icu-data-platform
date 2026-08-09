@@ -1,0 +1,53 @@
+unit_decision_audit_policy_version: '0.2'
+status: approved_for_complete_read_only_candidate_unit_decision_audit
+
+input:
+  cleaned_release_id: 20260806T114234Z
+  expected_static_rows: 16054
+  expected_dynamic_rows: 24069379
+  candidate_unit_decisions: candidate_unit_decisions_0_2.yaml
+  candidate_unit_decisions_sha256: ad7c032e84aaf70225b45619e3c53a35294387fc08d04c40c5707d78d2b45109
+  source_unit_resolution_audit_run_id: 20260807T065722Z
+
+scope:
+  expected_variable_count: 72
+  expected_harmonization_action_count: 9
+  expected_cleaning_mask_count: 9
+  expected_target_variable_count: 16
+  expected_weight_linked_action_count: 1
+  require_full_hospital_profiles_for_every_target_variable: true
+  require_pre_and_post_profiles_for_every_conversion: true
+  require_peer_profile_for_every_conversion_and_mask: true
+  require_exact_static_weight_linkage_accounting: true
+  require_finite_aware_quantile_sampling: true
+  require_positive_value_profiles: true
+
+streaming:
+  rows_per_batch: 50000
+  quantile_sample_capacity_per_profile: 100000
+  quantile_sample_rows_per_batch: 4096
+
+boundary:
+  read_released_cleaned_data: true
+  read_candidate_unit_decisions: true
+  modify_harmonized_release: false
+  modify_cleaned_release: false
+  modify_derived_release: false
+  write_clinical_data: false
+  write_reports_only: true
+  activate_candidate_decisions: false
+  convert_persisted_values: false
+  mask_persisted_values: false
+  filter_rows_or_stays: false
+  include_patient_rows_or_identifiers_in_reports: false
+  authorize_external_data_export: false
+
+reporting:
+  private_directory_name: unit_decision_audit
+  review_directory_name: unit_decision_audit
+  private_artifact_version: '0.2'
+  review_artifact_version: '0.2'
+  private_directory_mode: '0700'
+  private_file_mode: '0600'
+  review_directory_mode: '0750'
+  review_file_mode: '0640'

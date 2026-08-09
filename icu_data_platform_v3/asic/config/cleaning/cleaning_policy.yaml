@@ -1,0 +1,115 @@
+cleaning_policy_version: '0.1'
+status: approved_for_nonpublishable_cleaning_candidate_and_complete_audit
+
+input:
+  harmonized_release_id: 20260806T111156Z
+  harmonized_contract_version: '0.1'
+  harmonized_promotion_policy: ../harmonization/reviewed_harmonized_promotion_20260806T111156Z.yaml
+  harmonized_promotion_policy_sha256: dcfef977dcb1a55a3303b3c40dcf590b894205a27ae2b01cca485e92517365d5
+
+native_v3_quality_registry:
+  path: ../harmonization/cross_hospital_quality_audit.yaml
+  sha256: 047022f4092b879ff9713980015b86d9510ff33fc1b0963be092db6d5b53cb59
+  legacy_expanded_rule_count: 47
+  source_available_rule_count: 46
+  source_unavailable_variables: [delta_p_computed]
+  approved_unit_rule_count: 34
+  unresolved_unit_deferred_rule_count: 12
+
+numeric_policy:
+  mask_nonfinite_values_in_every_float64_field: true
+  range_bounds_are_inclusive: true
+  invalid_zero_is_applied_after_range_test: true
+  unresolved_unit_rules_are_audit_only: true
+  preserve_finite_values_when_unit_is_unresolved: true
+  power_of_ten_repair:
+    enabled_for_applied_rules_with_both_bounds: true
+    factors: [0.001, 0.01, 0.1, 10, 100, 1000]
+    require_original_value_outside_rule: true
+    require_exactly_one_in_range_factor: true
+    no_in_range_factor_action: set_missing
+    multiple_in_range_factors_action: set_missing
+    record_factor_level_counts: true
+
+additional_scalar_rules:
+  static:
+    - {id: STATIC-DIALYSIS-FREE-DAYS-NONNEGATIVE, variable: dialysis_free_days, hard_min: 0, invalid_zero: false, allow_power_of_ten_repair: false}
+    - {id: STATIC-HOSPITAL-LOS-NONNEGATIVE, variable: hosp_los, hard_min: 0, invalid_zero: false, allow_power_of_ten_repair: false}
+    - {id: STATIC-ICU-LOS-NONNEGATIVE, variable: icu_los, hard_min: 0, invalid_zero: false, allow_power_of_ten_repair: false}
+    - {id: STATIC-STUDY-TIME-NONNEGATIVE, variable: time_since_study_start, hard_min: 0, invalid_zero: false, allow_power_of_ten_repair: false}
+    - {id: STATIC-VENT-FREE-DAYS-NONNEGATIVE, variable: vent_free_days, hard_min: 0, invalid_zero: false, allow_power_of_ten_repair: false}
+    - {id: STATIC-WEIGHT-PLAUSIBLE, variable: weight_kg, hard_min: 20, hard_max: 300, invalid_zero: true, allow_power_of_ten_repair: true}
+  dynamic:
+    - {id: DYNAMIC-ECMO-O2-PERCENT, variable: ecmo_o2, hard_min: 0, hard_max: 100, invalid_zero: false, allow_power_of_ten_repair: true}
+    - {id: DYNAMIC-ETCO2-MMHG, variable: etco2, hard_min: 0, hard_max: 100, invalid_zero: true, allow_power_of_ten_repair: true}
+    - {id: DYNAMIC-FEO2-PERCENT, variable: feo2, hard_min: 0, hard_max: 100, invalid_zero: false, allow_power_of_ten_repair: true}
+    - {id: DYNAMIC-FIO2-SET-PERCENT, variable: fio2_set, hard_min: 20, hard_max: 100, invalid_zero: false, allow_power_of_ten_repair: true}
+    - {id: DYNAMIC-IE-RATIO-SET, variable: ie_ratio_set, hard_min: 0, hard_max: 10, invalid_zero: true, allow_power_of_ten_repair: true}
+    - {id: DYNAMIC-LYMPHOCYTE-PERCENT, variable: lymph_pct, hard_min: 0, hard_max: 100, invalid_zero: false, allow_power_of_ten_repair: true}
+    - {id: DYNAMIC-PEEP-SET-CMH2O, variable: peep_set, hard_min: 0, hard_max: 30, invalid_zero: false, allow_power_of_ten_repair: true}
+    - {id: DYNAMIC-SPONTANEOUS-RESP-RATE, variable: spont_resp_rate, hard_min: 0, hard_max: 80, invalid_zero: false, allow_power_of_ten_repair: true}
+    - {id: DYNAMIC-STROKE-INDEX-BOLUS, variable: stroke_index_bolus, hard_min: 0, hard_max: 100, invalid_zero: true, allow_power_of_ten_repair: true}
+
+list_rules:
+  - id: STATIC-HEIGHT-MEASUREMENTS-PLAUSIBLE
+    table: static
+    variable: height_measurements_cm
+    element_hard_min: 120
+    element_hard_max: 220
+    remove_null_elements: true
+    remove_nonfinite_elements: true
+    remove_out_of_range_elements: true
+    preserve_source_list_order: true
+    preserve_duplicates: true
+    preserve_empty_list_when_all_elements_removed: true
+    apply_power_of_ten_repair: false
+
+hospital_scoped_masks:
+  - id: UK06-VT-PER-IDEAL-BW-UNRECOVERABLE-MIXED-SCALE
+    hospital: asic_UK06
+    table: dynamic
+    variable: vt_per_kg_ideal_body_weight
+    action: set_all_site_values_missing
+    rationale: Legacy and raw-v3 evidence show unrecoverable mixed scales; thresholded division remains ambiguous and was not approved.
+
+preservation:
+  preserve_all_rows_and_stays: true
+  preserve_column_order_and_physical_types: true
+  preserve_all_five_operational_provenance_fields: true
+  preserve_globally_all_missing_columns: true
+  globally_all_missing_columns:
+    - feo2
+    - severity_read_confirmation
+    - sofa_score_without_gcs
+    - stroke_volume_bolus
+  do_not_drop_columns: true
+
+streaming:
+  rows_per_batch: 50000
+  parquet_compression: zstd
+
+expected_rows:
+  static: 16054
+  dynamic: 24069379
+
+outputs:
+  candidate_directory_name: cleaned_candidates
+  candidate_artifact_version: '0.1'
+  build_review_directory_name: cleaning_build
+  audit_private_directory_name: cleaning_audit
+  audit_review_directory_name: cleaning_audit
+  audit_private_artifact_version: '0.1'
+  audit_review_artifact_version: '0.1'
+
+boundary:
+  read_released_harmonized_data: true
+  modify_harmonized_release: false
+  overwrite_outputs: false
+  filter_rows: false
+  filter_stays: false
+  aggregate_height_measurements: false
+  derive_variables: false
+  define_cohorts: false
+  perform_time_blocking: false
+  publish_cleaned_release: false
+  authorize_external_data_export: false

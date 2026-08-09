@@ -1,0 +1,64 @@
+harmonized_0_2_promotion_policy_version: '0.1'
+status: explicitly_approved_for_immutable_harmonized_0_2_release
+
+approved_input:
+  build_run_id: 20260807T112402Z
+  audit_run_id: 20260807T112402Z
+  frozen_contract_version: '0.2'
+  candidate_artifact_version: '0.1'
+  audit_private_artifact_version: '0.1'
+  audit_review_artifact_version: '0.1'
+
+immutable_policy:
+  harmonized_0_2_audit: harmonized_0_2_audit.yaml
+  harmonized_0_2_audit_sha256: b0a86a15fdc9c6f41469cb0eb36382ba299e4b3fe6a6d7b7d951d1a129504485
+
+human_approval:
+  role: data_owner
+  recorded_date: '2026-08-07'
+  statement: I approve promotion of harmonized 0.2 candidate 20260807T112402Z under frozen contract 0.2.
+
+expected_audit:
+  technical_status: pass
+  overall_status_before_approval: pending_human_review
+  technical_blocking_finding_count: 0
+  human_blocking_finding_count_before_approval: 1
+  human_blocking_check_resolved_by_this_approval: harmonized_0_2_candidate_release_approved
+  compared_static_rows: 16054
+  compared_dynamic_rows: 24069379
+  compared_output_cells: 3466440088
+  unit_conversion_rules: 9
+  semantic_split_rules: 9
+  negative_medication_values_preserved: 201
+  missing_or_invalid_weight_links: 0
+
+previous_current_release:
+  release_id: 20260806T111156Z
+  frozen_contract_version: '0.1'
+  current_release_pointer: harmonized/current_release.json
+  require_ready_for_cleaning: true
+
+release:
+  release_id: 20260807T112402Z
+  releases_directory: harmonized/releases
+  current_release_pointer: harmonized/current_release.json
+  prior_pointer_snapshot_name: previous_current_release.json
+  artifact_version: '0.2'
+  review_directory_name: harmonized_0_2_promotion
+
+boundary:
+  copy_audited_parquet_bytes_unchanged: true
+  preserve_candidate_artifacts: true
+  preserve_all_previous_releases: true
+  preserve_previous_current_pointer_bytes_in_new_release: true
+  overwrite_existing_release: false
+  require_exact_previous_current_pointer: true
+  replace_current_pointer_atomically: true
+  apply_harmonization: false
+  apply_cleaning: false
+  apply_derivation: false
+  filter_rows: false
+  filter_stays: false
+  authorize_harmonized_layer: true
+  authorize_cleaning_input: true
+  authorize_external_data_export: false

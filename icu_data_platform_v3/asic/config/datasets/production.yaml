@@ -1,0 +1,55 @@
+dataset_context: production
+inventory_policy: ../inventory/policy.yaml
+ingestion_policy: ../ingestion/policy.yaml
+schema_token_policy: ../schema_tokens/policy.yaml
+harmonization_review_policy: ../harmonization/review_policy.yaml
+composite_source_audit_policy: ../harmonization/composite_source_audit.yaml
+static_contract_audit_policy: ../harmonization/static_contract_audit.yaml
+static_completion_review_policy: ../harmonization/static_completion_review.yaml
+icd10_notation_audit_policy: ../harmonization/icd10_notation_audit.yaml
+icd10_component_audit_policy: ../harmonization/icd10_component_audit.yaml
+icd10_component_detail_audit_policy: ../harmonization/icd10_component_detail_audit.yaml
+static_registry_completion_audit_policy: ../harmonization/static_registry_completion_audit.yaml
+harmonization_dry_run_policy: ../harmonization/dry_run.yaml
+consolidated_harmonization_audit_policy: ../harmonization/consolidated_audit.yaml
+categorical_contract_review_policy: ../harmonization/categorical_contract_review.yaml
+schema_dictionary_review_policy: ../harmonization/schema_dictionary_review.yaml
+schema_dictionary_freeze_policy: ../harmonization/reviewed_schema_dictionary_freeze_0_1.yaml
+harmonized_build_policy: ../harmonization/harmonized_build.yaml
+harmonized_build_audit_policy: ../harmonization/harmonized_build_audit.yaml
+harmonized_promotion_policy: ../harmonization/reviewed_harmonized_promotion_20260806T111156Z.yaml
+cleaning_policy: ../cleaning/cleaning_policy.yaml
+cleaned_promotion_policy: ../cleaning/reviewed_cleaned_promotion_20260806T114234Z.yaml
+derivation_contract_review_policy: ../derivation/contract_review.yaml
+driving_pressure_semantics_review_policy: ../derivation/driving_pressure_semantics_review.yaml
+core_derived_contract_policy: ../derivation/reviewed_core_derived_contract_0_1.yaml
+core_derived_promotion_policy: ../derivation/reviewed_core_derived_promotion_20260806T170134Z.yaml
+core_derived_0_2_contract_policy: ../derivation/reviewed_core_derived_contract_0_2.yaml
+core_derived_0_2_promotion_policy: ../derivation/reviewed_core_derived_0_2_promotion_20260808T074305Z.yaml
+time_blocking_contract_evidence_policy: ../time_blocking/contract_evidence_8h.yaml
+time_blocking_8h_contract_policy: ../time_blocking/reviewed_8h_contract_0_1.yaml
+time_blocking_implementation_policy: ../time_blocking/production_candidate_audit_8h.yaml
+time_blocking_8h_promotion_policy: ../time_blocking/reviewed_8h_promotion_20260808T130534Z.yaml
+unit_resolution_audit_policy: ../unit_resolution/audit.yaml
+unit_decision_audit_policy: ../unit_resolution/decision_audit.yaml
+unit_schema_dictionary_amendment_policy: ../unit_resolution/schema_dictionary_amendment.yaml
+unit_schema_dictionary_freeze_policy: ../unit_resolution/reviewed_unit_schema_dictionary_freeze_0_2.yaml
+harmonized_0_2_build_policy: ../unit_resolution/harmonized_0_2_build.yaml
+harmonized_0_2_audit_policy: ../unit_resolution/harmonized_0_2_audit.yaml
+harmonized_0_2_promotion_policy: ../unit_resolution/reviewed_harmonized_0_2_promotion_20260807T112402Z.yaml
+medication_value_semantics_audit_policy: ../unit_resolution/medication_value_semantics_audit.yaml
+cleaning_policy_0_2_review: ../cleaning/cleaning_policy_0_2_review.yaml
+cleaning_range_evidence_0_2: ../cleaning/range_evidence_0_2.yaml
+cleaning_0_2_policy: ../cleaning/reviewed_cleaning_policy_0_2.yaml
+cleaning_0_2_audit_policy: ../cleaning/cleaning_0_2_audit.yaml
+cleaned_0_2_promotion_policy: ../cleaning/reviewed_cleaned_0_2_promotion_20260807T154100Z.yaml
+comparison_reference: null
+
+paths:
+  raw_root: /hpcwork/jrc_combine/richard/asic_2026
+  data: ../../data/production
+  reports: ../../reports/production
+  runs: ../../runs/production
+
+ingestion:
+  rows_per_batch: 50000

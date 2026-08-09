@@ -1,0 +1,35 @@
+cleaning_0_2_audit_policy_version: '0.1'
+status: approved_for_complete_independent_read_only_audit
+
+build_policy: reviewed_cleaning_policy_0_2.yaml
+build_policy_sha256: 061c0db1f7a87a5061b358efed246bae0088be0f32db001feb98ba9f4a462ebc
+
+audit:
+  rows_per_batch: 50000
+  verify_source_hashes_before_and_after: true
+  verify_candidate_hashes: true
+  compare_every_output_cell: true
+  recompute_cleaning_0_1_rules: true
+  recompute_all_twelve_priority_rules: true
+  recompute_general_negative_medication_rule: true
+  verify_preserved_positive_extremes: true
+  verify_zero_null_and_positive_medication_conservation: true
+  verify_cleaned_dictionary_annotations: true
+  verify_rows_schema_order_and_provenance: true
+  verify_rule_level_counts: true
+
+outputs:
+  private_directory_name: cleaning_0_2_audit
+  review_directory_name: cleaning_0_2_audit
+  private_artifact_version: '0.2'
+  review_artifact_version: '0.2'
+
+boundary:
+  read_released_harmonized_0_2: true
+  read_cleaned_0_2_candidate: true
+  modify_clinical_data: false
+  write_reports_only: true
+  approve_release_automatically: false
+  update_release_pointer: false
+  publish: false
+  authorize_external_data_export: false

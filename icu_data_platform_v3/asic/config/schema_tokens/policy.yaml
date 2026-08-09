@@ -1,0 +1,41 @@
+policy_version: '0.3'
+status: approved_for_read_only_schema_token_inventory
+
+required_inventory_artifact_version: '0.4'
+required_ingestion_manifest_version: '0.2'
+required_ingestion_audit_artifact_version: '0.1'
+allowed_input_blockers:
+  - provisional_archive_owner_confirmation
+
+candidate_registry: candidate_registry.yaml
+reviewed_rules: reviewed_rules.yaml
+
+scan:
+  rows_per_batch: 10000
+  max_examples_per_token_class: 1000
+  store_direct_numeric_examples: false
+  store_identifier_examples: false
+  store_free_text_examples: false
+
+classification:
+  textual_missing_candidates:
+    - storniert
+    - storno
+    - kein material
+    - falsches mater.
+    - falsches mater
+    - fal.volumen
+    - geronnen
+    - entfällt
+    - entfaellt
+    - folgt
+    - nan
+    - na
+    - n/a
+    - 'null'
+    - none
+reporting:
+  private_artifact_version: '0.3'
+  review_artifact_version: '0.3'
+  private_directory_mode: '0700'
+  private_file_mode: '0600'

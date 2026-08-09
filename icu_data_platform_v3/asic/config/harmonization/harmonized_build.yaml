@@ -1,0 +1,62 @@
+harmonized_build_policy_version: '0.1'
+status: approved_for_frozen_contract_bound_nonpublishable_build
+
+inputs:
+  candidate_run_id: 20260806T074852Z
+  candidate_artifact_version: '0.3'
+  candidate_status: candidate_nonpublishable_requires_consolidated_review
+  frozen_contract_version: '0.1'
+  frozen_contract_directory: contracts/harmonized_schema_dictionary/0.1
+
+decision_sources:
+  consolidated_decisions: reviewed_consolidated_decisions_0_1.yaml
+  consolidated_decisions_sha256: 3b9d49d24461e97354851f53937e5335248301099d4a7068f88c162df6e5ceb3
+  categorical_decisions: reviewed_categorical_decisions_0_1.yaml
+  categorical_decisions_sha256: 013b6a01e07b947cb7ed56a1f0b0a24a7ab870b0cfcd0f5a56d34c28f8f9c53c
+  schema_dictionary_freeze: reviewed_schema_dictionary_freeze_0_1.yaml
+  schema_dictionary_freeze_sha256: 33c4813048f1a12acc137bd24d4003ef953f57524d4a76d0488938eecd48b7a0
+
+approved_hospitals:
+  - asic_UK00
+  - asic_UK01
+  - asic_UK02
+  - asic_UK03
+  - asic_UK04
+  - asic_UK06
+  - asic_UK07
+  - asic_UK08
+
+expected_rows:
+  static: 16054
+  dynamic: 24069379
+
+approved_transformations:
+  apply_complete_categorical_contract: true
+  apply_four_hospital_unit_conversions: true
+  generate_artificial_anchored_time: true
+  artificial_time_source: minutes_since_icu_admission
+  artificial_time_target: anchored_time_since_icu_admission
+  artificial_time_anchor: '2020-01-01 00:00:00'
+  preserve_five_operational_provenance_fields: true
+  preserve_row_and_hospital_order: true
+
+streaming:
+  rows_per_batch: 50000
+  parquet_compression: zstd
+
+outputs:
+  directory_name: harmonized_candidates
+  artifact_version: '0.1'
+  review_directory_name: harmonized_build
+  status: frozen_contract_bound_nonpublishable_requires_build_audit
+
+boundary:
+  read_verified_candidate_artifacts: true
+  modify_candidate_artifacts: false
+  overwrite_outputs: false
+  filter_rows: false
+  filter_stays: false
+  apply_cleaning: false
+  apply_derivation: false
+  publish: false
+  update_release_pointer: false

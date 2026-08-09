@@ -1,0 +1,86 @@
+consolidated_harmonization_audit_policy_version: '0.2'
+status: approved_for_read_only_consolidated_candidate_audit
+
+required_candidate:
+  dry_run_policy: dry_run.yaml
+  dry_run_policy_sha256: 5961b40299273d1469a79166be12ff0e92bc1d215e5fcadf1893b8e67290145c
+  candidate_artifact_version: '0.3'
+  candidate_private_artifact_version: '0.3'
+  candidate_review_artifact_version: '0.3'
+  candidate_status: candidate_nonpublishable_requires_consolidated_review
+  hospital_count: 8
+  hospital_suffixes:
+    asic_UK00: '0'
+    asic_UK01: '1'
+    asic_UK02: '2'
+    asic_UK03: '3'
+    asic_UK04: '4'
+    asic_UK06: '6'
+    asic_UK07: '7'
+    asic_UK08: '8'
+
+v3_quality_policy:
+  path: cross_hospital_quality_audit.yaml
+  sha256: 047022f4092b879ff9713980015b86d9510ff33fc1b0963be092db6d5b53cb59
+  role: native_v3_reviewed_quality_rule_registry
+
+optional_old_version_comparison:
+  reference: null
+  availability: optional_nonblocking
+  role: untrusted_context_only_never_v3_input
+
+scan:
+  rows_per_batch: 50000
+  numeric_sample_capacity_per_hospital_variable: 20000
+  sample_rows_per_batch: 512
+  maximum_private_examples_per_finding: 1000
+  categorical_domain_cap: 10000
+  minimum_nonmissing_for_distribution_comparison: 20
+  minimum_hospitals_for_distribution_comparison: 4
+  hospital_metric_iqr_fence_factor: 1.5
+  general_scale_factors: [0.001, 0.01, 0.1, 10, 100, 1000]
+  peer_alignment_minimum_improvement_factor: 5
+  peer_alignment_maximum_residual_factor: 2
+  row_scale_entry_factors: [0.001, 0.01, 0.1, 10, 100, 1000]
+
+coverage:
+  verify_candidate_and_ingested_hashes: true
+  verify_row_and_provenance_conservation: true
+  verify_common_ordered_schemas: true
+  verify_dictionary_schema_coverage: true
+  verify_parser_accounting: true
+  verify_static_identifier_uniqueness: true
+  verify_dynamic_identifiers_exist_in_static: true
+  profile_every_numeric_variable: true
+  inventory_every_categorical_domain: true
+  profile_every_list_variable: true
+  audit_every_unresolved_unit_policy: true
+  audit_legacy_invalid_ranges: true
+  discover_row_level_scale_entry_candidates: true
+  audit_all_migrated_targeted_scale_hypotheses: true
+  audit_all_migrated_targeted_comparisons: true
+  audit_all_migrated_targeted_buckets: true
+  audit_all_migrated_relationships: true
+  audit_known_legacy_semantic_findings: true
+  audit_migrated_candidate_context_rules: true
+  audit_static_missing_sentinels: true
+  audit_predicted_body_weight_formula: true
+  inventory_global_all_missing_columns: true
+  generate_complete_decision_register: true
+  audit_optional_old_version_differences_when_available: true
+  require_old_version_artifacts: false
+  apply_unit_or_cleaning_changes: false
+  write_harmonized_data: false
+  write_cleaned_data: false
+  write_derived_data: false
+  publish_data: false
+
+reporting:
+  private_artifact_version: '0.1'
+  review_artifact_version: '0.1'
+  private_directory_name: consolidated_harmonization_audit
+  review_directory_name: consolidated_harmonization_audit
+  private_directory_mode: '0700'
+  private_file_mode: '0600'
+  review_directory_mode: '0750'
+  review_file_mode: '0640'

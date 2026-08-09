@@ -1,0 +1,90 @@
+reviewed_medication_value_semantics_version: '0.2'
+status: approved_pending_schema_dictionary_0_2_freeze
+
+evidence:
+  audit_artifact: asic_v3_medication_value_semantics_review
+  audit_artifact_version: '0.1'
+  audit_generated_at_utc: '2026-08-07T09:35:48+00:00'
+  input_cleaned_release_id: 20260806T114234Z
+  dynamic_rows_scanned: 24069379
+  source_medication_variable_count: 25
+  hospital_variable_profile_count: 200
+  explicit_zero_count: 5013108
+  positive_value_count: 19034792
+  negative_value_count: 201
+  nonfinite_value_count: 0
+  null_count: 577686374
+  variables_with_explicit_zero_count: 24
+  all_missing_hospital_variable_profile_count: 105
+  zero_and_positive_profile_count: 71
+  medication_conversion_scope_count: 4
+  semantic_split_scope_count: 9
+  projected_zero_to_null_count: 0
+  projected_null_to_zero_count: 0
+
+negative_value_evidence:
+  affected_variable_count: 1
+  affected_hospital_count: 1
+  affected_variable: inhaled_no
+  affected_hospital: asic_UK08
+  negative_value_count: 201
+  distinct_negative_values:
+    - {value: -1.8, count: 11}
+    - {value: -1.72, count: 1}
+    - {value: -1.7, count: 96}
+    - {value: -0.5, count: 50}
+    - {value: -0.4, count: 32}
+    - {value: -0.15, count: 1}
+    - {value: -0.1, count: 10}
+  classified_as_single_missing_sentinel: false
+  deterministic_recovery_available: false
+
+human_decision:
+  decision_date: '2026-08-07'
+  decision: >-
+    Preserve explicit zero separately from null and apply a general
+    dictionary-driven cleaning rule that masks finite negative medication or
+    therapy dose, rate, and concentration values to null.
+  approval_record: >-
+    The data owner agreed that a general negative-value medication cleaning
+    rule is preferable to a hospital-specific inhaled-nitric-oxide exception
+    and instructed implementation to proceed.
+
+value_semantics:
+  explicit_numeric_zero: preserve_as_observed_zero
+  'null': preserve_as_unavailable_or_unobserved
+  null_implies_inactive_medication: false
+  null_to_zero_imputation: prohibited
+  zero_to_null_conversion: prohibited
+  positive_exposure_candidate: value_greater_than_zero
+  carry_forward_or_interval_imputation: requires_separate_reviewed_contract
+
+general_negative_cleaning_rule:
+  rule_id: mask_negative_medication_or_therapy_value
+  selection: dictionary_medication_or_therapy_variable_true
+  supported_physical_type: float64
+  finite_negative_condition: value_less_than_zero
+  action: set_null_and_count_by_hospital_and_variable
+  layer: cleaned
+  apply_after_hospital_harmonization_and_semantic_splitting: true
+  preserve_negative_in_ingested_layer: true
+  preserve_negative_in_harmonized_layer: true
+  preserve_zero: true
+  preserve_positive: true
+  preserve_null: true
+  take_absolute_value: false
+  clip_negative_to_zero: false
+  future_signed_variable_requires_explicit_exemption: true
+  expected_current_mask_count: 201
+
+boundary:
+  authorize_schema_dictionary_0_2_planning: true
+  authorize_schema_dictionary_0_2_freeze: false
+  authorize_cleaning_policy_0_2_implementation: true
+  activate_cleaning_policy_0_2: false
+  modify_existing_harmonized_release: false
+  modify_existing_cleaned_release: false
+  modify_existing_derived_release: false
+  write_clinical_data: false
+  filter_rows_or_stays: false
+  authorize_external_data_export: false

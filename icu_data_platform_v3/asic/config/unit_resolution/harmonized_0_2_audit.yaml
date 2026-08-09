@@ -1,0 +1,40 @@
+harmonized_0_2_audit_policy_version: '0.1'
+status: approved_for_complete_independent_read_only_audit
+
+build_policy: harmonized_0_2_build.yaml
+build_policy_sha256: ada798e3879f1cb72370d407d21b092af838431e7b8ad071809194fdd5979556
+
+audit:
+  rows_per_batch: 50000
+  verify_source_release_hashes_before_and_after: true
+  verify_candidate_hashes: true
+  verify_frozen_schema_exactly: true
+  compare_every_output_cell: true
+  recompute_all_nine_unit_conversions: true
+  recompute_all_nine_semantic_splits: true
+  verify_uk00_static_weight_linkage: true
+  verify_cleaned_static_weight_reference_hash_before_and_after: true
+  verify_zero_null_and_negative_conservation: true
+  compare_all_five_provenance_fields: true
+  verify_all_rows_and_source_order: true
+  verify_rule_level_counts: true
+
+outputs:
+  private_directory_name: harmonized_0_2_audit
+  review_directory_name: harmonized_0_2_audit
+  private_artifact_version: '0.1'
+  review_artifact_version: '0.1'
+
+boundary:
+  read_released_harmonized_0_1: true
+  read_cleaned_0_1_static_weight_reference: true
+  read_cleaned_0_1_dynamic: false
+  read_harmonized_0_2_candidate: true
+  modify_clinical_data: false
+  write_reports_only: true
+  apply_cleaning: false
+  apply_derivation: false
+  approve_release_automatically: false
+  update_release_pointer: false
+  publish: false
+  authorize_external_data_export: false

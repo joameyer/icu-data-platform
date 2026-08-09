@@ -1,0 +1,72 @@
+core_derived_promotion_policy_version: '0.1'
+status: explicitly_approved_for_immutable_core_derived_release
+
+approved_input:
+  derived_candidate_run_id: 20260806T170134Z
+  derived_audit_run_id: 20260806T170134Z
+  cleaned_release_id: 20260806T114234Z
+  core_derived_contract_version: '0.1'
+  candidate_artifact_version: '0.1'
+  audit_private_artifact_version: '0.1'
+  audit_review_artifact_version: '0.1'
+
+human_approval:
+  role: data_owner
+  recorded_date: '2026-08-06'
+  statement: I approve promotion of core-derived candidate 20260806T170134Z under core-derived contract 0.1.
+  context: Explicit approval immediately following the complete core-derived candidate audit review.
+
+expected_audit:
+  technical_status: pass
+  overall_status_before_approval: pending_human_review
+  technical_blocking_finding_count: 0
+  human_blocking_finding_count_before_approval: 1
+  human_blocking_check_resolved_by_this_approval: core_derived_candidate_release_approved
+  metrics:
+    compared_static_rows: 16054
+    compared_dynamic_rows: 24069379
+    compared_output_cell_count: 3322168300
+    expected_output_cell_count: 3322168300
+    static_output_column_count: 37
+    dynamic_output_column_count: 138
+  derivation_accounting:
+    dynamic_row_count: 24069379
+    hours_non_missing_count: 24069379
+    hours_negative_count: 247977
+    driving_pressure_computable_count: 6386755
+    driving_pressure_in_range_count: 6383119
+    driving_pressure_out_of_range_count: 3636
+    static_row_count: 16054
+    hospital_mortality_false: 9757
+    hospital_mortality_true: 4726
+    hospital_mortality_missing: 1571
+    hospital_mortality_conflict_count: 0
+    icu_mortality_false: 10457
+    icu_mortality_true: 2146
+    icu_mortality_missing: 3451
+    icu_mortality_conflict_count: 0
+    ventilation_supported_timestamp_count_total: 8715616
+    ventilation_episode_count_total: 53535
+    observed_mechanical_ventilation_ge_24h_true: 12775
+
+release:
+  release_id: 20260806T170134Z
+  releases_directory: derived/releases
+  current_release_pointer: derived/current_release.json
+  artifact_version: '0.1'
+  review_directory_name: derived_promotion
+
+boundary:
+  copy_audited_parquet_bytes_unchanged: true
+  preserve_candidate_artifacts: true
+  overwrite_existing_release: false
+  overwrite_existing_current_pointer: false
+  rerun_derivation: false
+  rerun_cleaning: false
+  filter_rows_or_stays: false
+  drop_or_modify_source_columns: false
+  create_cohort: false
+  apply_time_blocking: false
+  authorize_core_derived_layer: true
+  authorize_analysis_input: true
+  authorize_external_data_export: false

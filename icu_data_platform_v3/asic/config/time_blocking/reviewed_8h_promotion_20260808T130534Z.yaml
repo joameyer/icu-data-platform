@@ -1,0 +1,83 @@
+time_blocking_promotion_policy_version: '0.1'
+status: explicitly_approved_for_immutable_time_blocking_release
+
+approved_input:
+  candidate_run_id: 20260808T130534Z
+  audit_run_id: 20260808T130534Z
+  core_derived_release_id: 20260808T074305Z
+  time_blocking_contract_version: '0.1'
+  candidate_artifact_version: '0.1'
+  audit_artifact_version: '0.1'
+
+immutable_contract:
+  path: reviewed_8h_contract_0_1.yaml
+  sha256: e6cf3e79e4688292e06260a2b6e29b327bc61d352ba831a5f63021a879ceef6b
+
+immutable_workflow:
+  implementation_policy: production_candidate_audit_8h.yaml
+  implementation_policy_sha256: 7cd486f54af71c159bdc625bb1e63dbd4883d516130db11fcdeb7fcd7befdcb4
+  execution_authorization: reviewed_8h_production_execution.yaml
+  execution_authorization_sha256: 829aacbab4327b2263387e6bb4863f9d911e44b4be2136d67f6215472b072f02
+
+human_approval:
+  role: data_owner
+  recorded_date: '2026-08-08'
+  statement: >-
+    I approve promotion of ASIC v3 8-hour time-blocking candidate
+    20260808T130534Z under time-blocking contract 0.1 as immutable release
+    20260808T130534Z, and authorize operator-executed promotion and atomic
+    creation of only the 8-hour time-blocking current-release pointer. External
+    export remains unauthorized.
+  context: >-
+    Explicit approval immediately following review of the complete independent
+    candidate audit with zero technical blockers.
+
+expected_candidate:
+  manifest_sha256: c7436c8b624e5245ceef49500c4d952798ac5d05ca110393cfdd2c8d8e790882
+  metrics:
+    source_dynamic_row_count: 24069379
+    assigned_source_row_count: 24069379
+    stay_summary_row_count: 16054
+    block_row_count: 777756
+    empty_block_count: 10348
+    terminal_partial_block_count: 14855
+    output_feature_count: 1062
+
+expected_audit:
+  overall_status_before_approval: pending_human_review
+  technical_blocking_finding_count: 0
+  human_blocking_finding_count_before_approval: 1
+  human_blocking_check_resolved_by_this_approval: time_blocking_candidate_promotion_approved
+  metrics:
+    assigned_source_rows: 24069379
+    compared_block_rows: 777756
+    compared_feature_cells: 825976872
+    compared_stays: 16054
+
+release:
+  release_id: 20260808T130534Z
+  releases_directory: derived/time_blocking/8h/releases
+  current_release_pointer: derived/time_blocking/8h/current_release.json
+  require_initial_current_release_pointer_absent: true
+  release_manifest: release_manifest.json
+  review_directory: time_blocking/8h/promotion
+  artifact_version: '0.1'
+
+boundary:
+  copy_audited_candidate_bytes_unchanged: true
+  preserve_candidate_artifacts: true
+  require_core_derived_pointer_unchanged: true
+  require_core_derived_release_bytes_unchanged: true
+  copy_static_table: false
+  repeat_static_values_on_blocks: false
+  overwrite_existing_release: false
+  create_only_time_blocking_8h_current_pointer: true
+  replace_core_derived_current_pointer: false
+  rerun_time_blocking: false
+  rerun_derivation: false
+  filter_rows_or_stays: false
+  create_analysis_cohort: false
+  apply_carry_forward_or_imputation: false
+  emit_medication_dose_totals: false
+  authorize_analysis_input: true
+  authorize_external_data_export: false

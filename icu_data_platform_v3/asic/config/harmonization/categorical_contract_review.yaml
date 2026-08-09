@@ -1,0 +1,39 @@
+categorical_contract_review_policy_version: '0.1'
+status: approved_for_read_only_review_from_immutable_consolidated_evidence
+
+reviewed_decisions:
+  path: reviewed_consolidated_decisions_0_1.yaml
+  sha256: 3b9d49d24461e97354851f53937e5335248301099d4a7068f88c162df6e5ceb3
+
+required_consolidated_audit:
+  private_artifact_version: '0.1'
+  review_artifact_version: '0.1'
+  technical_blocking_finding_count: 0
+  private_directory_name: consolidated_harmonization_audit
+  review_directory_name: consolidated_harmonization_audit
+
+prior_reviewed_variables:
+  scalar:
+    - hospital_mortality_reported
+    - icu_readmit
+    - study_implementation_phase
+  fixed_position_composite:
+    - therapy_read_confirmation_utc
+
+priority_pending_variables:
+  - ards_diagnosis_app
+  - ecmo
+  - position_therapy
+
+write_boundary:
+  read_candidate_data: false
+  rescan_clinical_rows: false
+  modify_candidate_data: false
+  write_harmonized_data: false
+  publish_data: false
+
+reporting:
+  private_artifact_version: '0.1'
+  review_artifact_version: '0.1'
+  private_directory_name: categorical_contract_review
+  review_directory_name: categorical_contract_review

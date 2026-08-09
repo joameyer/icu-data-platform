@@ -1,0 +1,33 @@
+harmonized_build_audit_policy_version: '0.1'
+status: approved_for_complete_read_only_build_audit
+
+build_policy: harmonized_build.yaml
+build_policy_sha256: 6758a0115c43774c039e8b9a89952005129b0e0bb463d848a6b472ed77a8caa9
+
+audit:
+  rows_per_batch: 50000
+  verify_input_and_output_hashes: true
+  verify_frozen_schema_exactly: true
+  verify_all_rows_and_hospital_order: true
+  recompute_every_categorical_transformation: true
+  recompute_every_hospital_unit_conversion: true
+  recompute_every_artificial_timestamp: true
+  compare_every_unchanged_value: true
+  compare_all_five_provenance_fields: true
+  verify_rule_level_counts: true
+
+outputs:
+  private_directory_name: harmonized_build_audit
+  review_directory_name: harmonized_build_audit
+  private_artifact_version: '0.1'
+  review_artifact_version: '0.1'
+
+boundary:
+  read_candidate_clinical_rows: true
+  read_harmonized_clinical_rows: true
+  modify_clinical_data: false
+  write_reports_only: true
+  apply_cleaning: false
+  apply_derivation: false
+  approve_release_automatically: false
+  publish: false

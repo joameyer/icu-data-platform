@@ -1,0 +1,13 @@
+reference_version: '1.0'
+status: untrusted_read_only_comparison
+
+paths:
+  pooled_static: /hpcwork/jrc_combine/joana/icu_data_platform/asic/data/production/pooled/static.parquet
+  pooled_dynamic: /hpcwork/jrc_combine/joana/icu_data_platform/asic/data/production/pooled/dynamic.parquet
+  translated_static: /hpcwork/jrc_combine/joana/icu_data_platform/asic/data/production/translated/static.parquet
+  translated_dynamic: /hpcwork/jrc_combine/joana/icu_data_platform/asic/data/production/translated/dynamic.parquet
+
+identifiers:
+  stay_id_column: Pseudo-ID
+  hospital_code_column: hid
+

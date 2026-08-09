@@ -1,0 +1,122 @@
+decision_registry_version: '0.2'
+status: approved_partial_static_raw_v3_decisions
+supersedes: reviewed_static_decisions_0_1.yaml
+
+review:
+  approved_by_role: project_data_owner
+  approved_at: '2026-08-05'
+  static_contract_audit_run_id: 20260805T112746Z
+  registry_review_run_id: 20260805T104417Z
+  composite_audit_run_id: 20260805T111026Z
+
+decisions:
+  - rule_id: HARM-STATIC-HOSP-MORT-UK00-001
+    hospital: asic_UK00
+    table: static
+    raw_name: KH-Sterblichkeit
+    occurrence: 1
+    target: hospital_mortality_reported
+    kind: boolean
+    evidence_nonempty_count: 3676
+    evidence_direct_numeric_count: 0
+    evidence_custom_parsed_count: 0
+    evidence_approved_missing_count: 0
+    evidence_unknown_nonempty_count: 0
+    evidence_domain_complete: true
+    normalization: strip_lower
+    value_mapping:
+      'false': false
+      'true': true
+    output_value_type: bool
+    output_unit: not_applicable
+    literal_empty_handling: 'null'
+    source_absence_handling: 'null'
+    unknown_nonempty_handling: block
+
+  - rule_id: HARM-STATIC-WEIGHT-UK00-001
+    hospital: asic_UK00
+    table: static
+    raw_name: weightKg
+    occurrence: 1
+    target: weight_kg
+    kind: numeric
+    evidence_nonempty_count: 3676
+    evidence_direct_numeric_count: 3614
+    evidence_custom_parsed_count: 62
+    evidence_approved_missing_count: 0
+    evidence_unknown_nonempty_count: 0
+    approved_parser: decimal_comma
+    approved_missing_tokens: []
+    output_value_type: float64
+    output_unit: kg
+    literal_empty_handling: 'null'
+    source_absence_handling: 'null'
+    unknown_nonempty_handling: block
+
+  - rule_id: HARM-STATIC-HOSP-LOS-UK00-001
+    hospital: asic_UK00
+    table: static
+    raw_name: Liegedauer_KH
+    occurrence: 1
+    target: hosp_los
+    kind: numeric
+    evidence_nonempty_count: 3676
+    evidence_direct_numeric_count: 0
+    evidence_custom_parsed_count: 0
+    evidence_approved_missing_count: 3676
+    evidence_unknown_nonempty_count: 0
+    approved_parser: approved_missing_only
+    approved_missing_tokens:
+      - nan
+    output_value_type: float64
+    output_unit: day
+    literal_empty_handling: 'null'
+    source_absence_handling: 'null'
+    unknown_nonempty_handling: block
+
+identifier_contract:
+  rule_id: HARM-STATIC-STAY-ID-001
+  table: static
+  source_raw_name_variants:
+    - Pseudo-ID
+    - PseudoID
+  source_occurrence: 1
+  local_target: stay_id_local
+  global_target: stay_id_global
+  output_value_type: large_string
+  separator: ':'
+  local_value_policy: preserve_exact_nonempty_without_separator
+  hospital_suffixes:
+    asic_UK00: '0'
+    asic_UK01: '1'
+    asic_UK02: '2'
+    asic_UK03: '3'
+    asic_UK04: '4'
+    asic_UK06: '6'
+    asic_UK07: '7'
+    asic_UK08: '8'
+  evidence:
+    static_row_count: 16054
+    nonempty_local_id_count: 16054
+    within_hospital_duplicate_count: 0
+    cross_hospital_local_overlap_count: 3676
+    ingestion_identifier_agreement: true
+    hospital_static_row_counts:
+      asic_UK00: 3676
+      asic_UK01: 1571
+      asic_UK02: 902
+      asic_UK03: 1360
+      asic_UK04: 486
+      asic_UK06: 678
+      asic_UK07: 2217
+      asic_UK08: 5164
+  empty_or_missing_handling: block
+  local_separator_collision_handling: block
+  within_hospital_duplicate_handling: block
+
+scope:
+  allow_synthetic_batch_transform: true
+  allow_production_reads: false
+  allow_artifact_writes: false
+  allow_hospital_concatenation: false
+  allow_union_schema_freeze: false

@@ -1,0 +1,90 @@
+unit_resolution_audit_policy_version: '0.1'
+status: approved_for_consolidated_read_only_unit_and_range_review
+
+input:
+  cleaned_release_id: 20260806T114234Z
+  expected_dynamic_rows: 24069379
+  harmonized_contract_version: '0.1'
+  frozen_contract_directory: contracts/harmonized_schema_dictionary/0.1
+  frozen_schema_policy: ../harmonization/reviewed_schema_dictionary_freeze_0_1.yaml
+  frozen_schema_policy_sha256: 33c4813048f1a12acc137bd24d4003ef953f57524d4a76d0488938eecd48b7a0
+  quality_policy: ../harmonization/cross_hospital_quality_audit.yaml
+  quality_policy_sha256: 047022f4092b879ff9713980015b86d9510ff33fc1b0963be092db6d5b53cb59
+  harmonization_dry_run_id: 20260806T074852Z
+  consolidated_harmonization_audit_run_id: 20260806T092818Z
+
+scope:
+  expected_unresolved_unit_variable_count: 72
+  expected_priority_legacy_range_variable_count: 12
+  require_all_unresolved_variables_to_be_dynamic_float64: true
+  require_source_mapping_evidence_for_every_variable: true
+  require_prior_candidate_profile_for_every_hospital_variable: true
+  compare_current_finite_counts_with_preclean_candidate: true
+  priority_expected_outside_legacy_range_counts:
+    albumin: 890
+    creatinine: 746
+    evlwi: 72
+    gedvi: 100
+    hemoglobin: 1130
+    inr: 2377
+    lactate_art: 290
+    platelets: 1024
+    ptt: 3098
+    sofa_score_unspecified: 0
+    sofa_score_without_gcs: 0
+    svri: 294
+
+scan:
+  rows_per_batch: 50000
+  numeric_sample_capacity_per_hospital_variable: 20000
+  sample_rows_per_batch: 512
+  minimum_nonmissing_for_cross_hospital_comparison: 20
+  minimum_hospitals_for_cross_hospital_comparison: 4
+  hospital_metric_iqr_fence_factor: 1.5
+  scale_screen_factors: [0.001, 0.01, 0.1, 10, 100, 1000]
+  peer_alignment_minimum_improvement_factor: 5
+  peer_alignment_maximum_residual_factor: 2
+
+decision_framework:
+  distribution_evidence_can_establish_unit: false
+  raw_header_can_establish_unit_without_source_documentation: false
+  preserve_values_until_unit_is_resolved: true
+  automatic_unit_conversion: false
+  automatic_legacy_range_activation: false
+  permitted_unit_dispositions:
+    - confirm_same_unit_all_hospitals
+    - approve_hospital_specific_conversion
+    - confirm_dimensionless_or_score_representation
+    - retain_unresolved_and_analysis_ineligible
+    - classify_mixed_or_unrecoverable
+  permitted_range_dispositions:
+    - activate_legacy_range_after_unit_confirmation
+    - replace_with_reviewed_unit_specific_range
+    - preserve_audit_only
+    - mask_hospital_specific_unrecoverable_values
+    - retire_range_rule_as_inapplicable
+
+boundary:
+  read_released_cleaned_data: true
+  read_existing_private_mapping_and_audit_evidence: true
+  modify_harmonized_release: false
+  modify_cleaned_release: false
+  modify_derived_release: false
+  write_clinical_data: false
+  write_reports_only: true
+  infer_units_automatically: false
+  apply_unit_conversions: false
+  apply_legacy_ranges: false
+  mask_values: false
+  filter_rows_or_stays: false
+  authorize_external_data_export: false
+
+reporting:
+  private_directory_name: unit_resolution_audit
+  review_directory_name: unit_resolution_audit
+  private_artifact_version: '0.1'
+  review_artifact_version: '0.1'
+  private_directory_mode: '0700'
+  private_file_mode: '0600'
+  review_directory_mode: '0750'
+  review_file_mode: '0640'

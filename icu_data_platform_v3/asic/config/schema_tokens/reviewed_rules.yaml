@@ -1,0 +1,196 @@
+review_registry_version: '0.2'
+status: approved_partial_raw_v3_rules
+
+review:
+  reviewer_role: project_data_owner
+  approved_at: '2026-08-05'
+  evidence_schema_token_inventory_run_id: 20260805T064135Z
+  scope: >-
+    Human-approved resolutions for the first raw-v3 schema/token anomaly review.
+    All seed mappings not covered below still require raw-v3 review.
+
+rules:
+  - rule_id: HARM-STATIC-CLUSTER-UK00-001
+    hospital: asic_UK00
+    table: static
+    raw_name: Cluster-ID
+    candidate_target: cluster_id
+    candidate_kind: categorical
+    allowed_tokens: [C1, C2, C3, C4]
+    evidence_nonempty_count: 3676
+
+  - rule_id: HARM-STATIC-CLUSTER-UK01-001
+    hospital: asic_UK01
+    table: static
+    raw_name: Cluster-ID
+    candidate_target: cluster_id
+    candidate_kind: categorical
+    allowed_tokens: [C5]
+    evidence_nonempty_count: 1571
+
+  - rule_id: HARM-STATIC-CLUSTER-UK02-001
+    hospital: asic_UK02
+    table: static
+    raw_name: Cluster-ID
+    candidate_target: cluster_id
+    candidate_kind: categorical
+    allowed_tokens: [C7, C9]
+    evidence_nonempty_count: 902
+
+  - rule_id: HARM-STATIC-CLUSTER-UK03-001
+    hospital: asic_UK03
+    table: static
+    raw_name: Cluster-ID
+    candidate_target: cluster_id
+    candidate_kind: categorical
+    allowed_tokens: [C6]
+    evidence_nonempty_count: 1360
+
+  - rule_id: HARM-STATIC-CLUSTER-UK04-001
+    hospital: asic_UK04
+    table: static
+    raw_name: Cluster-ID
+    candidate_target: cluster_id
+    candidate_kind: categorical
+    allowed_tokens: [C10]
+    evidence_nonempty_count: 486
+
+  - rule_id: HARM-STATIC-CLUSTER-UK06-001
+    hospital: asic_UK06
+    table: static
+    raw_name: Cluster-ID
+    candidate_target: cluster_id
+    candidate_kind: categorical
+    allowed_tokens: [C8]
+    evidence_nonempty_count: 678
+
+  - rule_id: HARM-STATIC-CLUSTER-UK07-001
+    hospital: asic_UK07
+    table: static
+    raw_name: Cluster-ID
+    candidate_target: cluster_id
+    candidate_kind: categorical
+    allowed_tokens: [C11]
+    evidence_nonempty_count: 2217
+
+  - rule_id: HARM-STATIC-CLUSTER-UK08-001
+    hospital: asic_UK08
+    table: static
+    raw_name: Cluster-ID
+    candidate_target: cluster_id
+    candidate_kind: categorical
+    allowed_tokens: [C12]
+    evidence_nonempty_count: 5164
+
+  - rule_id: HARM-STATIC-HEIGHT-UK00-002
+    hospital: asic_UK00
+    table: static
+    raw_name: heightcm
+    candidate_target: height_measurements_cm
+    candidate_kind: numeric
+    approved_parser: numeric_list
+    approved_list_missing_tokens: [nan]
+    nonblocking_truncation_classes:
+      - custom_parsed_numeric_list
+      - custom_parsed_numeric_list_with_missing_elements
+    canonical_value_type: list_float64
+    expected_unit: cm
+    preserve_list_order: true
+    preserve_duplicates: true
+    evidence_nonempty_count: 3676
+    evidence_run_id: 20260805T081315Z
+    supersedes_rule_id: HARM-STATIC-HEIGHT-UK00-001
+    supersedes_candidate_target: height_cm
+
+  - rule_id: HARM-STATIC-DIALYSIS-UK01-001
+    hospital: asic_UK01
+    table: static
+    raw_name: "Dialyse_(dialysefreie_Tage)\u00a0"
+    candidate_target: dialysis_free_days
+    candidate_kind: numeric
+    evidence_nonempty_count: 0
+
+  - rule_id: HARM-STATIC-VFD-SENTINEL-UK08-001
+    hospital: asic_UK08
+    table: static
+    raw_name: Beatmungsfreie_Tage
+    candidate_target: vent_free_days
+    candidate_kind: numeric
+    approved_missing_sentinel_tokens: ['-1', '-1.0']
+    evidence_nonempty_count: 5164
+
+  - rule_id: HARM-STATIC-DFD-SENTINEL-UK08-001
+    hospital: asic_UK08
+    table: static
+    raw_name: 'Dialyse_(dialysefreie_Tage)'
+    candidate_target: dialysis_free_days
+    candidate_kind: numeric
+    approved_missing_sentinel_tokens: ['-1', '-1.0']
+    evidence_nonempty_count: 5164
+
+  - rule_id: HARM-STATIC-HLOS-SENTINEL-UK08-001
+    hospital: asic_UK08
+    table: static
+    raw_name: Liegedauer_KH
+    candidate_target: hosp_los
+    candidate_kind: numeric
+    approved_missing_sentinel_tokens: ['-1', '-1.0']
+    evidence_nonempty_count: 5164
+
+  - rule_id: HARM-DYNAMIC-PF-DECIMAL-UK01-001
+    hospital: asic_UK01
+    table: dynamic
+    raw_name: 'Horowitz-Quotient_(ohne_Temp-Korrektur)'
+    candidate_target: pf_ratio
+    candidate_kind: numeric
+    approved_parser: decimal_comma
+    nonblocking_truncation_classes: [decimal_comma_syntax_candidate]
+    evidence_nonempty_count: 66623
+
+  - rule_id: HARM-DYNAMIC-PEEP-DECIMAL-UK01-001
+    hospital: asic_UK01
+    table: dynamic
+    raw_name: PEEP
+    candidate_target: peep
+    candidate_kind: numeric
+    approved_parser: decimal_comma
+    nonblocking_truncation_classes: [decimal_comma_syntax_candidate]
+    evidence_nonempty_count: 360839
+
+  - rule_id: HARM-DYNAMIC-PINSP-DECIMAL-UK01-001
+    hospital: asic_UK01
+    table: dynamic
+    raw_name: P_EI
+    candidate_target: insp_pressure
+    candidate_kind: numeric
+    approved_parser: decimal_comma
+    nonblocking_truncation_classes: [decimal_comma_syntax_candidate]
+    evidence_nonempty_count: 215003
+
+  - rule_id: HARM-DYNAMIC-DELTAP-DECIMAL-UK01-001
+    hospital: asic_UK01
+    table: dynamic
+    raw_name: deltaP
+    candidate_target: delta_p_reported
+    candidate_kind: numeric
+    approved_parser: decimal_comma
+    nonblocking_truncation_classes: [decimal_comma_syntax_candidate]
+    evidence_nonempty_count: 213281
+
+  - rule_id: HARM-DYNAMIC-VTIBW-DECIMAL-UK01-001
+    hospital: asic_UK01
+    table: dynamic
+    raw_name: individuelles_Tidalvolumen_pro_kg_idealem_Koerpergewicht
+    candidate_target: vt_per_kg_ideal_body_weight
+    candidate_kind: numeric
+    approved_parser: decimal_comma
+    nonblocking_truncation_classes: [decimal_comma_syntax_candidate]
+    evidence_nonempty_count: 202377
+
+superseded_rules:
+  - rule_id: HARM-STATIC-HEIGHT-UK00-001
+    superseded_by: HARM-STATIC-HEIGHT-UK00-002
+    reason: >-
+      Raw-v3 review found multi-measurement lists and approved missing elements;
+      collapsing singleton lists to a scalar would create an inconsistent type
+      and discard the repeated-measurement semantics.

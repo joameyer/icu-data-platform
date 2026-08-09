@@ -1,0 +1,56 @@
+driving_pressure_semantics_review_policy_version: '0.1'
+status: approved_for_read_only_hospital_semantics_review
+
+input:
+  cleaned_release_id: 20260806T114234Z
+  expected_dynamic_rows: 24069379
+  expected_hospitals:
+    - asic_UK00
+    - asic_UK01
+    - asic_UK02
+    - asic_UK03
+    - asic_UK04
+    - asic_UK06
+    - asic_UK07
+    - asic_UK08
+
+fields:
+  hospital: hospital_id
+  inspiratory_pressure: insp_pressure
+  peep: peep
+  reported_driving_pressure: delta_p_reported
+
+candidate_interpretations:
+  absolute_inspiratory_pressure: insp_pressure_minus_peep
+  pressure_above_peep: insp_pressure_unchanged
+
+comparison:
+  candidate_valid_min: 0
+  candidate_valid_max: 60
+  agreement_tolerances: [0.01, 0.1, 1.0]
+
+prior_evidence_cross_check:
+  both_input_count: 6386755
+  absolute_interpretation_below_zero_count: 3625
+  absolute_interpretation_above_sixty_count: 11
+  reported_overlap_count: 3231499
+  absolute_interpretation_within_0_01_count: 839792
+
+streaming:
+  rows_per_batch: 50000
+
+outputs:
+  private_directory_name: driving_pressure_semantics
+  review_directory_name: driving_pressure_semantics
+  private_artifact_version: '0.1'
+  review_artifact_version: '0.1'
+
+boundary:
+  read_released_cleaned_dynamic_rows: true
+  write_aggregate_reports_only: true
+  write_clinical_data: false
+  modify_cleaned_release: false
+  activate_formula: false
+  mask_values: false
+  filter_rows_or_stays: false
+  authorize_external_data_export: false

@@ -1,0 +1,217 @@
+reviewed_schema_dictionary_freeze_version: '0.1'
+status: human_approved_exact_schema_and_dictionary
+
+approval:
+  dataset_context: production
+  approved_utc_date: '2026-08-06'
+  reviewer_role: data_owner
+  source_review_run_id: 20260806T103811Z
+  approval_statement: I approve and freeze the ASIC v3 ordered harmonized schema and variable dictionary described by schema review 20260806T103811Z.
+
+required_lineage:
+  candidate_run_id: 20260806T074852Z
+  consolidated_audit_run_id: 20260806T092818Z
+  categorical_review_run_id: 20260806T100728Z
+  schema_review_artifact_version: '0.2'
+  schema_review_private_artifact_version: '0.2'
+
+expected_metrics:
+  clinical_variable_count: 153
+  source_backed_clinical_variable_count: 152
+  reviewed_generated_variable_count: 1
+  static_variable_count: 23
+  dynamic_variable_count: 130
+  operational_provenance_field_count_per_table: 5
+  categorical_rule_count: 16
+  categorical_evidence_failure_count: 0
+  approved_named_unit_count: 55
+  approved_conversion_output_unit_variable_count: 4
+  unresolved_unit_variable_count: 72
+  analysis_eligible_variable_count: 74
+  analysis_ineligible_variable_count: 78
+  conditionally_ineligible_variable_count: 1
+  globally_all_missing_variable_count: 4
+  technical_blocking_finding_count: 0
+  candidate_rows_rescanned: 0
+
+resolved_human_findings:
+  - ordered_harmonized_union_schema_approved
+  - variable_dictionary_approved
+
+approved_schema:
+  static:
+    - {position: 1, name: "stay_id_global", physical_type: "large_string", unit: "not_applicable", eligibility: "eligible"}
+    - {position: 2, name: "stay_id_local", physical_type: "large_string", unit: "not_applicable", eligibility: "eligible"}
+    - {position: 3, name: "hospital_id", physical_type: "large_string", unit: "not_applicable", eligibility: "eligible"}
+    - {position: 4, name: "age_group", physical_type: "large_string", unit: "not_applicable", eligibility: "eligible"}
+    - {position: 5, name: "bmi_group", physical_type: "large_string", unit: "not_applicable", eligibility: "eligible"}
+    - {position: 6, name: "cluster_id", physical_type: "large_string", unit: "not_applicable", eligibility: "eligible"}
+    - {position: 7, name: "death_status", physical_type: "large_string", unit: "not_applicable", eligibility: "eligible"}
+    - {position: 8, name: "dialysis_free_days", physical_type: "double", unit: "day", eligibility: "eligible"}
+    - {position: 9, name: "discharge_status", physical_type: "large_string", unit: "not_applicable", eligibility: "eligible"}
+    - {position: 10, name: "height_group", physical_type: "large_string", unit: "not_applicable", eligibility: "eligible"}
+    - {position: 11, name: "height_measurements_cm", physical_type: "list<item: double>", unit: "cm", eligibility: "eligible"}
+    - {position: 12, name: "hosp_los", physical_type: "double", unit: "day", eligibility: "eligible"}
+    - {position: 13, name: "hospital_mortality_reported", physical_type: "bool", unit: "not_applicable", eligibility: "eligible"}
+    - {position: 14, name: "icd10_codes", physical_type: "list<item: large_string>", unit: "not_applicable", eligibility: "eligible"}
+    - {position: 15, name: "icd10_codes_source_text", physical_type: "large_string", unit: "not_applicable", eligibility: "eligible"}
+    - {position: 16, name: "icu_los", physical_type: "double", unit: "day", eligibility: "eligible"}
+    - {position: 17, name: "icu_readmit", physical_type: "bool", unit: "not_applicable", eligibility: "eligible"}
+    - {position: 18, name: "sex", physical_type: "large_string", unit: "not_applicable", eligibility: "eligible"}
+    - {position: 19, name: "study_implementation_phase", physical_type: "large_string", unit: "not_applicable", eligibility: "eligible"}
+    - {position: 20, name: "time_since_study_start", physical_type: "double", unit: "day", eligibility: "eligible"}
+    - {position: 21, name: "vent_free_days", physical_type: "double", unit: "day", eligibility: "eligible"}
+    - {position: 22, name: "weight_group", physical_type: "large_string", unit: "not_applicable", eligibility: "eligible"}
+    - {position: 23, name: "weight_kg", physical_type: "double", unit: "kg", eligibility: "eligible"}
+  dynamic:
+    - {position: 1, name: "stay_id_global", physical_type: "large_string", unit: "not_applicable", eligibility: "eligible"}
+    - {position: 2, name: "stay_id_local", physical_type: "large_string", unit: "not_applicable", eligibility: "eligible"}
+    - {position: 3, name: "hospital_id", physical_type: "large_string", unit: "not_applicable", eligibility: "eligible"}
+    - {position: 4, name: "albumin", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 5, name: "alt", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 6, name: "amylase", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 7, name: "ards_diagnosis_app", physical_type: "int32", unit: "not_applicable", eligibility: "ineligible"}
+    - {position: 8, name: "ast", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 9, name: "base_excess_art", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 10, name: "bicarbonate_art", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 11, name: "bilirubin_total", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 12, name: "bnp", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 13, name: "cardiac_index_bolus", physical_type: "double", unit: "L_per_min_per_m2", eligibility: "eligible"}
+    - {position: 14, name: "cardiac_index_cont", physical_type: "double", unit: "L_per_min_per_m2", eligibility: "eligible"}
+    - {position: 15, name: "cardiac_output_bolus", physical_type: "double", unit: "L_per_min", eligibility: "eligible"}
+    - {position: 16, name: "cardiac_output_cont", physical_type: "double", unit: "L_per_min", eligibility: "eligible"}
+    - {position: 17, name: "ck", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 18, name: "ck_mb", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 19, name: "clonidine_iv_cont", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 20, name: "compliance", physical_type: "double", unit: "mL_per_cmH2O", eligibility: "eligible"}
+    - {position: 21, name: "core_temp", physical_type: "double", unit: "deg_C", eligibility: "eligible"}
+    - {position: 22, name: "creatinine", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 23, name: "crp", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 24, name: "cvp", physical_type: "double", unit: "mmHg", eligibility: "eligible"}
+    - {position: 25, name: "d_dimer", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 26, name: "dbp", physical_type: "double", unit: "mmHg", eligibility: "eligible"}
+    - {position: 27, name: "delta_p_reported", physical_type: "double", unit: "cmH2O", eligibility: "eligible"}
+    - {position: 28, name: "dexamethasone_iv_bolus", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 29, name: "dexmedetomidine_iv_cont", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 30, name: "dobutamine_iv_cont", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 31, name: "dpap", physical_type: "double", unit: "mmHg", eligibility: "eligible"}
+    - {position: 32, name: "ecmo", physical_type: "bool", unit: "not_applicable", eligibility: "eligible"}
+    - {position: 33, name: "ecmo_o2", physical_type: "double", unit: "percent", eligibility: "eligible"}
+    - {position: 34, name: "epinephrine_iv_cont", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 35, name: "etco2", physical_type: "double", unit: "mmHg", eligibility: "eligible"}
+    - {position: 36, name: "evlwi", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 37, name: "extracorp_blood_flow", physical_type: "double", unit: "L_per_min", eligibility: "eligible"}
+    - {position: 38, name: "extracorp_o2_flow", physical_type: "double", unit: "L_per_min", eligibility: "eligible"}
+    - {position: 39, name: "fentanyl_iv_cont", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 40, name: "feo2", physical_type: "double", unit: "percent", eligibility: "ineligible"}
+    - {position: 41, name: "fio2", physical_type: "double", unit: "percent", eligibility: "eligible"}
+    - {position: 42, name: "fio2_set", physical_type: "double", unit: "percent", eligibility: "eligible"}
+    - {position: 43, name: "fludrocortisone_po_bolus", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 44, name: "fluid_balance_24h", physical_type: "double", unit: "mL", eligibility: "eligible"}
+    - {position: 45, name: "furosemide_iv_cont", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 46, name: "gedvi", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 47, name: "heart_rate", physical_type: "double", unit: "beat_per_min", eligibility: "eligible"}
+    - {position: 48, name: "hematocrit", physical_type: "double", unit: "percent", eligibility: "eligible"}
+    - {position: 49, name: "hemoglobin", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 50, name: "hydrocortisone_iv_bolus", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 51, name: "ie_ratio", physical_type: "double", unit: "dimensionless_ratio", eligibility: "ineligible"}
+    - {position: 52, name: "ie_ratio_set", physical_type: "double", unit: "dimensionless_ratio", eligibility: "ineligible"}
+    - {position: 53, name: "il6", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 54, name: "inhaled_iloprost", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 55, name: "inhaled_no", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 56, name: "inr", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 57, name: "insp_pressure", physical_type: "double", unit: "cmH2O", eligibility: "eligible"}
+    - {position: 58, name: "isofa_cardiovascular", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 59, name: "isofa_cns", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 60, name: "isofa_liver", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 61, name: "isofa_renal", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 62, name: "isofa_respiratory", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 63, name: "isofa_thrombocyte", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 64, name: "isofa_total_score", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 65, name: "isoflurane_inh", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 66, name: "ketanest_iv_cont", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 67, name: "lactate_art", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 68, name: "ldh", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 69, name: "levosimendan_iv_cont", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 70, name: "lipase", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 71, name: "lymph_abs", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 72, name: "lymph_pct", physical_type: "double", unit: "percent", eligibility: "eligible"}
+    - {position: 73, name: "map", physical_type: "double", unit: "mmHg", eligibility: "eligible"}
+    - {position: 74, name: "midazolam_iv_cont", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 75, name: "milrinone_iv_cont", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 76, name: "minutes_since_icu_admission", physical_type: "double", unit: "min", eligibility: "eligible"}
+    - {position: 77, name: "anchored_time_since_icu_admission", physical_type: "timestamp[ns]", unit: "artificial_anchored_timestamp", eligibility: "eligible"}
+    - {position: 78, name: "morphine_iv_cont", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 79, name: "mpap", physical_type: "double", unit: "mmHg", eligibility: "eligible"}
+    - {position: 80, name: "norepinephrine_iv_cont", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 81, name: "ntprobnp", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 82, name: "paco2", physical_type: "double", unit: "mmHg", eligibility: "eligible"}
+    - {position: 83, name: "pao2", physical_type: "double", unit: "mmHg", eligibility: "eligible"}
+    - {position: 84, name: "pct", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 85, name: "pcwp", physical_type: "double", unit: "mmHg", eligibility: "eligible"}
+    - {position: 86, name: "peep", physical_type: "double", unit: "cmH2O", eligibility: "eligible"}
+    - {position: 87, name: "peep_set", physical_type: "double", unit: "cmH2O", eligibility: "eligible"}
+    - {position: 88, name: "pf_ratio", physical_type: "double", unit: "mmHg", eligibility: "eligible"}
+    - {position: 89, name: "ph_art", physical_type: "double", unit: "pH", eligibility: "eligible"}
+    - {position: 90, name: "platelets", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 91, name: "position_therapy", physical_type: "double", unit: "dimensionless_proportion", eligibility: "eligible"}
+    - {position: 92, name: "prednisolone_iv_bolus", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 93, name: "propofol_iv_cont", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 94, name: "ptt", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 95, name: "pvri", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 96, name: "resp_rate", physical_type: "double", unit: "breath_per_min", eligibility: "eligible"}
+    - {position: 97, name: "rocuronium_iv_bolus", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 98, name: "sao2", physical_type: "double", unit: "percent", eligibility: "eligible"}
+    - {position: 99, name: "sbp", physical_type: "double", unit: "mmHg", eligibility: "eligible"}
+    - {position: 100, name: "scvo2", physical_type: "double", unit: "percent", eligibility: "eligible"}
+    - {position: 101, name: "severity_read_confirmation", physical_type: "large_string", unit: "not_applicable", eligibility: "ineligible"}
+    - {position: 102, name: "sevoflurane_inh", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 103, name: "sofa_blood", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 104, name: "sofa_cns", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 105, name: "sofa_liver", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 106, name: "sofa_renal", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 107, name: "sofa_respiratory", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 108, name: "sofa_respiratory_calculated", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 109, name: "sofa_score_unspecified", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 110, name: "sofa_score_without_gcs", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 111, name: "sofa_total_score", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 112, name: "spap", physical_type: "double", unit: "mmHg", eligibility: "eligible"}
+    - {position: 113, name: "spo2", physical_type: "double", unit: "percent", eligibility: "eligible"}
+    - {position: 114, name: "spont_resp_rate", physical_type: "double", unit: "breath_per_min", eligibility: "eligible"}
+    - {position: 115, name: "stroke_index_bolus", physical_type: "double", unit: "mL_per_m2", eligibility: "eligible"}
+    - {position: 116, name: "stroke_index_cont", physical_type: "double", unit: "mL_per_m2", eligibility: "eligible"}
+    - {position: 117, name: "stroke_volume_bolus", physical_type: "double", unit: "mL", eligibility: "ineligible"}
+    - {position: 118, name: "stroke_volume_cont", physical_type: "double", unit: "mL", eligibility: "eligible"}
+    - {position: 119, name: "sufentanil_iv_cont", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 120, name: "svri", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 121, name: "terlipressin_iv_bolus", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 122, name: "therapy_read_confirmation_utc", physical_type: "fixed_size_list<item: bool>[2]", unit: "not_applicable", eligibility: "eligible"}
+    - {position: 123, name: "troponin", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 124, name: "urea", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 125, name: "vasopressin_iv_cont", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+    - {position: 126, name: "vt", physical_type: "double", unit: "mL", eligibility: "eligible"}
+    - {position: 127, name: "vt_per_ideal_bw_total", physical_type: "double", unit: "mL", eligibility: "eligible"}
+    - {position: 128, name: "vt_per_kg_ideal_body_weight", physical_type: "double", unit: "mL_per_kg", eligibility: "conditionally_ineligible"}
+    - {position: 129, name: "vt_spontaneous", physical_type: "double", unit: "mL", eligibility: "eligible"}
+    - {position: 130, name: "wbc", physical_type: "double", unit: "unresolved", eligibility: "ineligible"}
+
+operational_provenance_fields:
+  - {name: __v3_source_file_id, physical_type: string}
+  - {name: __v3_source_file_order, physical_type: int32}
+  - {name: __v3_source_row_number, physical_type: int64}
+  - {name: __v3_source_order, physical_type: int64}
+  - {name: __v3_source_schema_variant_id, physical_type: string}
+
+freeze_boundary:
+  read_clinical_candidate_rows: false
+  modify_candidate_data: false
+  generate_clinical_data: false
+  freeze_exact_reviewed_dictionary: true
+  authorize_harmonized_build_implementation: true
+  authorize_publication: false
+
+output:
+  contract_version: '0.1'
+  directory: contracts/harmonized_schema_dictionary/0.1
+  review_directory: schema_dictionary_freeze
+

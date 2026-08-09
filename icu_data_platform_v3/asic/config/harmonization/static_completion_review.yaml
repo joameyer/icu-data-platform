@@ -1,0 +1,43 @@
+static_completion_review_policy_version: '0.1'
+status: approved_for_read_only_remaining_static_review
+
+static_contract_audit_basis_run_id: 20260805T112746Z
+required_static_contract_private_artifact_version: '0.1'
+required_static_contract_review_artifact_version: '0.1'
+reviewed_static_decisions: reviewed_static_decisions_0_2.yaml
+
+remaining_variables:
+  - target: icu_los
+    kind: numeric
+    proposed_value_type: float64
+    proposed_unit: day
+    proposed_policy: direct_numeric_with_null_missing
+  - target: dialysis_free_days
+    kind: numeric
+    proposed_value_type: float64
+    proposed_unit: day
+    proposed_policy: direct_numeric_with_reviewed_scoped_sentinels
+  - target: vent_free_days
+    kind: numeric
+    proposed_value_type: float64
+    proposed_unit: day
+    proposed_policy: direct_numeric_with_reviewed_scoped_sentinels
+  - target: icd10_codes
+    kind: free_text
+    proposed_value_type: large_string
+    proposed_unit: not_applicable
+    proposed_policy: preserve_exact_nonempty_source_string
+
+scope:
+  allow_static_contract_private_evidence_reads: true
+  allow_review_report_writes: true
+  allow_ingested_data_reads: false
+  allow_raw_data_reads: false
+  allow_value_transforms: false
+  allow_harmonized_artifact_writes: false
+  allow_hospital_concatenation: false
+  allow_registry_approval: false
+  allow_union_schema_approval: false
+
+reporting:
+  review_artifact_version: '0.1'

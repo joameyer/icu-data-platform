@@ -1,0 +1,63 @@
+cleaned_promotion_policy_version: '0.1'
+status: explicitly_approved_for_immutable_cleaned_release
+
+approved_input:
+  cleaning_candidate_run_id: 20260806T114234Z
+  cleaning_audit_run_id: 20260806T114234Z
+  harmonized_release_id: 20260806T111156Z
+  harmonized_contract_version: '0.1'
+  candidate_artifact_version: '0.1'
+  audit_private_artifact_version: '0.1'
+  audit_review_artifact_version: '0.1'
+
+immutable_policy:
+  cleaning_policy: cleaning_policy.yaml
+  cleaning_policy_sha256: d4b8b8ed02bc68208c66e8faa8c506aff8a2f8946f6cca5acaef7ab4f7dd9856
+
+human_approval:
+  role: data_owner
+  recorded_date: '2026-08-06'
+  statement: i approve
+  context: Promotion of cleaned candidate 20260806T114234Z under cleaning policy 0.1, as proposed in the immediately preceding cleaned-candidate audit review.
+
+expected_audit:
+  technical_status: pass
+  overall_status_before_approval: pending_human_review
+  technical_blocking_finding_count: 0
+  human_blocking_finding_count_before_approval: 1
+  human_blocking_check_resolved_by_this_approval: cleaned_candidate_release_approved
+  compared_static_rows: 16054
+  compared_dynamic_rows: 24069379
+  compared_output_cell_count: 3249815677
+  applied_scalar_rule_count: 49
+  unit_unresolved_audit_only_rule_count: 12
+  power_of_ten_correction_count: 838
+  range_mask_count: 542477
+  nonfinite_mask_count: 0
+  height_element_removal_count: 53
+  hospital_mask_count: 99362
+  unit_unresolved_audit_only_outside_range_count: 10021
+  post_clean_range_violation_count: 0
+  post_clean_nonfinite_count: 0
+
+release:
+  release_id: 20260806T114234Z
+  releases_directory: cleaned/releases
+  current_release_pointer: cleaned/current_release.json
+  artifact_version: '0.1'
+  review_directory_name: cleaned_promotion
+
+boundary:
+  copy_audited_parquet_bytes_unchanged: true
+  preserve_candidate_artifacts: true
+  overwrite_existing_release: false
+  overwrite_existing_current_pointer: false
+  rerun_cleaning: false
+  apply_harmonization: false
+  apply_derivation: false
+  filter_rows: false
+  filter_stays: false
+  drop_columns: false
+  authorize_cleaned_layer: true
+  authorize_derived_input: true
+  authorize_external_data_export: false

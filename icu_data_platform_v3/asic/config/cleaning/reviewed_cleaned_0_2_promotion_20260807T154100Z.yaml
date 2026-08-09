@@ -1,0 +1,81 @@
+cleaned_0_2_promotion_policy_version: '0.1'
+status: explicitly_approved_for_immutable_cleaned_0_2_release
+
+approved_input:
+  build_run_id: 20260807T154100Z
+  audit_run_id: 20260807T154100Z
+  harmonized_release_id: 20260807T112402Z
+  harmonized_contract_version: '0.2'
+  cleaning_policy_version: '0.2'
+  candidate_artifact_version: '0.2'
+  audit_private_artifact_version: '0.2'
+  audit_review_artifact_version: '0.2'
+
+immutable_policy:
+  cleaning_0_2_policy: reviewed_cleaning_policy_0_2.yaml
+  cleaning_0_2_policy_sha256: 061c0db1f7a87a5061b358efed246bae0088be0f32db001feb98ba9f4a462ebc
+  cleaning_0_2_audit_policy: cleaning_0_2_audit.yaml
+  cleaning_0_2_audit_policy_sha256: 05762cfe89cf8ffb3e539cee7943952026606607b94585d19031f5b38df74c6a
+
+human_approval:
+  role: data_owner
+  recorded_date: '2026-08-08'
+  statement: >-
+    i approve promotion of cleaned 0.2 candidate 20260807T154100Z under
+    cleaning policy 0.2.
+
+expected_audit:
+  technical_status: pass
+  overall_status_before_approval: pending_human_review
+  technical_blocking_finding_count: 0
+  human_blocking_finding_count_before_approval: 1
+  human_blocking_check_resolved_by_this_approval: cleaned_0_2_candidate_release_approved
+  compared_static_rows: 16054
+  compared_dynamic_rows: 24069379
+  compared_output_cells: 3466440088
+  baseline_scalar_rule_count: 49
+  priority_rule_count: 12
+  medication_variable_count: 34
+  priority_power_of_ten_correction_count: 32
+  priority_mask_count: 9740
+  priority_nonpositive_mask_count: 9647
+  priority_above_upper_mask_count: 93
+  positive_upper_values_preserved: 332
+  negative_medication_mask_count: 201
+  albumin_above_1000_mask_count: 83
+  post_clean_nonfinite_count: 0
+  post_clean_baseline_invalid_count: 0
+  post_clean_priority_invalid_count: 0
+  post_clean_negative_medication_count: 0
+
+previous_current_release:
+  release_id: 20260806T114234Z
+  cleaning_policy_version: '0.1'
+  current_release_pointer: cleaned/current_release.json
+  require_ready_for_derivation: true
+
+release:
+  release_id: 20260807T154100Z
+  releases_directory: cleaned/releases
+  current_release_pointer: cleaned/current_release.json
+  prior_pointer_snapshot_name: previous_current_release.json
+  artifact_version: '0.2'
+  review_directory_name: cleaned_0_2_promotion
+
+boundary:
+  copy_all_audited_candidate_bytes_unchanged: true
+  preserve_candidate_artifacts: true
+  preserve_all_previous_releases: true
+  preserve_previous_current_pointer_bytes_in_new_release: true
+  overwrite_existing_release: false
+  require_exact_previous_current_pointer: true
+  replace_current_pointer_atomically: true
+  rerun_cleaning: false
+  apply_harmonization: false
+  apply_derivation: false
+  filter_rows: false
+  filter_stays: false
+  drop_columns: false
+  authorize_cleaned_layer: true
+  authorize_derived_input: true
+  authorize_external_data_export: false

@@ -1,0 +1,33 @@
+time_blocking_implementation_policy_version: '0.1'
+status: local_implementation_and_tests_only
+
+contract:
+  path: reviewed_8h_contract_0_1.yaml
+  sha256: e6cf3e79e4688292e06260a2b6e29b327bc61d352ba831a5f63021a879ceef6b
+
+execution:
+  allowed_dataset_contexts: [demo]
+  production_candidate_authorized: false
+  production_audit_authorized: false
+  input_rows_per_batch: 2048
+  output_rows_per_batch: 256
+  compression: zstd
+
+outputs:
+  build_private_directory: time_blocking/8h/build
+  build_review_directory: time_blocking/8h/build
+  audit_private_directory: time_blocking/8h/audit
+  audit_review_directory: time_blocking/8h/audit
+  candidate_artifact_version: '0.1'
+  audit_artifact_version: '0.1'
+
+boundary:
+  create_run_scoped_demo_candidate: true
+  overwrite_candidate: false
+  create_or_modify_release: false
+  create_or_modify_current_release_pointer: false
+  modify_core_derived_release: false
+  filter_rows_or_stays: false
+  create_analysis_cohort: false
+  apply_carry_forward_or_imputation: false
+  authorize_external_data_export: false

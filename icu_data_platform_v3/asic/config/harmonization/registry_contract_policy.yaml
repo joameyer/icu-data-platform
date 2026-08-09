@@ -1,0 +1,37 @@
+registry_contract_policy_version: '0.1'
+status: approved_for_synthetic_contract_validation_only
+
+required_schema_token_artifact_version: '0.3'
+required_registry_review_artifact_version: '0.3'
+required_complete_registry_version: '0.1'
+
+allowed_actions:
+  - retain
+  - drop_after_all_missing
+allowed_kinds:
+  - identifier
+  - free_text
+  - categorical
+  - numeric
+  - temporal
+allowed_value_types:
+  - large_string
+  - float64
+  - list_float64
+  - bool
+  - timestamp_ns
+  - fixed_size_list_bool_2
+allowed_merge_policies:
+  - coalesce_disjoint_sources
+  - fail_if_both_nonmissing_and_unequal
+  - binary_or_fail_on_nonbinary
+  - assemble_fixed_position_list
+
+gates:
+  allow_synthetic_schema_planning: true
+  allow_production_registry: false
+  allow_production_reads: false
+  allow_value_transforms: false
+  allow_artifact_writes: false
+  allow_hospital_concatenation: false
+  allow_union_schema_freeze: false

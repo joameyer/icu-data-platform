@@ -1,0 +1,309 @@
+candidate_contract_version: '0.3'
+status: prior_v2_legacy_and_partial_raw_v3_proposals_only
+
+provenance:
+  - frozen_v2_translation_policy_1.3
+  - frozen_v2_translated_contract_1.3
+  - legacy_raw_harmonization_knowledge
+  - reviewed_raw_v3_rules_0.3
+
+# Defaults are candidate representations, not approved harmonized types.
+default_by_kind:
+  identifier:
+    value_type: large_string
+    value_type_status: candidate_requires_raw_v3_review
+    unit: not_applicable
+    unit_status: not_applicable
+  free_text:
+    value_type: large_string
+    value_type_status: candidate_requires_raw_v3_review
+    unit: not_applicable
+    unit_status: not_applicable
+  categorical:
+    value_type: large_string
+    value_type_status: candidate_requires_raw_v3_review
+    unit: not_applicable
+    unit_status: not_applicable
+  numeric:
+    value_type: float64
+    value_type_status: candidate_requires_raw_v3_review
+    unit: unresolved
+    unit_status: unresolved_requires_source_or_cross_hospital_evidence
+  temporal:
+    value_type: large_string
+    value_type_status: unresolved_requires_temporal_parser_review
+    unit: unresolved
+    unit_status: unresolved_requires_source_definition
+
+target_overrides:
+  static:
+    time_since_study_start:
+      value_type: float64
+      value_type_status: human_approved_raw_v3
+      unit: day
+      unit_status: human_approved_raw_v3
+    study_implementation_phase:
+      value_type: large_string
+      value_type_status: human_approved_raw_v3
+      unit: not_applicable
+      unit_status: not_applicable
+    height_measurements_cm:
+      value_type: list_float64
+      value_type_status: human_approved_raw_v3
+      unit: cm
+      unit_status: human_approved_raw_v3
+    height_cm:
+      value_type: float64
+      value_type_status: prior_v2_candidate_requires_raw_v3_review
+      unit: cm
+      unit_status: candidate_requires_raw_v3_review
+    weight_kg:
+      unit: kg
+      unit_status: candidate_requires_raw_v3_review
+    hosp_los:
+      unit: day
+      unit_status: candidate_requires_raw_v3_review
+    icu_los:
+      unit: day
+      unit_status: candidate_requires_raw_v3_review
+    dialysis_free_days:
+      unit: day
+      unit_status: candidate_requires_raw_v3_review
+    vent_free_days:
+      unit: day
+      unit_status: candidate_requires_raw_v3_review
+    hospital_code_source:
+      unit: dimensionless_code
+      unit_status: candidate_requires_raw_v3_review
+    icu_readmit:
+      value_type: bool
+      value_type_status: human_approved_raw_v3
+      unit: not_applicable
+      unit_status: not_applicable
+    hospital_mortality_reported:
+      value_type: bool
+      value_type_status: prior_v2_candidate_requires_raw_v3_review
+      unit: not_applicable
+      unit_status: not_applicable
+
+  dynamic:
+    therapy_read_confirmation_utc:
+      value_type: fixed_size_list_bool_2
+      value_type_status: human_approved_raw_v3
+      unit: not_applicable
+      unit_status: not_applicable
+    minutes_since_icu_admission:
+      value_type: float64
+      value_type_status: prior_v2_candidate_requires_raw_v3_review
+      unit: min
+      unit_status: candidate_requires_raw_v3_review
+    anchored_time_source:
+      value_type: timestamp_ns
+      value_type_status: prior_v2_candidate_requires_raw_v3_review
+      unit: artificial_anchored_timestamp
+      unit_status: candidate_requires_raw_v3_review
+    hospital_code_source:
+      unit: dimensionless_code
+      unit_status: candidate_requires_raw_v3_review
+    heart_rate:
+      unit: beat_per_min
+      unit_status: candidate_requires_raw_v3_review
+    resp_rate:
+      unit: breath_per_min
+      unit_status: candidate_requires_raw_v3_review
+    spont_resp_rate:
+      unit: breath_per_min
+      unit_status: candidate_requires_raw_v3_review
+    core_temp:
+      unit: deg_C
+      unit_status: candidate_requires_raw_v3_review
+    sbp:
+      unit: mmHg
+      unit_status: candidate_requires_raw_v3_review
+    map:
+      unit: mmHg
+      unit_status: candidate_requires_raw_v3_review
+    dbp:
+      unit: mmHg
+      unit_status: candidate_requires_raw_v3_review
+    cvp:
+      unit: mmHg
+      unit_status: candidate_requires_raw_v3_review
+    spap:
+      unit: mmHg
+      unit_status: candidate_requires_raw_v3_review
+    mpap:
+      unit: mmHg
+      unit_status: candidate_requires_raw_v3_review
+    dpap:
+      unit: mmHg
+      unit_status: candidate_requires_raw_v3_review
+    pcwp:
+      unit: mmHg
+      unit_status: candidate_requires_raw_v3_review
+    pao2:
+      unit: mmHg
+      unit_status: candidate_requires_raw_v3_review
+    paco2:
+      unit: mmHg
+      unit_status: candidate_requires_raw_v3_review
+    etco2:
+      unit: mmHg
+      unit_status: candidate_requires_hospital_unit_conversion_review
+    peep:
+      unit: cmH2O
+      unit_status: candidate_requires_raw_v3_review
+    peep_set:
+      unit: cmH2O
+      unit_status: candidate_requires_raw_v3_review
+    insp_pressure:
+      unit: cmH2O
+      unit_status: candidate_requires_raw_v3_review
+    delta_p_computed:
+      unit: cmH2O
+      unit_status: candidate_requires_raw_v3_review
+    delta_p_reported:
+      unit: cmH2O
+      unit_status: candidate_requires_raw_v3_review
+    compliance:
+      unit: mL_per_cmH2O
+      unit_status: candidate_requires_raw_v3_review
+    vt:
+      unit: mL
+      unit_status: candidate_requires_raw_v3_review
+    vt_spontaneous:
+      unit: mL
+      unit_status: candidate_requires_raw_v3_review
+    vt_per_kg:
+      unit: mL_per_kg
+      unit_status: candidate_requires_raw_v3_review
+    vt_per_kg_ideal_body_weight:
+      unit: mL_per_kg
+      unit_status: candidate_requires_hospital_semantic_split_review
+    fio2:
+      unit: fraction
+      unit_status: candidate_requires_percentage_vs_fraction_review
+    fio2_set:
+      unit: fraction
+      unit_status: candidate_requires_percentage_vs_fraction_review
+    feo2:
+      unit: fraction
+      unit_status: candidate_requires_percentage_vs_fraction_review
+    ecmo_o2:
+      unit: fraction
+      unit_status: candidate_requires_percentage_vs_fraction_review
+    spo2:
+      unit: fraction
+      unit_status: candidate_requires_percentage_vs_fraction_review
+    sao2:
+      unit: fraction
+      unit_status: candidate_requires_percentage_vs_fraction_review
+    scvo2:
+      unit: fraction
+      unit_status: candidate_requires_percentage_vs_fraction_review
+    ie_ratio:
+      unit: dimensionless_ratio
+      unit_status: candidate_requires_ratio_direction_review
+    ie_ratio_set:
+      unit: dimensionless_ratio
+      unit_status: candidate_requires_ratio_direction_review
+    pf_ratio:
+      unit: mmHg
+      unit_status: candidate_requires_raw_v3_review
+    fluid_balance_24h:
+      unit: mL
+      unit_status: candidate_requires_raw_v3_review
+    cardiac_output_bolus:
+      unit: L_per_min
+      unit_status: candidate_requires_raw_v3_review
+    cardiac_output_cont:
+      unit: L_per_min
+      unit_status: candidate_requires_raw_v3_review
+    cardiac_index_bolus:
+      unit: L_per_min_per_m2
+      unit_status: candidate_requires_raw_v3_review
+    cardiac_index_cont:
+      unit: L_per_min_per_m2
+      unit_status: candidate_requires_raw_v3_review
+    stroke_volume_bolus:
+      unit: mL
+      unit_status: candidate_requires_raw_v3_review
+    stroke_volume_cont:
+      unit: mL
+      unit_status: candidate_requires_raw_v3_review
+    stroke_index_bolus:
+      unit: mL_per_m2
+      unit_status: candidate_requires_raw_v3_review
+    stroke_index_cont:
+      unit: mL_per_m2
+      unit_status: candidate_requires_raw_v3_review
+    extracorp_blood_flow:
+      unit: L_per_min
+      unit_status: candidate_requires_raw_v3_review
+    extracorp_o2_flow:
+      unit: L_per_min
+      unit_status: candidate_requires_raw_v3_review
+    ph_art:
+      unit: pH
+      unit_status: candidate_requires_raw_v3_review
+
+# These value mappings were reviewed only at the lossy v2 boundary. They are
+# surfaced as raw-v3 candidates and never applied by this review command.
+categorical_value_candidates:
+  static:
+    sex:
+      review_status: frozen_v2_candidate_requires_raw_v3_review
+      normalization: strip_upper
+      values: {M: male, W: female}
+    weight_group:
+      review_status: frozen_v2_candidate_requires_raw_v3_review
+      normalization: strip
+      values: {'<65': '<65', '65-75': '65-75', '76-250': '76-250', '-1': null}
+    bmi_group:
+      review_status: frozen_v2_candidate_requires_raw_v3_review
+      normalization: strip_upper
+      values:
+        {L: underweight, M: normal_weight, P: overweight,
+         '1': obesity_class_1, '2': obesity_class_2, '3': obesity_class_3,
+         X: null, NAN: null}
+    discharge_status:
+      review_status: frozen_v2_candidate_requires_raw_v3_review
+      normalization: strip_lower
+      values: {verlegt: transferred, verstorben: died}
+    death_status:
+      review_status: frozen_v2_candidate_requires_raw_v3_review
+      normalization: strip_upper
+      values: {'0': discharged_alive, ICU: died_in_icu, KH: died_in_hospital, NAN: null}
+    hospital_mortality_reported:
+      review_status: frozen_v2_candidate_requires_raw_v3_review
+      normalization: strip_lower
+      values: {'false': false, 'true': true}
+    icu_readmit:
+      review_status: human_approved_raw_v3_cross_hospital_domain
+      normalization: strip
+      values: {'0': false, '0.0': false, '1': true, '1.0': true}
+    study_implementation_phase:
+      review_status: human_approved_raw_v3_cross_hospital_domain
+      normalization: strip
+      values:
+        {'0': calibration, '0.0': calibration,
+         '1': roll_in, '1.0': roll_in,
+         '2': app_implementation, '2.0': app_implementation}
+  dynamic:
+    therapy_read_confirmation_utc:
+      review_status: human_approved_raw_v3_cross_hospital_domain
+      normalization: integral_binary_numeric
+      values: {'0': false, '1': true}
+
+# Preserved frozen-v2 semantic candidate. This is not a raw-v3 approval and is
+# never applied by the review command.
+semantic_split_candidates:
+  - candidate_id: CANDIDATE-UK00-VT-PBW-TOTAL-001
+    hospital: asic_UK00
+    table: dynamic
+    current_target: vt_per_kg_ideal_body_weight
+    proposed_target: vt_per_ideal_bw_total
+    proposed_value_type: float64
+    proposed_unit: mL
+    status: frozen_v2_candidate_requires_raw_v3_review
+    evidence_reference: frozen_v2_translation_policy_1.3

@@ -1,0 +1,42 @@
+artifact: asic_v3_time_blocking_8h_production_execution_authorization
+artifact_version: '0.1'
+status: human_approved_for_exact_candidate_and_audit_run
+dataset_context: production
+resolution: 8h
+core_derived_release_id: 20260808T074305Z
+
+approval:
+  role: data_owner
+  recorded_date: '2026-08-08'
+  statement: >-
+    The data owner authorizes operator-executed production candidate
+    20260808T130534Z and independent audit 20260808T130534Z, and clarified
+    that the assistant must provide deployment instructions rather than access
+    or execute on the password-protected cluster.
+  authorization_basis:
+    - >-
+      I authorize implementation of the run-scoped ASIC v3 8-hour production
+      candidate and independent audit workflow. Do not run it, promote a
+      release, or modify any pointer.
+    - >-
+      With do not run it, I simply meant do not try to run it on the cluster;
+      if you want to run something, tell me how to deploy it.
+
+lineage:
+  time_blocking_contract_sha256: e6cf3e79e4688292e06260a2b6e29b327bc61d352ba831a5f63021a879ceef6b
+  production_workflow_policy_sha256: 7cd486f54af71c159bdc625bb1e63dbd4883d516130db11fcdeb7fcd7befdcb4
+
+run_scope:
+  candidate_run_id: 20260808T130534Z
+  audit_run_id: 20260808T130534Z
+
+authorized_actions:
+  build_exact_run_scoped_candidate: true
+  run_exact_independent_audit: true
+  promote_release: false
+  modify_current_release_pointer: false
+  modify_core_derived_release: false
+  filter_rows_or_stays: false
+  create_analysis_cohort: false
+  apply_carry_forward_or_imputation: false
+  authorize_external_data_export: false

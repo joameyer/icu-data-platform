@@ -1,0 +1,149 @@
+core_derived_contract_version: '0.1'
+status: approved_for_nonpublishable_derived_candidate_and_complete_audit
+human_approval_recorded_utc: '2026-08-06'
+
+input:
+  cleaned_release_id: 20260806T114234Z
+  expected_static_rows: 16054
+  expected_dynamic_rows: 24069379
+  expected_hospitals:
+    - asic_UK00
+    - asic_UK01
+    - asic_UK02
+    - asic_UK03
+    - asic_UK04
+    - asic_UK06
+    - asic_UK07
+    - asic_UK08
+
+review_evidence:
+  consolidated_derivation_review:
+    generated_at_utc: '2026-08-06T15:27:00+00:00'
+    expected_static_rows: 16054
+    expected_dynamic_rows: 24069379
+    expected_both_driving_pressure_inputs: 6386755
+    expected_supported_timestamps: 8715616
+    expected_nonnegative_episode_count: 53535
+    expected_nonnegative_ge_24h_stays: 12775
+  driving_pressure_semantics_review:
+    run_id: 20260806T161232Z
+    expected_both_input_count: 6386755
+    expected_below_zero_count: 3625
+    expected_above_sixty_count: 11
+    expected_reported_overlap_count: 3231499
+
+recipes:
+  exact_elapsed_hours:
+    input: minutes_since_icu_admission
+    output: hours_since_icu_admission
+    formula: minutes_since_icu_admission_divided_by_60
+    output_type: float64
+    output_unit: h
+    preserve_negative_values: true
+    preserve_input: true
+
+  computed_driving_pressure:
+    inspiratory_pressure_input: insp_pressure
+    peep_input: peep
+    reported_comparison: delta_p_reported
+    output: delta_p_computed
+    validity_flag: delta_p_computed_out_of_range
+    formula: end_inspiratory_pressure_minus_peep
+    source_definition: ASIC_study_protocol
+    applies_to_all_hospitals: true
+    output_type: float64
+    output_unit: cmH2O
+    valid_minimum: 0
+    valid_maximum: 60
+    missing_input_action: output_and_flag_missing
+    out_of_range_action: output_missing_flag_true
+    in_range_action: retain_output_flag_false
+    preserve_reported_and_inputs: true
+
+  mortality:
+    detailed_status_input: death_status
+    reported_hospital_input: hospital_mortality_reported
+    discharge_status_input: discharge_status
+    hospital_output: hospital_mortality
+    icu_output: icu_mortality
+    hospital_conflict_output: hospital_mortality_source_conflict
+    icu_conflict_output: icu_mortality_source_conflict
+    detailed_status_implications:
+      discharged_alive: {hospital_mortality: false, icu_mortality: false}
+      died_in_icu: {hospital_mortality: true, icu_mortality: true}
+      died_in_hospital: {hospital_mortality: true, icu_mortality: false}
+    reported_hospital_implications:
+      'false': {hospital_mortality: false, icu_mortality: false}
+      'true': {hospital_mortality: true, icu_mortality: null}
+    discharge_status_implications:
+      transferred: {hospital_mortality: false, icu_mortality: false}
+      died: {hospital_mortality: true, icu_mortality: null}
+    no_evidence_action: output_missing_conflict_false
+    agreeing_evidence_action: output_agreed_value_conflict_false
+    conflicting_evidence_action: output_missing_conflict_true
+    preserve_all_source_fields: true
+
+  observed_ventilation_support:
+    time_input: minutes_since_icu_admission
+    marker_inputs: [fio2, peep, vt, vt_per_kg_ideal_body_weight]
+    timestamp_supported_when: any_marker_non_missing
+    maximum_continuity_gap_hours: 8
+    gap_is_inclusive: true
+    minimum_episode_duration_hours: 24
+    duration_is_inclusive: true
+    sort_supported_timestamps_within_stay: true
+    episode_window: nonnegative_minutes_since_icu_admission
+    supported_timestamp_count_window: all_elapsed_times
+    preserve_negative_time_source_rows: true
+    claim_ground_truth_ventilation: false
+    filter_stays_or_rows: false
+    static_outputs:
+      - {name: ventilation_supported_timestamp_count, physical_type: int64, unit: count}
+      - {name: ventilation_episode_count, physical_type: int32, unit: count}
+      - {name: maximum_observed_ventilation_episode_hours, physical_type: float64, unit: h}
+      - {name: observed_mechanical_ventilation_ge_24h, physical_type: bool, unit: not_applicable}
+      - {name: icu_recording_extent_hours, physical_type: float64, unit: h}
+
+expected_output_evidence:
+  hours_non_missing_count: 24069379
+  hours_negative_count: 247977
+  driving_pressure_in_range_count: 6383119
+  driving_pressure_out_of_range_count: 3636
+  hospital_mortality: {'false': 9757, 'true': 4726, missing: 1571, conflicts: 0}
+  icu_mortality: {'false': 10457, 'true': 2146, missing: 3451, conflicts: 0}
+  ventilation_supported_timestamp_count_total: 8715616
+  ventilation_episode_count_total: 53535
+  observed_mechanical_ventilation_ge_24h_true: 12775
+
+separations:
+  preserve_reported_and_computed_driving_pressure_separately: true
+  preserve_sofa_and_isofa_variants_without_recomputation_or_coalescence: true
+  ventilation_proxy_is_not_a_cohort_filter_or_ground_truth_label: true
+  defer_time_blocking: true
+  defer_analysis_specific_cohorts: true
+
+streaming:
+  rows_per_batch: 50000
+  parquet_compression: zstd
+  require_contiguous_dynamic_stays: true
+
+outputs:
+  candidate_directory_name: derived_candidates
+  candidate_artifact_version: '0.1'
+  build_review_directory_name: derived_build
+  audit_private_directory_name: derived_audit
+  audit_review_directory_name: derived_audit
+  audit_private_artifact_version: '0.1'
+  audit_review_artifact_version: '0.1'
+
+boundary:
+  read_released_cleaned_data: true
+  modify_cleaned_release: false
+  overwrite_outputs: false
+  preserve_all_input_rows_and_columns: true
+  filter_rows_or_stays: false
+  calculate_or_coalesce_sofa_or_isofa: false
+  create_time_blocks: false
+  create_analysis_cohort: false
+  publish_derived_release: false
+  authorize_external_data_export: false

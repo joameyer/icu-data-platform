@@ -1,0 +1,250 @@
+reviewed_unit_decisions_version: '0.2'
+status: approved_unit_and_semantic_split_decisions_pending_schema_freeze
+
+lineage:
+  base_candidate: candidate_unit_decisions_0_2.yaml
+  base_candidate_sha256: ad7c032e84aaf70225b45619e3c53a35294387fc08d04c40c5707d78d2b45109
+  unit_decision_audit_run_id: 20260807T083117Z
+  unit_decision_audit_artifact_version: '0.2'
+  input_cleaned_release_id: 20260806T114234Z
+  audit_generated_at_utc: '2026-08-07T08:32:51+00:00'
+
+human_decision:
+  decision_date: '2026-08-07'
+  decision: >-
+    Approve the nine audited hospital unit conversions and replace all nine
+    proposed cleaning masks with harmonization-stage semantic splits that
+    preserve every source value.
+  approval_record: >-
+    The data owner agreed to the proposed parallel-variable strategy and
+    instructed the implementation to continue.
+
+approved_harmonization_action_ids:
+  - UK08-ALBUMIN-MG-L-TO-DG-L
+  - UK03-D-DIMER-UG-ML-TO-NG-ML
+  - UK08-D-DIMER-UG-ML-TO-NG-ML
+  - UK03-TROPONIN-NG-L-TO-NG-ML
+  - UK08-UREA-BUN-MG-DL-TO-MMOL-L
+  - UK08-ISOFLURANE-HUNDREDTHS-TO-VOL-PERCENT
+  - UK03-FUROSEMIDE-MG-DAY-TO-MG-H
+  - UK08-VASOPRESSIN-IU-H-TO-IU-MIN
+  - UK00-VASOPRESSIN-IU-KG-MIN-TO-IU-MIN
+
+# These rules route one hospital's source representation into a parallel
+# harmonized variable. The ordinary canonical variable is unavailable for that
+# hospital rather than populated with a value having a different definition.
+# No value is removed in cleaning.
+semantic_splits:
+  - decision_id: UK08-CLONIDINE-WEIGHT-NORMALIZED-SPLIT
+    evidence_decision_id: UK08-CLONIDINE-UNRECOVERABLE-NORMALIZATION
+    hospital: asic_UK08
+    source_variable: clonidine_iv_cont
+    canonical_variable: clonidine_iv_cont
+    target_variable: clonidine_iv_cont_weight_normalized
+    description: Continuous intravenous clonidine dose rate normalized by body weight
+    target_value_type: float64
+    target_unit: ug_per_kg_per_h
+    target_display_unit: µg/kg/h
+    analysis_eligibility: eligible
+    confidence: moderate
+    evidence_basis: clinical_convention_and_complete_cross_hospital_distribution
+
+  - decision_id: UK03-EPINEPHRINE-ABSOLUTE-SPLIT
+    evidence_decision_id: UK03-EPINEPHRINE-UNRECOVERABLE-NORMALIZATION
+    hospital: asic_UK03
+    source_variable: epinephrine_iv_cont
+    canonical_variable: epinephrine_iv_cont
+    target_variable: epinephrine_iv_cont_absolute
+    description: Continuous intravenous epinephrine absolute dose rate
+    target_value_type: float64
+    target_unit: ug_per_min
+    target_display_unit: µg/min
+    analysis_eligibility: eligible
+    confidence: moderate
+    evidence_basis: clinical_convention_and_complete_cross_hospital_distribution
+
+  - decision_id: UK08-HYDROCORTISONE-SOURCE-PRESERVATION-SPLIT
+    evidence_decision_id: UK08-HYDROCORTISONE-UNRECOVERABLE-DEFINITION
+    hospital: asic_UK08
+    source_variable: hydrocortisone_iv_bolus
+    canonical_variable: hydrocortisone_iv_bolus
+    target_variable: hydrocortisone_iv_bolus_source_uk08
+    description: UK08 hydrocortisone bolus source-scale value with unresolved definition
+    target_value_type: float64
+    target_unit: unresolved_source_scale
+    target_display_unit: source scale unresolved
+    analysis_eligibility: ineligible_pending_definition
+    confidence: unresolved
+    evidence_basis: complete_distribution_does_not_identify_unique_definition
+
+  - decision_id: UK08-KETANEST-WEIGHT-NORMALIZED-SPLIT
+    evidence_decision_id: UK08-KETANEST-UNRECOVERABLE-NORMALIZATION
+    hospital: asic_UK08
+    source_variable: ketanest_iv_cont
+    canonical_variable: ketanest_iv_cont
+    target_variable: ketanest_iv_cont_weight_normalized
+    description: Continuous intravenous ketanest dose rate normalized by body weight
+    target_value_type: float64
+    target_unit: mg_per_kg_per_h
+    target_display_unit: mg/kg/h
+    analysis_eligibility: eligible
+    confidence: moderate
+    evidence_basis: clinical_convention_and_complete_cross_hospital_distribution
+
+  - decision_id: UK08-MORPHINE-WEIGHT-NORMALIZED-SPLIT
+    evidence_decision_id: UK08-MORPHINE-UNRECOVERABLE-NORMALIZATION
+    hospital: asic_UK08
+    source_variable: morphine_iv_cont
+    canonical_variable: morphine_iv_cont
+    target_variable: morphine_iv_cont_weight_normalized
+    description: Continuous intravenous morphine dose rate normalized by body weight
+    target_value_type: float64
+    target_unit: ug_per_kg_per_h
+    target_display_unit: µg/kg/h
+    analysis_eligibility: eligible
+    confidence: moderate
+    evidence_basis: clinical_convention_and_complete_cross_hospital_distribution
+
+  - decision_id: UK03-NOREPINEPHRINE-ABSOLUTE-SPLIT
+    evidence_decision_id: UK03-NOREPINEPHRINE-UNRECOVERABLE-NORMALIZATION
+    hospital: asic_UK03
+    source_variable: norepinephrine_iv_cont
+    canonical_variable: norepinephrine_iv_cont
+    target_variable: norepinephrine_iv_cont_absolute
+    description: Continuous intravenous norepinephrine absolute dose rate
+    target_value_type: float64
+    target_unit: ug_per_min
+    target_display_unit: µg/min
+    analysis_eligibility: eligible
+    confidence: moderate
+    evidence_basis: clinical_convention_and_complete_cross_hospital_distribution
+
+  - decision_id: UK02-PREDNISOLONE-SOURCE-PRESERVATION-SPLIT
+    evidence_decision_id: UK02-PREDNISOLONE-UNRECOVERABLE-NORMALIZATION
+    hospital: asic_UK02
+    source_variable: prednisolone_iv_bolus
+    canonical_variable: prednisolone_iv_bolus
+    target_variable: prednisolone_iv_bolus_source_uk02
+    description: UK02 prednisolone bolus source-scale value with unresolved definition
+    target_value_type: float64
+    target_unit: unresolved_source_scale
+    target_display_unit: source scale unresolved
+    analysis_eligibility: ineligible_pending_definition
+    confidence: unresolved
+    evidence_basis: complete_distribution_does_not_support_weight_normalization_or_unique_scale_conversion
+
+  - decision_id: UK08-PROPOFOL-WEIGHT-NORMALIZED-SPLIT
+    evidence_decision_id: UK08-PROPOFOL-UNRECOVERABLE-NORMALIZATION
+    hospital: asic_UK08
+    source_variable: propofol_iv_cont
+    canonical_variable: propofol_iv_cont
+    target_variable: propofol_iv_cont_weight_normalized
+    description: Continuous intravenous propofol dose rate normalized by body weight
+    target_value_type: float64
+    target_unit: mg_per_kg_per_h
+    target_display_unit: mg/kg/h
+    analysis_eligibility: eligible
+    confidence: moderate
+    evidence_basis: clinical_convention_and_complete_cross_hospital_distribution
+
+  - decision_id: UK00-SUFENTANIL-SOURCE-PRESERVATION-SPLIT
+    evidence_decision_id: UK00-SUFENTANIL-UNRECOVERABLE-NORMALIZATION
+    hospital: asic_UK00
+    source_variable: sufentanil_iv_cont
+    canonical_variable: sufentanil_iv_cont
+    target_variable: sufentanil_iv_cont_source_uk00
+    description: UK00 sufentanil infusion source-scale value with unresolved normalization
+    target_value_type: float64
+    target_unit: unresolved_source_scale
+    target_display_unit: source scale unresolved
+    analysis_eligibility: ineligible_pending_definition
+    confidence: unresolved
+    evidence_basis: complete_distribution_does_not_identify_mass_weight_and_time_denominators
+
+semantic_split_execution_contract:
+  route_source_value_unchanged_to_parallel_target: true
+  canonical_variable_missing_for_split_hospital: true
+  preserve_zero_values: true
+  preserve_null_values_as_null: true
+  cleaning_mask_split_source_values: false
+  retain_parallel_variables_in_cleaned_layer: true
+  allow_automatic_coalescence_between_representations: false
+  allow_automatic_weight_conversion_without_observed_weight: false
+  require_source_to_target_provenance: true
+
+# This scope includes medication dose/rate fields and closely related inhaled
+# therapy exposure fields. The distinction is intentionally about observation,
+# not a claim that an explicit zero proves a medication was stopped.
+medication_value_semantics:
+  decision_date: '2026-08-07'
+  approval_record: >-
+    The data owner approved preserving explicit numeric zero separately from
+    missing and requested a complete aggregate audit before contract 0.2 is
+    frozen.
+  medication_or_therapy_variables:
+    - clonidine_iv_cont
+    - dexamethasone_iv_bolus
+    - dexmedetomidine_iv_cont
+    - dobutamine_iv_cont
+    - epinephrine_iv_cont
+    - fentanyl_iv_cont
+    - fludrocortisone_po_bolus
+    - furosemide_iv_cont
+    - hydrocortisone_iv_bolus
+    - inhaled_iloprost
+    - inhaled_no
+    - isoflurane_inh
+    - ketanest_iv_cont
+    - levosimendan_iv_cont
+    - midazolam_iv_cont
+    - milrinone_iv_cont
+    - morphine_iv_cont
+    - norepinephrine_iv_cont
+    - prednisolone_iv_bolus
+    - propofol_iv_cont
+    - rocuronium_iv_bolus
+    - sevoflurane_inh
+    - sufentanil_iv_cont
+    - terlipressin_iv_bolus
+    - vasopressin_iv_cont
+  explicit_numeric_zero: preserve_as_observed_zero
+  empty_or_approved_missing_token: preserve_as_null
+  hospital_variable_without_observed_values: preserve_as_null_not_zero
+  missing_cell_in_partially_observed_hospital_variable: preserve_as_null_not_zero
+  null_to_zero_imputation: prohibited
+  zero_to_null_conversion: prohibited
+  null_implies_medication_inactive: false
+  harmonization_conversions_preserve_zero_and_null_independently: true
+  semantic_splits_preserve_zero_and_null_independently: true
+  continuous_infusion_active_candidate: value_greater_than_zero
+  bolus_administration_candidate: value_greater_than_zero
+  carry_forward_or_interval_imputation: requires_separate_reviewed_contract
+
+superseded_cleaning_mask_decision_ids:
+  - UK08-CLONIDINE-UNRECOVERABLE-NORMALIZATION
+  - UK03-EPINEPHRINE-UNRECOVERABLE-NORMALIZATION
+  - UK08-HYDROCORTISONE-UNRECOVERABLE-DEFINITION
+  - UK08-KETANEST-UNRECOVERABLE-NORMALIZATION
+  - UK08-MORPHINE-UNRECOVERABLE-NORMALIZATION
+  - UK03-NOREPINEPHRINE-UNRECOVERABLE-NORMALIZATION
+  - UK02-PREDNISOLONE-UNRECOVERABLE-NORMALIZATION
+  - UK08-PROPOFOL-UNRECOVERABLE-NORMALIZATION
+  - UK00-SUFENTANIL-UNRECOVERABLE-NORMALIZATION
+
+priority_cleaning_range_decisions:
+  status: pending_separate_cleaning_policy_0_2_review
+  activated_by_this_contract: false
+  reviewed_legacy_finding_count: 10021
+
+boundary:
+  authorize_unit_and_semantic_split_schema_planning: true
+  authorize_harmonized_schema_dictionary_freeze: false
+  authorize_clinical_data_build: false
+  authorize_cleaning_policy_0_2: false
+  modify_existing_harmonized_release: false
+  modify_existing_cleaned_release: false
+  modify_existing_derived_release: false
+  write_clinical_data: false
+  filter_rows_or_stays: false
+  drop_source_values: false
+  authorize_external_data_export: false

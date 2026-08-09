@@ -1,0 +1,17 @@
+bootstrap_policy_version: '0.1'
+status: partial_reviewed_rules_only_not_production_ready
+
+schema_token_policy: ../schema_tokens/policy.yaml
+
+gates:
+  production_execution_enabled: false
+  complete_harmonization_registry: false
+  union_schema_status: not_approved
+  variable_dictionary_status: not_approved
+
+scope:
+  allow_synthetic_batch_transforms: true
+  allow_production_reads: false
+  allow_artifact_writes: false
+  allow_hospital_concatenation: false
+

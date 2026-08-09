@@ -1,0 +1,169 @@
+unit_resolution_decisions_version: '0.2-candidate.1'
+status: complete_candidate_pending_data_owner_approval
+
+evidence:
+  unit_resolution_audit_run_id: 20260807T065722Z
+  input_harmonized_contract_version: '0.1'
+  input_cleaned_release_id: 20260806T114234Z
+  prior_analysis_configuration:
+    original_path: /Users/joanameyer/repository/phase-aware-icu-mortality-prediction/config/variable_configuration.csv
+    sha256: a116d58c09299e27670afd33b3989c4c5f7253987bc3ab44a9383b98d018d3e7
+    runtime_dependency: false
+    copied_decisions_only: true
+  data_owner_confirmed_groups:
+    - all_sofa_and_isofa_fields_are_dimensionless_score_points
+    - arterial_blood_gas_units
+    - advanced_hemodynamic_units
+
+provenance_statement:
+  hospital_unit_dictionary_was_provided: false
+  units_are_team_derived: true
+  derivation_basis:
+    - prior_asic_analysis_configuration
+    - canonical_variable_definition
+    - clinical_domain_knowledge
+    - complete_aggregate_raw_v3_distributions
+    - cross_hospital_scale_evidence
+  mandatory_dictionary_note: >-
+    ASIC source hospitals did not provide a complete unit dictionary. Units in
+    this contract were assigned by the data owner and pipeline team from prior
+    analysis configuration, variable definitions, clinical convention, and
+    aggregate cross-hospital evidence. Hospital-specific conversions and masks
+    are therefore explicit reviewed assumptions rather than hospital-supplied
+    metadata.
+
+activation_boundary:
+  candidate_only: true
+  human_approval_required: true
+  modify_existing_harmonized_release: false
+  modify_existing_cleaned_release: false
+  modify_existing_derived_release: false
+  requires_new_harmonized_contract_version: '0.2'
+  requires_new_cleaning_policy_version: '0.2'
+  requires_complete_rebuild_and_audit: true
+
+# Machine-readable unit names use ASCII. display_unit is the human-facing
+# representation for the variable dictionary.
+variables:
+  albumin: {description: "Albumin concentration", unit: dg_per_L, display_unit: "dg/L", eligibility: eligible, evidence_basis: prior_analysis_configuration_and_v3_scale_evidence, confidence: high}
+  alt: {description: "Alanine aminotransferase (ALT/GPT)", unit: U_per_L, display_unit: "U/L", eligibility: eligible, evidence_basis: clinical_convention_and_v3_distribution, confidence: high}
+  amylase: {description: "Amylase activity", unit: U_per_L, display_unit: "U/L", eligibility: eligible, evidence_basis: clinical_convention_and_v3_distribution, confidence: high}
+  ast: {description: "Aspartate aminotransferase (AST/GOT)", unit: U_per_L, display_unit: "U/L", eligibility: eligible, evidence_basis: prior_analysis_configuration, confidence: high}
+  base_excess_art: {description: "Arterial base excess", unit: mmol_per_L, display_unit: "mmol/L", eligibility: eligible, evidence_basis: data_owner_confirmed, confidence: high}
+  bicarbonate_art: {description: "Arterial bicarbonate concentration", unit: mmol_per_L, display_unit: "mmol/L", eligibility: eligible, evidence_basis: data_owner_confirmed, confidence: high}
+  bilirubin_total: {description: "Total bilirubin concentration", unit: umol_per_L, display_unit: "µmol/L", eligibility: eligible, evidence_basis: prior_analysis_configuration, confidence: high}
+  bnp: {description: "B-type natriuretic peptide concentration", unit: pg_per_mL, display_unit: "pg/mL", eligibility: eligible, evidence_basis: clinical_convention_and_v3_distribution, confidence: moderate}
+  ck: {description: "Creatine kinase activity", unit: U_per_L, display_unit: "U/L", eligibility: eligible, evidence_basis: prior_analysis_configuration, confidence: high}
+  ck_mb: {description: "Creatine kinase MB activity", unit: U_per_L, display_unit: "U/L", eligibility: eligible, evidence_basis: clinical_convention_and_v3_distribution, confidence: moderate}
+  clonidine_iv_cont: {description: "Continuous intravenous clonidine dose rate", unit: mg_per_h, display_unit: "mg/h", eligibility: eligible, evidence_basis: clinical_convention_and_peer_hospital_distribution, confidence: moderate}
+  creatinine: {description: "Creatinine concentration", unit: umol_per_L, display_unit: "µmol/L", eligibility: eligible, evidence_basis: prior_analysis_configuration, confidence: high}
+  crp: {description: "C-reactive protein concentration", unit: nmol_per_L, display_unit: "nmol/L", eligibility: eligible, evidence_basis: clinical_convention_and_v3_distribution, confidence: moderate}
+  d_dimer: {description: "D-dimer concentration in source-reported assay scale", unit: ng_per_mL, display_unit: "ng/mL", eligibility: eligible, evidence_basis: clinical_convention_and_cross_hospital_scale_evidence, confidence: moderate, caveat: "FEU versus DDU was not supplied by the hospitals and remains an assay caveat."}
+  dexamethasone_iv_bolus: {description: "Intravenous dexamethasone bolus dose", unit: mg, display_unit: "mg", eligibility: eligible, evidence_basis: clinical_convention_and_v3_distribution, confidence: high}
+  dexmedetomidine_iv_cont: {description: "Continuous intravenous dexmedetomidine dose rate", unit: ug_per_kg_per_h, display_unit: "µg/kg/h", eligibility: eligible, evidence_basis: clinical_convention_and_v3_distribution, confidence: high}
+  dobutamine_iv_cont: {description: "Continuous intravenous dobutamine dose rate", unit: ug_per_kg_per_min, display_unit: "µg/kg/min", eligibility: eligible, evidence_basis: clinical_convention_and_v3_distribution, confidence: high}
+  epinephrine_iv_cont: {description: "Continuous intravenous epinephrine dose rate", unit: ug_per_kg_per_min, display_unit: "µg/kg/min", eligibility: eligible, evidence_basis: clinical_convention_and_peer_hospital_distribution, confidence: high}
+  evlwi: {description: "Extravascular lung water index", unit: mL_per_kg, display_unit: "mL/kg", eligibility: eligible, evidence_basis: data_owner_confirmed, confidence: high}
+  fentanyl_iv_cont: {description: "Continuous intravenous fentanyl dose rate", unit: ug_per_kg_per_h, display_unit: "µg/kg/h", eligibility: eligible, evidence_basis: clinical_convention_and_single_hospital_distribution, confidence: moderate}
+  fludrocortisone_po_bolus: {description: "Oral fludrocortisone bolus dose", unit: mg, display_unit: "mg", eligibility: eligible, evidence_basis: clinical_convention_and_v3_distribution, confidence: high}
+  furosemide_iv_cont: {description: "Continuous intravenous furosemide dose rate", unit: mg_per_h, display_unit: "mg/h", eligibility: eligible, evidence_basis: clinical_convention_and_peer_hospital_distribution, confidence: moderate}
+  gedvi: {description: "Global end-diastolic volume index", unit: mL_per_m2, display_unit: "mL/m²", eligibility: eligible, evidence_basis: data_owner_confirmed, confidence: high}
+  hemoglobin: {description: "Hemoglobin concentration", unit: mmol_per_L, display_unit: "mmol/L", eligibility: eligible, evidence_basis: prior_analysis_configuration, confidence: high}
+  hydrocortisone_iv_bolus: {description: "Intravenous hydrocortisone bolus dose", unit: mg, display_unit: "mg", eligibility: eligible, evidence_basis: clinical_convention_and_peer_hospital_distribution, confidence: high}
+  il6: {description: "Interleukin-6 concentration", unit: pg_per_mL, display_unit: "pg/mL", eligibility: eligible, evidence_basis: clinical_convention_and_v3_distribution, confidence: moderate}
+  inhaled_iloprost: {description: "Inhaled iloprost dose", unit: ng_per_administration, display_unit: "ng/administration", eligibility: eligible, evidence_basis: clinical_convention_and_single_hospital_distribution, confidence: moderate}
+  inhaled_no: {description: "Inhaled nitric oxide concentration", unit: ppm, display_unit: "ppm", eligibility: eligible, evidence_basis: clinical_convention_and_v3_distribution, confidence: high}
+  inr: {description: "International normalized ratio", unit: dimensionless_ratio, display_unit: "dimensionless ratio", eligibility: eligible, evidence_basis: prior_analysis_configuration_and_data_owner_confirmation, confidence: high}
+  isofa_cardiovascular: {description: "iSOFA cardiovascular component", unit: score_point, display_unit: "score points", eligibility: eligible, evidence_basis: data_owner_confirmed, confidence: high}
+  isofa_cns: {description: "iSOFA central nervous system component", unit: score_point, display_unit: "score points", eligibility: eligible, evidence_basis: data_owner_confirmed, confidence: high}
+  isofa_liver: {description: "iSOFA liver component", unit: score_point, display_unit: "score points", eligibility: eligible, evidence_basis: data_owner_confirmed, confidence: high}
+  isofa_renal: {description: "iSOFA renal component", unit: score_point, display_unit: "score points", eligibility: eligible, evidence_basis: data_owner_confirmed, confidence: high}
+  isofa_respiratory: {description: "iSOFA respiratory component", unit: score_point, display_unit: "score points", eligibility: eligible, evidence_basis: data_owner_confirmed, confidence: high}
+  isofa_thrombocyte: {description: "iSOFA thrombocyte component", unit: score_point, display_unit: "score points", eligibility: eligible, evidence_basis: data_owner_confirmed, confidence: high}
+  isofa_total_score: {description: "Total iSOFA score", unit: score_point, display_unit: "score points", eligibility: eligible, evidence_basis: data_owner_confirmed, confidence: high}
+  isoflurane_inh: {description: "Inhaled isoflurane concentration", unit: volume_percent, display_unit: "vol%", eligibility: eligible, evidence_basis: clinical_convention_and_cross_hospital_scale_evidence, confidence: moderate}
+  ketanest_iv_cont: {description: "Continuous intravenous S-ketamine dose rate", unit: mg_per_h, display_unit: "mg/h", eligibility: eligible, evidence_basis: clinical_convention_and_peer_hospital_distribution, confidence: moderate}
+  lactate_art: {description: "Arterial lactate concentration", unit: mmol_per_L, display_unit: "mmol/L", eligibility: eligible, evidence_basis: prior_analysis_configuration_and_data_owner_confirmation, confidence: high}
+  ldh: {description: "Lactate dehydrogenase activity", unit: U_per_L, display_unit: "U/L", eligibility: eligible, evidence_basis: prior_analysis_configuration, confidence: high}
+  levosimendan_iv_cont: {description: "Continuous intravenous levosimendan dose rate", unit: ug_per_kg_per_min, display_unit: "µg/kg/min", eligibility: eligible, evidence_basis: clinical_convention_and_v3_distribution, confidence: high}
+  lipase: {description: "Lipase activity", unit: U_per_L, display_unit: "U/L", eligibility: eligible, evidence_basis: prior_analysis_configuration, confidence: high}
+  lymph_abs: {description: "Absolute lymphocyte count", unit: 10e9_per_L, display_unit: "10^9/L", eligibility: eligible, evidence_basis: clinical_convention_and_v3_distribution, confidence: high}
+  midazolam_iv_cont: {description: "Continuous intravenous midazolam dose rate", unit: mg_per_h, display_unit: "mg/h", eligibility: eligible, evidence_basis: clinical_convention_and_v3_distribution, confidence: high}
+  milrinone_iv_cont: {description: "Continuous intravenous milrinone dose rate", unit: ug_per_kg_per_min, display_unit: "µg/kg/min", eligibility: eligible, evidence_basis: clinical_convention_and_v3_distribution, confidence: high}
+  morphine_iv_cont: {description: "Continuous intravenous morphine dose rate", unit: mg_per_h, display_unit: "mg/h", eligibility: eligible, evidence_basis: clinical_convention_and_peer_hospital_distribution, confidence: moderate}
+  norepinephrine_iv_cont: {description: "Continuous intravenous norepinephrine dose rate", unit: ug_per_kg_per_min, display_unit: "µg/kg/min", eligibility: eligible, evidence_basis: clinical_convention_and_peer_hospital_distribution, confidence: high}
+  ntprobnp: {description: "N-terminal pro-B-type natriuretic peptide concentration", unit: pg_per_mL, display_unit: "pg/mL", eligibility: eligible, evidence_basis: clinical_convention_and_v3_distribution, confidence: moderate}
+  pct: {description: "Procalcitonin concentration", unit: ng_per_mL, display_unit: "ng/mL", eligibility: eligible, evidence_basis: clinical_convention_and_v3_distribution, confidence: high}
+  platelets: {description: "Platelet count", unit: 10e9_per_L, display_unit: "10^9/L", eligibility: eligible, evidence_basis: prior_analysis_configuration, confidence: high}
+  prednisolone_iv_bolus: {description: "Intravenous prednisolone bolus dose", unit: mg, display_unit: "mg", eligibility: eligible, evidence_basis: clinical_convention_and_peer_hospital_distribution, confidence: moderate}
+  propofol_iv_cont: {description: "Continuous intravenous propofol dose rate", unit: mg_per_h, display_unit: "mg/h", eligibility: eligible, evidence_basis: clinical_convention_and_peer_hospital_distribution, confidence: high}
+  ptt: {description: "Activated partial thromboplastin time", unit: s, display_unit: "s", eligibility: eligible, evidence_basis: data_owner_confirmed_and_v3_distribution, confidence: high}
+  pvri: {description: "Pulmonary vascular resistance index", unit: dyn_s_cm5_m2, display_unit: "dyn·s·cm⁻⁵·m²", eligibility: eligible, evidence_basis: data_owner_confirmed, confidence: high, caveat: "The v3 source is extremely sparse, but missingness does not change its unit."}
+  rocuronium_iv_bolus: {description: "Intravenous rocuronium bolus dose", unit: mg, display_unit: "mg", eligibility: eligible, evidence_basis: clinical_convention_and_v3_distribution, confidence: high}
+  sevoflurane_inh: {description: "Inhaled sevoflurane concentration", unit: volume_percent, display_unit: "vol%", eligibility: eligible, evidence_basis: clinical_convention_and_sparse_v3_distribution, confidence: moderate}
+  sofa_blood: {description: "SOFA coagulation/thrombocyte component", unit: score_point, display_unit: "score points", eligibility: eligible, evidence_basis: data_owner_confirmed, confidence: high}
+  sofa_cns: {description: "SOFA central nervous system component", unit: score_point, display_unit: "score points", eligibility: eligible, evidence_basis: data_owner_confirmed, confidence: high}
+  sofa_liver: {description: "SOFA liver component", unit: score_point, display_unit: "score points", eligibility: eligible, evidence_basis: data_owner_confirmed, confidence: high}
+  sofa_renal: {description: "SOFA renal component", unit: score_point, display_unit: "score points", eligibility: eligible, evidence_basis: data_owner_confirmed, confidence: high}
+  sofa_respiratory: {description: "Reported SOFA respiratory component", unit: score_point, display_unit: "score points", eligibility: eligible, evidence_basis: data_owner_confirmed, confidence: high}
+  sofa_respiratory_calculated: {description: "Calculated SOFA respiratory component", unit: score_point, display_unit: "score points", eligibility: eligible, evidence_basis: data_owner_confirmed, confidence: high}
+  sofa_score_unspecified: {description: "SOFA score with source-unspecified variant", unit: score_point, display_unit: "score points", eligibility: eligible, evidence_basis: data_owner_confirmed, confidence: high, caveat: "The unit is resolved; the source variant remains explicitly identified by the variable name."}
+  sofa_score_without_gcs: {description: "SOFA score excluding the GCS component", unit: score_point, display_unit: "score points", eligibility: eligible, evidence_basis: data_owner_confirmed, confidence: high, caveat: "The current production column is all missing; availability does not alter its unit or eligibility."}
+  sofa_total_score: {description: "Total SOFA score", unit: score_point, display_unit: "score points", eligibility: eligible, evidence_basis: data_owner_confirmed, confidence: high}
+  sufentanil_iv_cont: {description: "Continuous intravenous sufentanil dose rate", unit: ug_per_h, display_unit: "µg/h", eligibility: eligible, evidence_basis: clinical_convention_and_peer_hospital_distribution, confidence: moderate}
+  svri: {description: "Systemic vascular resistance index", unit: dyn_s_cm5_m2, display_unit: "dyn·s·cm⁻⁵·m²", eligibility: eligible, evidence_basis: data_owner_confirmed, confidence: high}
+  terlipressin_iv_bolus: {description: "Intravenous terlipressin bolus dose", unit: mg, display_unit: "mg", eligibility: eligible, evidence_basis: clinical_convention_and_v3_distribution, confidence: high}
+  troponin: {description: "Troponin concentration; assay subtype not supplied", unit: ng_per_mL, display_unit: "ng/mL", eligibility: eligible, evidence_basis: clinical_convention_and_cross_hospital_scale_evidence, confidence: moderate}
+  urea: {description: "Urea concentration", unit: mmol_per_L, display_unit: "mmol/L", eligibility: eligible, evidence_basis: prior_analysis_configuration_and_cross_hospital_scale_evidence, confidence: high}
+  vasopressin_iv_cont: {description: "Continuous intravenous vasopressin dose rate", unit: IU_per_min, display_unit: "IU/min", eligibility: eligible, evidence_basis: clinical_convention_and_cross_hospital_scale_evidence, confidence: moderate}
+  wbc: {description: "White blood cell count", unit: 10e9_per_L, display_unit: "10^9/L", eligibility: eligible, evidence_basis: prior_analysis_configuration, confidence: high}
+
+# These are proposed harmonization actions. They are not executable until the
+# complete candidate and its row-level audit have been explicitly approved.
+hospital_harmonization_actions:
+  - {decision_id: UK08-ALBUMIN-MG-L-TO-DG-L, hospital: asic_UK08, variable: albumin, action: multiply, factor: 0.01, source_unit: mg_per_L, target_unit: dg_per_L, confidence: high, evidence: "UK08 median 28889.55 mg/L becomes 288.8955 dg/L, aligning with the 350-497 dg/L peer scale."}
+  - {decision_id: UK03-D-DIMER-UG-ML-TO-NG-ML, hospital: asic_UK03, variable: d_dimer, action: multiply, factor: 1000.0, source_unit: ug_per_mL, target_unit: ng_per_mL, confidence: moderate, evidence: "UK03 median 8.76 becomes 8760 ng/mL on the peer scale; FEU/DDU remains explicitly unspecified."}
+  - {decision_id: UK08-D-DIMER-UG-ML-TO-NG-ML, hospital: asic_UK08, variable: d_dimer, action: multiply, factor: 1000.0, source_unit: ug_per_mL, target_unit: ng_per_mL, confidence: moderate, evidence: "UK08 median 3.695 becomes 3695 ng/mL on the peer scale; FEU/DDU remains explicitly unspecified."}
+  - {decision_id: UK03-TROPONIN-NG-L-TO-NG-ML, hospital: asic_UK03, variable: troponin, action: multiply, factor: 0.001, source_unit: ng_per_L, target_unit: ng_per_mL, confidence: high, evidence: "UK03 median 96 ng/L becomes 0.096 ng/mL, matching peer medians 0.054-0.185 ng/mL."}
+  - {decision_id: UK08-UREA-BUN-MG-DL-TO-MMOL-L, hospital: asic_UK08, variable: urea, action: divide, factor: 2.8, source_unit: BUN_mg_per_dL, target_unit: mmol_per_L, confidence: high, evidence: "UK08 median 26.8 mg/dL BUN becomes 9.57 mmol/L, matching peer medians 6.85-9.6 mmol/L and the prior ASIC conversion configuration."}
+  - {decision_id: UK08-ISOFLURANE-HUNDREDTHS-TO-VOL-PERCENT, hospital: asic_UK08, variable: isoflurane_inh, action: multiply, factor: 0.01, source_unit: volume_percent_times_100, target_unit: volume_percent, confidence: moderate, evidence: "UK08 median 60 becomes 0.60 vol%; UK07 is already on a plausible 2.3 vol% scale."}
+  - {decision_id: UK03-FUROSEMIDE-MG-DAY-TO-MG-H, hospital: asic_UK03, variable: furosemide_iv_cont, action: divide, factor: 24.0, source_unit: mg_per_day, target_unit: mg_per_h, confidence: moderate, evidence: "UK03 median 160 mg/day becomes 6.67 mg/h, aligning with peer continuous-infusion medians 4-20 mg/h."}
+  - {decision_id: UK08-VASOPRESSIN-IU-H-TO-IU-MIN, hospital: asic_UK08, variable: vasopressin_iv_cont, action: divide, factor: 60.0, source_unit: IU_per_h, target_unit: IU_per_min, confidence: moderate, evidence: "UK08 median 0.8 IU/h becomes 0.0133 IU/min, near peer 0.02 IU/min."}
+  - decision_id: UK00-VASOPRESSIN-IU-KG-MIN-TO-IU-MIN
+    hospital: asic_UK00
+    variable: vasopressin_iv_cont
+    action: multiply_by_static_weight_kg
+    factor: 1.0
+    source_unit: IU_per_kg_per_min
+    target_unit: IU_per_min
+    confidence: moderate
+    evidence: "UK00 median 0.0003115 IU/kg/min maps to the peer IU/min scale for ordinary adult weights. Activation requires exact stay linkage and weight coverage audit."
+    missing_or_invalid_weight_action: set_missing_and_flag
+
+# These site-variable definitions cannot be recovered with the variables
+# available at the affected hospital. They are proposed for cleaned-layer
+# masking after the common unit is assigned to the remaining hospitals.
+hospital_cleaning_masks:
+  - {decision_id: UK08-CLONIDINE-UNRECOVERABLE-NORMALIZATION, hospital: asic_UK08, variable: clonidine_iv_cont, reason: "Likely weight-normalized versus peer absolute mg/h representation; actual patient weight is unavailable at UK08."}
+  - {decision_id: UK03-EPINEPHRINE-UNRECOVERABLE-NORMALIZATION, hospital: asic_UK03, variable: epinephrine_iv_cont, reason: "Likely absolute µg/min versus peer µg/kg/min representation; actual patient weight is unavailable at UK03."}
+  - {decision_id: UK08-HYDROCORTISONE-UNRECOVERABLE-DEFINITION, hospital: asic_UK08, variable: hydrocortisone_iv_bolus, reason: "Observed 8.4-scale is inconsistent with peer bolus mg values and no unique source definition can be reconstructed."}
+  - {decision_id: UK08-KETANEST-UNRECOVERABLE-NORMALIZATION, hospital: asic_UK08, variable: ketanest_iv_cont, reason: "Likely mg/kg/h versus peer mg/h representation; actual patient weight is unavailable at UK08."}
+  - {decision_id: UK08-MORPHINE-UNRECOVERABLE-NORMALIZATION, hospital: asic_UK08, variable: morphine_iv_cont, reason: "Likely µg/kg/h versus peer mg/h representation; actual patient weight is unavailable at UK08."}
+  - {decision_id: UK03-NOREPINEPHRINE-UNRECOVERABLE-NORMALIZATION, hospital: asic_UK03, variable: norepinephrine_iv_cont, reason: "Likely absolute µg/min versus peer µg/kg/min representation; actual patient weight is unavailable at UK03."}
+  - {decision_id: UK02-PREDNISOLONE-UNRECOVERABLE-NORMALIZATION, hospital: asic_UK02, variable: prednisolone_iv_bolus, reason: "Likely weight-normalized source versus peer bolus mg representation; actual patient weight is unavailable at UK02."}
+  - {decision_id: UK08-PROPOFOL-UNRECOVERABLE-NORMALIZATION, hospital: asic_UK08, variable: propofol_iv_cont, reason: "Likely mg/kg/h versus peer mg/h representation; actual patient weight is unavailable at UK08."}
+  - {decision_id: UK00-SUFENTANIL-UNRECOVERABLE-NORMALIZATION, hospital: asic_UK00, variable: sufentanil_iv_cont, reason: "The 0.0005 scale could combine mass, weight, and time normalization; the exact time denominator is not recoverable with sufficient confidence."}
+
+priority_cleaning_range_decisions:
+  albumin: {unit: dg_per_L, rule: mask_zero, legacy_outside_count: 890}
+  creatinine: {unit: umol_per_L, rule: mask_zero, legacy_outside_count: 746}
+  evlwi: {unit: mL_per_kg, rule: recover_unique_power_of_ten_else_mask_outside_open_closed_range, hard_min_exclusive: 0.0, hard_max_inclusive: 80.0, legacy_outside_count: 72}
+  gedvi: {unit: mL_per_m2, rule: mask_outside_open_closed_range_no_ambiguous_power_recovery, hard_min_exclusive: 0.0, hard_max_inclusive: 2000.0, legacy_outside_count: 100}
+  hemoglobin: {unit: mmol_per_L, rule: mask_zero_or_outside_open_closed_range, hard_min_exclusive: 0.0, hard_max_inclusive: 25.0, legacy_outside_count: 1130}
+  inr: {unit: dimensionless_ratio, rule: mask_outside_open_closed_range_no_ambiguous_power_recovery, hard_min_exclusive: 0.0, hard_max_inclusive: 15.0, legacy_outside_count: 2377}
+  lactate_art: {unit: mmol_per_L, rule: mask_outside_open_closed_range_no_ambiguous_power_recovery, hard_min_exclusive: 0.0, hard_max_inclusive: 30.0, legacy_outside_count: 290}
+  platelets: {unit: 10e9_per_L, rule: mask_zero_or_outside_open_closed_range, hard_min_exclusive: 0.0, hard_max_inclusive: 2000.0, legacy_outside_count: 1024}
+  ptt: {unit: s, rule: mask_outside_open_closed_range_no_ambiguous_power_recovery, hard_min_exclusive: 0.0, hard_max_inclusive: 300.0, legacy_outside_count: 3098}
+  sofa_score_unspecified: {unit: score_point, rule: preserve_values_within_closed_range, hard_min_inclusive: 0.0, hard_max_inclusive: 24.0, legacy_outside_count: 0}
+  sofa_score_without_gcs: {unit: score_point, rule: preserve_schema_and_unit_regardless_of_current_missingness, hard_min_inclusive: 0.0, hard_max_inclusive: 24.0, legacy_outside_count: 0}
+  svri: {unit: dyn_s_cm5_m2, rule: mask_outside_open_closed_range_no_ambiguous_power_recovery, hard_min_exclusive: 0.0, hard_max_inclusive: 10000.0, legacy_outside_count: 294}

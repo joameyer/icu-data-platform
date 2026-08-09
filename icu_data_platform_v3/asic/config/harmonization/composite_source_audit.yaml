@@ -1,0 +1,58 @@
+composite_source_audit_policy_version: '0.1'
+status: approved_for_read_only_reviewed_composite_validation
+
+required_registry_review_artifact_version: '0.3'
+required_ingestion_manifest_version: '0.2'
+review_basis_run_id: 20260805T104417Z
+
+reviewed_all_missing_retirements:
+  - decision_id: HARM-DYNAMIC-PH-UK00-EMPTY-001
+    review_item_id: R0129
+    retained_review_item_id: R0080
+    hospital: asic_UK00
+    table: dynamic
+    candidate_target: ph_art
+    expected_raw_nonempty_count: 0
+    action: drop_after_all_missing
+  - decision_id: HARM-DYNAMIC-NTPROBNP-UK02-EMPTY-001
+    review_item_id: R0326
+    retained_review_item_id: R0344
+    hospital: asic_UK02
+    table: dynamic
+    candidate_target: ntprobnp
+    expected_raw_nonempty_count: 0
+    action: drop_after_all_missing
+
+reviewed_fixed_source_lists:
+  - decision_id: HARM-DYNAMIC-THERAPY-CONFIRM-UK00-LIST-001
+    hospital: asic_UK00
+    table: dynamic
+    candidate_target: therapy_read_confirmation_utc
+    source_review_item_ids: [R0144, R0145]
+    source_position_basis: lossless_ingestion_physical_column_order
+    output_value_type: fixed_size_list_bool_2
+    output_list_size: 2
+    allowed_numeric_values: [0, 1]
+    source_null_handling:
+      parquet_null: null_element
+      literal_empty: null_element
+    preserve_conflicting_pairs: true
+    reduction_policy: none
+
+scan:
+  rows_per_batch: 100000
+  maximum_private_unresolved_token_examples: 1000
+
+scope:
+  allow_ingested_column_reads: true
+  allow_report_writes: true
+  allow_harmonized_artifact_writes: false
+  allow_source_mutation: false
+  allow_value_reduction: false
+  allow_hospital_concatenation: false
+
+reporting:
+  private_artifact_version: '0.1'
+  review_artifact_version: '0.1'
+  private_directory_mode: '0700'
+  private_file_mode: '0600'

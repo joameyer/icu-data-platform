@@ -1,0 +1,165 @@
+reviewed_categorical_decisions_version: '0.1'
+status: approved_complete_categorical_contract_pending_schema_dictionary_freeze
+
+evidence:
+  candidate_run_id: 20260806T074852Z
+  consolidated_audit_run_id: 20260806T092818Z
+  categorical_review_run_id: 20260806T100728Z
+  domain_truncated_variable_count: 0
+  technical_blocking_finding_count: 0
+
+rules:
+  dynamic:
+    ards_diagnosis_app:
+      physical_type: int32
+      unit: not_applicable
+      parser: integral_numeric_then_hospital_code_allowlist
+      allowed_codes_by_hospital:
+        asic_UK00: [0, 10, 100, 200, 1600, 3000, 60000]
+        asic_UK01: [0, 1, 2, 3]
+        asic_UK02: []
+        asic_UK03: []
+        asic_UK04: [0, 1, 2, 3]
+        asic_UK06: [1, 2]
+        asic_UK07: []
+        asic_UK08: [0, 1, 2, 3]
+      analysis_eligible: false
+      caveat: code_meanings_and_uk00_nonstandard_codes_unresolved
+      expected_non_null_count: 457704
+      expected_null_count: 23611675
+    ecmo:
+      physical_type: bool
+      unit: not_applicable
+      parser: integral_binary_numeric
+      approved_textual_missing_by_hospital:
+        asic_UK03: [nan]
+      analysis_eligible: true
+      expected_non_null_count: 7850008
+      expected_null_count: 16219371
+    position_therapy:
+      physical_type: float64
+      unit: dimensionless_proportion
+      parser: direct_numeric_exact_reviewed_domain
+      allowed_values: [0, 0.125, 0.1428571428571428, 0.1666666666666666, 0.2, 0.25, 0.3333333333333333, 0.5, 1]
+      comparison_tolerance: 1.0e-12
+      approved_textual_missing_by_hospital:
+        asic_UK03: [nan]
+      analysis_eligible: true
+      caveat: uk00_fractional_values_while_other_reporting_sites_are_mostly_binary
+      expected_non_null_count: 11082939
+      expected_null_count: 12986440
+    severity_read_confirmation:
+      physical_type: large_string
+      unit: not_applicable
+      parser: all_missing_only
+      analysis_eligible: false
+      all_missing: true
+      expected_non_null_count: 0
+      expected_null_count: 24069379
+    therapy_read_confirmation_utc:
+      physical_type: fixed_size_list_bool_2
+      unit: not_applicable
+      parser: previously_reviewed_fixed_position_composite
+      analysis_eligible: true
+      caveat: preserve_both_source_positions_without_or_consensus_or_preference
+
+  static:
+    age_group:
+      physical_type: large_string
+      unit: not_applicable
+      parser: exact_reviewed_domain
+      allowed_values: ['<70', '70-79', '80-130']
+      analysis_eligible: true
+      expected_non_null_count: 16054
+      expected_null_count: 0
+    bmi_group:
+      physical_type: large_string
+      unit: not_applicable
+      parser: exact_reviewed_domain
+      allowed_values: [underweight, normal_weight, overweight, obesity_class_1, obesity_class_2, obesity_class_3]
+      analysis_eligible: true
+      expected_non_null_count: 14386
+      expected_null_count: 1668
+    cluster_id:
+      physical_type: large_string
+      unit: not_applicable
+      parser: exact_hospital_scoped_domain
+      allowed_values_by_hospital:
+        asic_UK00: [C1, C2, C3, C4]
+        asic_UK01: [C5]
+        asic_UK02: [C7, C9]
+        asic_UK03: [C6]
+        asic_UK04: [C10]
+        asic_UK06: [C8]
+        asic_UK07: [C11]
+        asic_UK08: [C12]
+      analysis_eligible: true
+      expected_non_null_count: 16054
+      expected_null_count: 0
+    death_status:
+      physical_type: large_string
+      unit: not_applicable
+      parser: exact_reviewed_domain
+      allowed_values: [discharged_alive, died_in_icu, died_in_hospital]
+      analysis_eligible: true
+      caveat: keep_separate_from_discharge_status_and_reported_hospital_mortality
+      expected_non_null_count: 9447
+      expected_null_count: 6607
+    discharge_status:
+      physical_type: large_string
+      unit: not_applicable
+      parser: exact_reviewed_domain
+      allowed_values: [transferred, died]
+      analysis_eligible: true
+      caveat: keep_separate_from_death_status_and_reported_hospital_mortality
+      expected_non_null_count: 14483
+      expected_null_count: 1571
+    height_group:
+      physical_type: large_string
+      unit: not_applicable
+      parser: exact_domain_with_scoped_missing_sentinel
+      allowed_values: ['<180', '180-185', '>185']
+      approved_textual_missing_by_hospital:
+        asic_UK01: ['-1']
+      analysis_eligible: true
+      expected_non_null_count: 15993
+      expected_null_count: 61
+    hospital_mortality_reported:
+      physical_type: bool
+      unit: not_applicable
+      parser: previously_reviewed_nullable_boolean
+      analysis_eligible: true
+    icu_readmit:
+      physical_type: bool
+      unit: not_applicable
+      parser: previously_reviewed_nullable_boolean
+      analysis_eligible: true
+    sex:
+      physical_type: large_string
+      unit: not_applicable
+      parser: exact_reviewed_domain
+      allowed_values: [female, male]
+      analysis_eligible: true
+      expected_non_null_count: 16054
+      expected_null_count: 0
+    study_implementation_phase:
+      physical_type: large_string
+      unit: not_applicable
+      parser: previously_reviewed_study_phase
+      allowed_values: [calibration, roll_in, app_implementation]
+      analysis_eligible: true
+    weight_group:
+      physical_type: large_string
+      unit: not_applicable
+      parser: exact_reviewed_domain
+      allowed_values: ['<65', '65-75', '76-250']
+      analysis_eligible: true
+      expected_non_null_count: 15937
+      expected_null_count: 117
+
+activation:
+  existing_candidate_is_immutable: true
+  apply_only_when_building_a_new_harmonized_candidate: true
+  ordered_union_schema_approved: false
+  variable_dictionary_approved: false
+  publication_approved: false

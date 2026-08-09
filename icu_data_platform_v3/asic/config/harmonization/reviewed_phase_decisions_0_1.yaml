@@ -1,0 +1,38 @@
+reviewed_phase_decision_version: '0.1'
+status: human_approved_raw_v3
+
+review:
+  approved_by_role: project_data_owner
+  approved_at: '2026-08-06'
+  evidence_candidate_run_id: 20260806T072541Z
+  evidence_hospital: asic_UK03
+  evidence_static_row_count: 1360
+  evidence_mapped_phase_label_count: 1357
+  evidence_approved_missing_count: 3
+  evidence_unknown_count: 0
+  semantic_evidence: phase_specific_time_since_study_start_ordering
+
+decision:
+  rule_id: HARM-STATIC-STUDY-PHASE-UK03-001
+  hospital: asic_UK03
+  table: static
+  raw_name: Phase
+  occurrence: 1
+  target: study_implementation_phase
+  output_value_type: large_string
+  output_unit: not_applicable
+  normalization: strip_upper
+  values:
+    K: calibration
+    RI: roll_in
+    QS: app_implementation
+    NAN: null
+  literal_empty_handling: 'null'
+  source_absence_handling: 'null'
+  unknown_nonempty_handling: block
+
+scope:
+  allow_candidate_harmonization: true
+  allow_cleaning: false
+  allow_derivation: false
+  allow_publication: false

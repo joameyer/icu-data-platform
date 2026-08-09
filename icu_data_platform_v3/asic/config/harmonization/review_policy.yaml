@@ -1,0 +1,35 @@
+review_policy_version: '0.3'
+status: approved_for_read_only_candidate_registry_review
+
+required_schema_token_private_artifact_version: '0.3'
+required_schema_token_review_artifact_version: '0.3'
+required_schema_token_policy_version: '0.3'
+
+allowed_schema_token_blockers:
+  - candidate_harmonization_registry_approved
+  - provisional_archive_owner_confirmation
+
+resolved_schema_token_blockers:
+  provisional_archive_owner_confirmation:
+    decision_status: approved_by_data_owner
+    decision_date: '2026-08-05'
+    resolution: confirmed_legacy_snapshot_excluded_from_authoritative_inputs
+    required_handling: exclude_from_ingestion_and_retain_only_as_untrusted_reference
+
+schema_token_policy: ../schema_tokens/policy.yaml
+candidate_contract: candidate_contract.yaml
+
+scope:
+  allow_private_schema_token_evidence_reads: true
+  allow_ingested_data_reads: false
+  allow_harmonized_artifact_writes: false
+  allow_hospital_concatenation: false
+  allow_registry_approval: false
+  allow_union_schema_approval: false
+  allow_variable_dictionary_approval: false
+
+reporting:
+  private_artifact_version: '0.3'
+  review_artifact_version: '0.3'
+  private_directory_mode: '0700'
+  private_file_mode: '0600'

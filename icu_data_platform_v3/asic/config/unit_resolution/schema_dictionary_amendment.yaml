@@ -1,0 +1,50 @@
+unit_schema_dictionary_amendment_policy_version: '0.1'
+status: approved_for_report_only_schema_dictionary_0_2_planning
+
+inputs:
+  reviewed_unit_decisions: reviewed_unit_decisions_0_2.yaml
+  reviewed_unit_decisions_sha256: 90244e357fb8334e00469e527964170ac165f16d8a2c05e7e35e35c9b3edf3b0
+  reviewed_medication_value_semantics: reviewed_medication_value_semantics_0_2.yaml
+  reviewed_medication_value_semantics_sha256: 62a7f305e53e4789b2c2d2a7d1d1a4435a3e8010913383ccd1a0dd6879c94c9c
+  baseline_freeze_policy: ../harmonization/reviewed_schema_dictionary_freeze_0_1.yaml
+  baseline_freeze_policy_sha256: 33c4813048f1a12acc137bd24d4003ef953f57524d4a76d0488938eecd48b7a0
+  baseline_contract_version: '0.1'
+  proposed_contract_version: '0.2'
+  unit_decision_audit_run_id: 20260807T083117Z
+
+expected:
+  baseline_static_variable_count: 23
+  baseline_dynamic_variable_count: 130
+  reviewed_unit_update_count: 72
+  approved_conversion_count: 9
+  semantic_split_count: 9
+  resolved_semantic_split_count: 6
+  unresolved_source_split_count: 3
+  proposed_static_variable_count: 23
+  proposed_dynamic_variable_count: 139
+  proposed_clinical_variable_count: 162
+  baseline_medication_variable_count: 25
+  semantic_split_medication_variable_count: 9
+  proposed_medication_variable_count: 34
+  approved_general_negative_medication_rule_count: 1
+  audited_negative_medication_value_count: 201
+
+boundary:
+  read_frozen_contract_0_1: true
+  read_unit_decision_audit_manifest: true
+  read_clinical_rows: false
+  modify_frozen_contract_0_1: false
+  freeze_contract_0_2: false
+  build_harmonized_data: false
+  build_cleaned_data: false
+  build_derived_data: false
+  write_reports_only: true
+  filter_rows_or_stays: false
+  drop_source_values: false
+  authorize_external_data_export: false
+
+reporting:
+  private_directory_name: unit_schema_dictionary_amendment
+  review_directory_name: unit_schema_dictionary_amendment
+  private_artifact_version: '0.1'
+  review_artifact_version: '0.1'

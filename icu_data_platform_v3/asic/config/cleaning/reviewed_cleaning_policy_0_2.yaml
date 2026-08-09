@@ -1,0 +1,216 @@
+cleaning_policy_version: '0.2'
+status: human_approved_for_nonpublishable_candidate_and_complete_audit
+
+input:
+  harmonized_release_id: 20260807T112402Z
+  harmonized_contract_version: '0.2'
+  harmonized_promotion_policy: ../unit_resolution/reviewed_harmonized_0_2_promotion_20260807T112402Z.yaml
+  harmonized_promotion_policy_sha256: 72e969c6b010c5d4b4b8bb48abdd90ca576c8b25664f57888b8ad0245d3a31d5
+  frozen_contract_directory: contracts/harmonized_schema_dictionary/0.2
+  frozen_contract_policy: ../unit_resolution/reviewed_unit_schema_dictionary_freeze_0_2.yaml
+  frozen_contract_policy_sha256: 5d8e3133437f7924cf5c10ec4b316f974bf7631b298173b977dc5dd834c5419e
+  baseline_cleaning_policy: cleaning_policy.yaml
+  baseline_cleaning_policy_sha256: d4b8b8ed02bc68208c66e8faa8c506aff8a2f8946f6cca5acaef7ab4f7dd9856
+  reviewed_unit_decisions: ../unit_resolution/reviewed_unit_decisions_0_2.yaml
+  reviewed_unit_decisions_sha256: 90244e357fb8334e00469e527964170ac165f16d8a2c05e7e35e35c9b3edf3b0
+  reviewed_medication_semantics: ../unit_resolution/reviewed_medication_value_semantics_0_2.yaml
+  reviewed_medication_semantics_sha256: 62a7f305e53e4789b2c2d2a7d1d1a4435a3e8010913383ccd1a0dd6879c94c9c
+
+range_evidence:
+  policy: range_evidence_0_2.yaml
+  policy_sha256: cc38a4fc983ea9d65a7f87dbe5b4b84eb0902246bccbf8cb565eb24b76a7a863
+  run_id: 20260807T133609Z
+  generated_at_utc: '2026-08-07T13:37:29+00:00'
+  artifact_version: '0.1'
+  expected_dynamic_rows: 24069379
+  expected_hospital_profiles: 96
+  # The inherited legacy-rule metric is 10,565 because it incorrectly counts
+  # 544 valid zero-valued SOFA scores. The approved 0.2 rules retain those
+  # scores; the remaining directionally actionable findings total 10,021.
+  expected_legacy_findings: 10565
+  expected_zeros: 10141
+  expected_negatives: 50
+  expected_above_upper: 374
+  expected_fractional_scores: 0
+
+human_decision:
+  decision_date: '2026-08-07'
+  reviewer_role: data_owner
+  decision: >-
+    Approve the final twelve-variable unit-aware cleaning matrix, including
+    conservative preservation of uncertain positive extremes, the uniquely
+    recoverable EVLWI correction, the general negative-medication rule, and
+    an additional broad albumin ceiling of 1000 dg/L.
+  approval_record: >-
+    The data owner replied "i approve" after reviewing the complete
+    hospital-level counts, exact nonzero outlier frequencies, and the final
+    variable-by-variable recommendation.
+
+execution:
+  replay_every_cleaning_0_1_rule: true
+  preserve_cleaning_0_1_rule_semantics: true
+  mask_nonfinite_in_every_float64_field: true
+  apply_general_negative_medication_rule: true
+  preserve_medication_zero: true
+  preserve_medication_null: true
+  prohibit_null_to_zero_imputation: true
+  preserve_rows_and_stays: true
+  preserve_columns_and_order: true
+  create_cleaned_dictionary_annotations: true
+  create_derived_variables: false
+  perform_time_blocking: false
+
+priority_rules:
+  - id: C02-ALBUMIN
+    variable: albumin
+    action: mask_outside_open_closed_range
+    hard_min_exclusive: 0.0
+    hard_max_inclusive: 1000.0
+    unit: dg_per_L
+    rationale: >-
+      Exact zero is a reviewed missing sentinel. The broad 1000 dg/L ceiling
+      catches newly exposed values on the 6695-68613 dg/L scale without
+      treating the ordinary clinical reference interval as a cleaning bound.
+
+  - id: C02-CREATININE
+    variable: creatinine
+    action: mask_nonpositive_preserve_positive_extremes
+    hard_min_exclusive: 0.0
+    unit: umol_per_L
+    rationale: Exact zero is a reviewed missing sentinel; no defensible hard positive ceiling is activated.
+
+  - id: C02-EVLWI
+    variable: evlwi
+    action: recover_unique_power_of_ten_else_mask_outside_open_closed_range
+    hard_min_exclusive: 0.0
+    hard_max_inclusive: 80.0
+    unit: mL_per_kg
+    factors: [0.001, 0.01, 0.1, 10.0, 100.0, 1000.0]
+    rationale: >-
+      Correct only an out-of-range value having exactly one reviewed
+      power-of-ten result in range; mask ambiguous or unrecoverable values.
+
+  - id: C02-GEDVI
+    variable: gedvi
+    action: mask_nonpositive_preserve_above_review_threshold
+    hard_min_exclusive: 0.0
+    review_threshold: 2000.0
+    unit: mL_per_m2
+    rationale: Positive values above 2000 are extreme but do not establish a deterministic scale error.
+
+  - id: C02-HEMOGLOBIN
+    variable: hemoglobin
+    action: mask_outside_open_closed_range
+    hard_min_exclusive: 0.0
+    hard_max_inclusive: 25.0
+    unit: mmol_per_L
+    rationale: Zero and values above the deliberately broad ceiling are invalid for cleaned analysis input.
+
+  - id: C02-INR
+    variable: inr
+    action: mask_nonpositive_preserve_above_review_threshold
+    hard_min_exclusive: 0.0
+    review_threshold: 15.0
+    unit: dimensionless_ratio
+    rationale: Positive high INR values are retained because range evidence does not prove an input or unit error.
+
+  - id: C02-LACTATE-ART
+    variable: lactate_art
+    action: mask_nonpositive_preserve_above_review_threshold
+    hard_min_exclusive: 0.0
+    review_threshold: 30.0
+    unit: mmol_per_L
+    rationale: Negative and exact-zero values are invalid; positive severe values are retained and audited.
+
+  - id: C02-PLATELETS
+    variable: platelets
+    action: mask_outside_open_closed_range
+    hard_min_exclusive: 0.0
+    hard_max_inclusive: 2000.0
+    unit: 10e9_per_L
+    rationale: The cross-hospital exact-zero pattern is a reviewed missing sentinel.
+
+  - id: C02-PTT
+    variable: ptt
+    action: mask_nonpositive_preserve_above_review_threshold
+    hard_min_exclusive: 0.0
+    review_threshold: 300.0
+    unit: s
+    rationale: Positive prolonged measurements are retained because no deterministic input error is established.
+
+  - id: C02-SOFA-UNSPECIFIED
+    variable: sofa_score_unspecified
+    action: require_integer_closed_range
+    hard_min_inclusive: 0.0
+    hard_max_inclusive: 24.0
+    integer_tolerance: 1.0e-9
+    unit: score_point
+    rationale: Full SOFA is the sum of six 0-4 component scores.
+
+  - id: C02-SOFA-WITHOUT-GCS
+    variable: sofa_score_without_gcs
+    action: require_integer_closed_range
+    hard_min_inclusive: 0.0
+    hard_max_inclusive: 20.0
+    integer_tolerance: 1.0e-9
+    unit: score_point
+    rationale: The all-missing field is retained; a future value excludes the 0-4 GCS component.
+
+  - id: C02-SVRI
+    variable: svri
+    action: mask_nonpositive_preserve_above_review_threshold
+    hard_min_exclusive: 0.0
+    review_threshold: 10000.0
+    unit: dyn_s_cm5_m2
+    rationale: The smooth positive upper tail does not resemble a decimal-placement or unit error.
+
+expected:
+  static_rows: 16054
+  dynamic_rows: 24069379
+  static_clinical_variables: 23
+  dynamic_clinical_variables: 139
+  provenance_fields_per_table: 5
+  baseline_legacy_applied_rules: 34
+  baseline_additional_scalar_rules: 15
+  baseline_deferred_rules_replaced: 12
+  baseline_list_rules: 1
+  baseline_hospital_masks: 1
+  priority_rules: 12
+  medication_or_therapy_variables: 34
+  known_priority_zero_masks: 9597
+  known_priority_negative_masks: 50
+  expected_evlwi_factor_0_001_corrections: 32
+  expected_evlwi_ambiguous_masks: 10
+  expected_positive_upper_values_preserved: 332
+  expected_negative_medication_masks: 201
+  expected_current_score_violations: 0
+
+streaming:
+  rows_per_batch: 50000
+  parquet_compression: zstd
+
+outputs:
+  candidate_directory_name: cleaned_0_2_candidates
+  build_review_directory_name: cleaning_0_2_build
+  candidate_artifact_version: '0.2'
+  candidate_status: nonpublishable_requires_complete_cleaning_0_2_audit
+  cleaned_dictionary_filename: cleaned_variable_dictionary.parquet
+  cleaned_dictionary_markdown_filename: cleaned_variable_dictionary.md
+
+boundary:
+  read_released_harmonized_0_2: true
+  read_frozen_contract_0_2: true
+  modify_harmonized_release: false
+  modify_existing_cleaned_release: false
+  modify_existing_derived_release: false
+  overwrite_outputs: false
+  filter_rows: false
+  filter_stays: false
+  drop_columns: false
+  aggregate_height_measurements: false
+  derive_variables: false
+  define_cohorts: false
+  perform_time_blocking: false
+  approve_release_automatically: false
+  update_release_pointer: false
+  authorize_external_data_export: false

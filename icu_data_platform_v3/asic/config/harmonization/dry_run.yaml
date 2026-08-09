@@ -1,0 +1,99 @@
+harmonization_dry_run_policy_version: '0.3'
+status: approved_for_nonpublishable_streaming_candidate_harmonization
+
+evidence_basis:
+  inventory_run_id: 20260804T193415Z
+  ingestion_audit_run_id: 20260805T060046Z
+  schema_token_run_id: 20260805T090942Z
+  registry_review_run_id: 20260805T104417Z
+  composite_audit_run_id: 20260805T111026Z
+
+decision_sources:
+  inventory_policy: ../inventory/policy.yaml
+  inventory_policy_sha256: 1f77a7a64bb2b2672cf4f0836a9eeb7a72759431759113584464828ac3f63cd4
+  ingestion_policy: ../ingestion/policy.yaml
+  ingestion_policy_sha256: 9d3e297374e27c8a0fccbc4ca80ee53ab8e7d536e5fdbc27d0216e9a1a1fa41e
+  schema_token_policy: ../schema_tokens/policy.yaml
+  schema_token_policy_sha256: eaf7004da381d5a449149da70da3b295df3c43896dec208cab68d87ef972e49f
+  harmonization_review_policy: review_policy.yaml
+  harmonization_review_policy_sha256: b03c8169e51a886d5d5ced3d443f4b53e5eed21affda9561f16a5b92ad0f45e4
+  candidate_contract: candidate_contract.yaml
+  candidate_contract_sha256: 6734613734c5d275311bce7b33fac177537bb3139a472d16c93a8e8d8f3f011e
+  composite_source_policy: composite_source_audit.yaml
+  composite_source_policy_sha256: 5c9619a5d9237fdef1218164e501ac696031339ab4b29352f6aa4d2edd9e5947
+  reviewed_static_decisions: reviewed_static_decisions_0_3.yaml
+  reviewed_static_decisions_sha256: b173c99dd403b7d5731fe986b549563ee1302141c9d9afc8efb1106eba56a595
+  reviewed_icd10_contract: reviewed_icd10_contract_0_2.yaml
+  reviewed_icd10_contract_sha256: b672ba8841a8388e0507748b88c4411a4cbfc01e56160bc585856863a7791de9
+  reviewed_phase_decisions: reviewed_phase_decisions_0_1.yaml
+  reviewed_phase_decisions_sha256: 53e43d38b1092b046ceaa454f3bb7b84d42397d1cfc756b643dd5bf58f7e7f02
+
+approved_hospitals:
+  - asic_UK00
+  - asic_UK01
+  - asic_UK02
+  - asic_UK03
+  - asic_UK04
+  - asic_UK06
+  - asic_UK07
+  - asic_UK08
+
+candidate_parsing:
+  direct_numeric: true
+  decimal_comma: true
+  ratio_notation: true
+  explicit_percentage_to_fraction: true
+  threshold_boundary_value: true
+  reviewed_numeric_lists: true
+  reviewed_missing_sentinels: true
+  candidate_textual_missing_to_null: true
+  unreviewed_categorical_values: preserve_trimmed
+  temporal_values: preserve_exact_string
+  distribution_inferred_unit_conversion: false
+
+candidate_semantics:
+  apply_reviewed_static_decisions: true
+  apply_reviewed_icd10_contract: true
+  apply_reviewed_composite_sources: true
+  apply_reviewed_study_phase_decision: true
+  apply_candidate_uk00_vt_semantic_split: true
+  apply_candidate_categorical_translations: true
+  preserve_reported_and_computed_driving_pressure_separately: true
+  preserve_sofa_and_isofa_separately: true
+  filter_rows: false
+  filter_stays: false
+  apply_ventilation_cohort: false
+  mask_physiologic_outliers: false
+
+identifier_contract:
+  static_local_source: reviewed_raw_pseudo_id
+  dynamic_local_source: ingestion_filename_stay_id_provenance
+  dynamic_in_file_identifier_policy: if_available_must_agree
+  dynamic_raw_identifier_policy: if_available_must_corroborate
+  dynamic_static_membership_required: true
+  global_identifier_formula: <stay_id_local>:<approved_hospital_suffix>
+
+streaming:
+  rows_per_batch: 50000
+  parquet_compression: zstd
+  maximum_private_token_examples_per_column: 1000
+  maximum_private_categorical_values_per_column: 1000
+
+outputs:
+  directory_name: harmonization_candidates
+  artifact_version: '0.3'
+  private_report_artifact_version: '0.3'
+  review_report_artifact_version: '0.3'
+  status: candidate_nonpublishable_requires_consolidated_review
+
+scope:
+  allow_ingested_production_reads: true
+  allow_private_review_evidence_reads: true
+  allow_run_scoped_candidate_artifact_writes: true
+  allow_source_mutation: false
+  allow_ingested_artifact_overwrite: false
+  allow_candidate_artifact_overwrite: false
+  allow_cleaned_artifact_writes: false
+  allow_derived_artifact_writes: false
+  allow_publication: false
+  allow_release_pointer: false

@@ -1,0 +1,51 @@
+decision_registry_version: '0.3'
+status: approved_partial_static_raw_v3_decisions
+extends: reviewed_static_decisions_0_2.yaml
+extends_sha256: fbe08f1a997c5264dbe44d225b81bd66bd8436190fc4259af9ec2d50e0d3977f
+
+review:
+  approved_by_role: project_data_owner
+  approved_at: '2026-08-05'
+  static_contract_audit_run_id: 20260805T112746Z
+  static_completion_review_generated_at_utc: '2026-08-05T12:52:14+00:00'
+
+new_numeric_decisions:
+  - {rule_id: HARM-STATIC-ICU-LOS-UK00-001, hospital: asic_UK00, raw_name: Liegedauer_ICU, target: icu_los, evidence_nonempty_count: 3676, evidence_direct_numeric_count: 3676, evidence_approved_missing_count: 0, approved_parser: direct_numeric, approved_missing_tokens: []}
+  - {rule_id: HARM-STATIC-ICU-LOS-UK01-001, hospital: asic_UK01, raw_name: Liegedauer_ICU, target: icu_los, evidence_nonempty_count: 0, evidence_direct_numeric_count: 0, evidence_approved_missing_count: 0, approved_parser: approved_missing_only, approved_missing_tokens: []}
+  - {rule_id: HARM-STATIC-ICU-LOS-UK02-001, hospital: asic_UK02, raw_name: Liegedauer_ICU, target: icu_los, evidence_nonempty_count: 902, evidence_direct_numeric_count: 902, evidence_approved_missing_count: 0, approved_parser: direct_numeric, approved_missing_tokens: []}
+  - {rule_id: HARM-STATIC-ICU-LOS-UK03-001, hospital: asic_UK03, raw_name: Liegedauer_ICU, target: icu_los, evidence_nonempty_count: 1360, evidence_direct_numeric_count: 1360, evidence_approved_missing_count: 0, approved_parser: direct_numeric, approved_missing_tokens: []}
+  - {rule_id: HARM-STATIC-ICU-LOS-UK04-001, hospital: asic_UK04, raw_name: Liegedauer_ICU, target: icu_los, evidence_nonempty_count: 486, evidence_direct_numeric_count: 486, evidence_approved_missing_count: 0, approved_parser: direct_numeric, approved_missing_tokens: []}
+  - {rule_id: HARM-STATIC-ICU-LOS-UK06-001, hospital: asic_UK06, raw_name: Liegedauer_ICU, target: icu_los, evidence_nonempty_count: 678, evidence_direct_numeric_count: 678, evidence_approved_missing_count: 0, approved_parser: direct_numeric, approved_missing_tokens: []}
+  - {rule_id: HARM-STATIC-ICU-LOS-UK07-001, hospital: asic_UK07, raw_name: Liegedauer_ICU, target: icu_los, evidence_nonempty_count: 2217, evidence_direct_numeric_count: 2217, evidence_approved_missing_count: 0, approved_parser: direct_numeric, approved_missing_tokens: []}
+  - {rule_id: HARM-STATIC-ICU-LOS-UK08-001, hospital: asic_UK08, raw_name: Liegedauer_ICU, target: icu_los, evidence_nonempty_count: 5164, evidence_direct_numeric_count: 5164, evidence_approved_missing_count: 0, approved_parser: direct_numeric, approved_missing_tokens: []}
+
+  - {rule_id: HARM-STATIC-DFD-UK01-001, hospital: asic_UK01, raw_name: "Dialyse_(dialysefreie_Tage)\u00a0", target: dialysis_free_days, evidence_nonempty_count: 0, evidence_direct_numeric_count: 0, evidence_approved_missing_count: 0, approved_parser: approved_missing_only, approved_missing_tokens: []}
+  - {rule_id: HARM-STATIC-DFD-UK02-001, hospital: asic_UK02, raw_name: 'Dialyse_(dialysefreie_Tage)', target: dialysis_free_days, evidence_nonempty_count: 902, evidence_direct_numeric_count: 902, evidence_approved_missing_count: 0, approved_parser: direct_numeric, approved_missing_tokens: []}
+  - {rule_id: HARM-STATIC-DFD-UK06-001, hospital: asic_UK06, raw_name: 'Dialyse_(dialysefreie_Tage)', target: dialysis_free_days, evidence_nonempty_count: 678, evidence_direct_numeric_count: 678, evidence_approved_missing_count: 0, approved_parser: direct_numeric, approved_missing_tokens: []}
+  - {rule_id: HARM-STATIC-DFD-UK07-001, hospital: asic_UK07, raw_name: 'Dialyse_(dialysefreie_Tage)', target: dialysis_free_days, evidence_nonempty_count: 2217, evidence_direct_numeric_count: 2217, evidence_approved_missing_count: 0, approved_parser: direct_numeric, approved_missing_tokens: []}
+  - {rule_id: HARM-STATIC-DFD-UK08-001, hospital: asic_UK08, raw_name: 'Dialyse_(dialysefreie_Tage)', target: dialysis_free_days, evidence_nonempty_count: 5164, evidence_direct_numeric_count: 0, evidence_approved_missing_count: 5164, approved_parser: approved_missing_only, approved_missing_tokens: ['-1', '-1.0']}
+
+  - {rule_id: HARM-STATIC-VFD-UK01-001, hospital: asic_UK01, raw_name: Beatmungsfreie_Tage, target: vent_free_days, evidence_nonempty_count: 0, evidence_direct_numeric_count: 0, evidence_approved_missing_count: 0, approved_parser: approved_missing_only, approved_missing_tokens: []}
+  - {rule_id: HARM-STATIC-VFD-UK02-001, hospital: asic_UK02, raw_name: Beatmungsfreie_Tage, target: vent_free_days, evidence_nonempty_count: 902, evidence_direct_numeric_count: 902, evidence_approved_missing_count: 0, approved_parser: direct_numeric, approved_missing_tokens: []}
+  - {rule_id: HARM-STATIC-VFD-UK06-001, hospital: asic_UK06, raw_name: Beatmungsfreie_Tage, target: vent_free_days, evidence_nonempty_count: 678, evidence_direct_numeric_count: 678, evidence_approved_missing_count: 0, approved_parser: direct_numeric, approved_missing_tokens: []}
+  - {rule_id: HARM-STATIC-VFD-UK07-001, hospital: asic_UK07, raw_name: Beatmungsfreie_Tage, target: vent_free_days, evidence_nonempty_count: 2217, evidence_direct_numeric_count: 2217, evidence_approved_missing_count: 0, approved_parser: direct_numeric, approved_missing_tokens: []}
+  - {rule_id: HARM-STATIC-VFD-UK08-001, hospital: asic_UK08, raw_name: Beatmungsfreie_Tage, target: vent_free_days, evidence_nonempty_count: 5164, evidence_direct_numeric_count: 0, evidence_approved_missing_count: 5164, approved_parser: approved_missing_only, approved_missing_tokens: ['-1', '-1.0']}
+
+common_contract:
+  table: static
+  occurrence: 1
+  kind: numeric
+  evidence_custom_parsed_count: 0
+  evidence_unknown_nonempty_count: 0
+  output_value_type: float64
+  output_unit: day
+  literal_empty_handling: 'null'
+  source_absence_handling: 'null'
+  unknown_nonempty_handling: block
+
+scope:
+  allow_synthetic_batch_transform: true
+  allow_production_reads: false
+  allow_artifact_writes: false
+  allow_hospital_concatenation: false
+  allow_union_schema_freeze: false

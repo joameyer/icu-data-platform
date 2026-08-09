@@ -1,0 +1,57 @@
+reviewed_icd10_contract_version: '0.1'
+status: approved_for_component_audit_not_parser_activation
+
+review:
+  approved_by_role: project_data_owner
+  approved_at: '2026-08-05'
+  static_contract_audit_run_id: 20260805T112746Z
+  icd10_notation_audit_run_id: 20260805T131735Z
+  icd10_notation_review_generated_at_utc: '2026-08-05T13:17:35+00:00'
+
+evidence:
+  audited_hospital_count: 8
+  scanned_row_count: 16054
+  nonempty_cell_count: 16053
+  nonstring_source_cell_count: 0
+  comma_delimited_cell_count: 16022
+  single_code_cell_count: 7
+  approved_textual_missing_cell_count: 24
+
+source_text_contract:
+  target: icd10_codes_source_text
+  output_value_type: large_string
+  nonmissing_policy: preserve_exact
+  literal_empty_handling: 'null'
+  source_absence_handling: 'null'
+  unknown_nonempty_handling: block
+
+approved_textual_missing:
+  - rule_id: HARM-STATIC-ICD10-MISSING-UK03-001
+    hospital: asic_UK03
+    normalization: strip_casefold
+    token: 'nan'
+    evidence_cell_count: 24
+    output: 'null'
+
+candidate_list_contract:
+  target: icd10_codes
+  output_value_type: list_large_string
+  delimiter: ','
+  component_normalization: strip_surrounding_whitespace_only
+  single_code_handling: one_element_list
+  empty_component_handling: block
+  preserve_source_order: true
+  preserve_duplicates: true
+  preserve_case: true
+  preserve_component_punctuation: true
+  semantic_code_validation: deferred
+  activation: blocked_pending_component_audit_review
+
+scope:
+  allow_component_audit_reads: true
+  allow_report_writes: true
+  allow_value_transforms: false
+  allow_harmonized_artifact_writes: false
+  allow_hospital_concatenation: false
+  allow_union_schema_freeze: false
+  allow_parser_activation: false

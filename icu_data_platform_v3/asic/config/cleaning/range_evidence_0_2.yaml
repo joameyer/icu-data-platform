@@ -1,0 +1,46 @@
+cleaning_range_evidence_audit_version: '0.1'
+status: approved_for_read_only_direction_and_recoverability_audit
+
+inputs:
+  harmonized_release_id: 20260807T112402Z
+  harmonized_contract_version: '0.2'
+  harmonized_promotion_policy: ../unit_resolution/reviewed_harmonized_0_2_promotion_20260807T112402Z.yaml
+  harmonized_promotion_policy_sha256: 72e969c6b010c5d4b4b8bb48abdd90ca576c8b25664f57888b8ad0245d3a31d5
+  candidate_unit_decisions: ../unit_resolution/candidate_unit_decisions_0_2.yaml
+  candidate_unit_decisions_sha256: ad7c032e84aaf70225b45619e3c53a35294387fc08d04c40c5707d78d2b45109
+  prior_cleaning_policy_review: cleaning_policy_0_2_review.yaml
+  prior_cleaning_policy_review_sha256: 4901830532b58a26c45a965b5341c39f6ba50b8382ecd9536382e02c58cf5258
+  frozen_contract_directory: harmonized_schema_dictionary/0.2
+
+scope:
+  expected_dynamic_rows: 24069379
+  expected_hospital_count: 8
+  expected_variable_count: 12
+  hospitals: [asic_UK00, asic_UK01, asic_UK02, asic_UK03, asic_UK04, asic_UK06, asic_UK07, asic_UK08]
+  variables: [albumin, creatinine, evlwi, gedvi, hemoglobin, inr, lactate_art, platelets, ptt, sofa_score_unspecified, sofa_score_without_gcs, svri]
+
+scan:
+  rows_per_batch: 50000
+  power_of_ten_factors: [0.001, 0.01, 0.1, 10, 100, 1000]
+  require_complete_outlier_frequency_evidence: true
+  maximum_distinct_outlier_values_per_hospital_variable: 100000
+  score_integer_tolerance: 0.000000001
+  sofa_without_gcs_semantic_max_candidate: 20
+
+reporting:
+  private_directory_name: cleaning_range_evidence_0_2
+  review_directory_name: cleaning_range_evidence_0_2
+  private_artifact_version: '0.1'
+  review_artifact_version: '0.1'
+
+boundary:
+  read_released_harmonized_data: true
+  write_reports_only: true
+  modify_harmonized_release: false
+  modify_existing_cleaned_release: false
+  modify_existing_derived_release: false
+  activate_cleaning_rule: false
+  mask_or_convert_values: false
+  filter_rows_or_stays: false
+  write_patient_rows_or_identifiers: false
+  authorize_external_data_export: false

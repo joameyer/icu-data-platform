@@ -1,0 +1,110 @@
+policy_version: '0.3'
+status: approved_for_read_only_inventory
+
+expected_hospital_folders: ['00', '01', '02', '03', '04', '06', '07', '08']
+blocking_unmapped_hospital_folders: []
+identity_investigation_folders: ['01']
+
+hospital_mappings:
+  '00':
+    canonical_hospital_id: asic_UK00
+    approval_status: reviewed_existing_contract
+    cohort_action: include
+  '01':
+    canonical_hospital_id: asic_UK01
+    approval_status: approved_by_data_owner
+    cohort_action: include
+    evidence:
+      identity_confirmed: true
+      cohort_inclusion_confirmed: true
+      confirmation_date: '2026-08-04'
+  '02':
+    canonical_hospital_id: asic_UK02
+    approval_status: reviewed_existing_contract
+    cohort_action: include
+  '03':
+    canonical_hospital_id: asic_UK03
+    approval_status: reviewed_existing_contract
+    cohort_action: include
+  '04':
+    canonical_hospital_id: asic_UK04
+    approval_status: reviewed_existing_contract
+    cohort_action: include
+  '06':
+    canonical_hospital_id: asic_UK06
+    approval_status: reviewed_existing_contract
+    cohort_action: include
+  '07':
+    canonical_hospital_id: asic_UK07
+    approval_status: reviewed_existing_contract
+    cohort_action: include
+  '08':
+    canonical_hospital_id: asic_UK08
+    approval_status: reviewed_existing_contract
+    cohort_action: include
+
+excluded_directories:
+  checkpoint: .ipynb_checkpoints
+  untrusted_pooled: pooled
+
+known_root_metadata_files: [README.md]
+default_static_filename: static.csv
+additional_static_candidate_filenames:
+  - andere_variablen_kds_patienten.csv
+
+dynamic_filename_patterns:
+  '00': '^(?P<stay_id>[^/]+)\.csv$'
+  default: '^dynamische_variablen_kds_patient_(?P<stay_id>.+)\.csv$'
+
+candidate_identifier_columns: [Pseudo-ID, PseudoID]
+candidate_hospital_identity_columns: [hid, hospital_id, hospital, Hospital, UK]
+candidate_time_columns: [Zeit_ab_Aufnahme, Time, timeidx]
+
+reviewed_anomalies:
+  duplicate_headers:
+    - rule_id: uk00_ards_diagnose_app_duplicate
+      approval_status: approved
+      hospital_folder: '00'
+      raw_column_name: ARDS_Diagnose_App
+      expected_occurrences: 2
+      allowed_layouts:
+        - column_count: 125
+          one_based_positions: [122, 123]
+        - column_count: 127
+          one_based_positions: [110, 125]
+      ingestion_action: preserve_as_separate_positional_source_columns
+      translation_action: drop_second_only_if_all_empty_revalidated
+      evidence:
+        anomaly_audit_artifact_version: '0.1'
+        input_inventory_run_id: 20260804T175134Z
+        audited_file_count: 3676
+        audited_record_count: 7267221
+        second_occurrence_nonempty_count: 0
+
+  provisional_archive_exclusions:
+    - rule_id: uk00_control_export_archive
+      approval_status: provisional_pending_owner_confirmation
+      hospital_folder: '00'
+      expected_size_bytes: 290741496
+      expected_sha256: 8d277b9c16bde6ca404203da6148d01cbd717619f299cd60e95b860fc6687084
+      ingestion_action: exclude
+      retained_role: untrusted_read_only_comparison
+      evidence:
+        anomaly_audit_artifact_version: '0.1'
+        overlapping_files_with_differing_schema: 3677
+        archive_only_entries: 1
+        flat_only_files: 1
+        archive_minus_flat_rows: -626522
+
+csv:
+  encodings: [utf-8-sig, utf-8, cp1252]
+  delimiters: [';', ',', "\\t", '|']
+  sample_records: 200
+  minimum_header_columns: 2
+  require_consistent_record_width: true
+
+reporting:
+  inventory_manifest_version: '0.4'
+  include_protected_values_in_review_report: false
+  private_directory_mode: '0700'
+  private_file_mode: '0600'

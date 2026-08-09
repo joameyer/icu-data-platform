@@ -1,0 +1,87 @@
+core_derived_0_2_promotion_policy_version: '0.1'
+status: explicitly_approved_for_immutable_core_derived_0_2_release
+
+approved_input:
+  derived_candidate_run_id: 20260808T074305Z
+  derived_audit_run_id: 20260808T074305Z
+  cleaned_release_id: 20260807T154100Z
+  core_derived_contract_version: '0.2'
+  candidate_artifact_version: '0.2'
+  audit_private_artifact_version: '0.2'
+  audit_review_artifact_version: '0.2'
+
+immutable_contract:
+  core_derived_contract: reviewed_core_derived_contract_0_2.yaml
+  core_derived_contract_sha256: bfc7599a5eebce483b03ef73d5dd013c41bc9d0dc17aca899d173a43555ef3a6
+
+human_approval:
+  role: data_owner
+  recorded_date: '2026-08-08'
+  statement: I approve promotion of core-derived 0.2 candidate 20260808T074305Z under core-derived contract 0.2.
+  context: Explicit approval immediately following the complete core-derived 0.2 candidate audit review.
+
+expected_audit:
+  technical_status: pass
+  overall_status_before_approval: pending_human_review
+  technical_blocking_finding_count: 0
+  human_blocking_finding_count_before_approval: 1
+  human_blocking_check_resolved_by_this_approval: core_derived_candidate_release_approved
+  metrics:
+    compared_static_rows: 16054
+    compared_dynamic_rows: 24069379
+    compared_output_cell_count: 3538792711
+    expected_output_cell_count: 3538792711
+    static_output_column_count: 37
+    dynamic_output_column_count: 147
+  derivation_accounting:
+    dynamic_row_count: 24069379
+    hours_non_missing_count: 24069379
+    hours_negative_count: 247977
+    driving_pressure_computable_count: 6386755
+    driving_pressure_in_range_count: 6383119
+    driving_pressure_out_of_range_count: 3636
+    static_row_count: 16054
+    hospital_mortality_false: 9757
+    hospital_mortality_true: 4726
+    hospital_mortality_missing: 1571
+    hospital_mortality_conflict_count: 0
+    icu_mortality_false: 10457
+    icu_mortality_true: 2146
+    icu_mortality_missing: 3451
+    icu_mortality_conflict_count: 0
+    ventilation_supported_timestamp_count_total: 8715616
+    ventilation_episode_count_total: 53535
+    observed_mechanical_ventilation_ge_24h_true: 12775
+
+previous_current_release:
+  release_id: 20260806T170134Z
+  core_derived_contract_version: '0.1'
+  cleaned_release_id: 20260806T114234Z
+  current_release_pointer: derived/current_release.json
+  require_analysis_input_approved: true
+
+release:
+  release_id: 20260808T074305Z
+  releases_directory: derived/releases
+  current_release_pointer: derived/current_release.json
+  prior_pointer_snapshot_name: previous_current_release.json
+  artifact_version: '0.2'
+  review_directory_name: derived_0_2_promotion
+
+boundary:
+  copy_audited_parquet_bytes_unchanged: true
+  preserve_candidate_artifacts: true
+  preserve_all_previous_releases: true
+  preserve_previous_current_pointer_bytes_in_new_release: true
+  overwrite_existing_release: false
+  require_exact_previous_current_pointer: true
+  replace_current_pointer_atomically: true
+  rerun_derivation: false
+  rerun_cleaning: false
+  filter_rows_or_stays: false
+  drop_or_modify_source_columns: false
+  create_cohort: false
+  apply_time_blocking: false
+  authorize_core_derived_layer: true
+  authorize_analysis_input: true
+  authorize_external_data_export: false

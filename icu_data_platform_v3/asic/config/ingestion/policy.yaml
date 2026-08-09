@@ -1,0 +1,59 @@
+policy_version: '0.2'
+status: approved_for_lossless_ingestion_implementation
+
+required_inventory_artifact_version: '0.4'
+allowed_inventory_blockers:
+  - provisional_archive_owner_confirmation
+
+source_selection:
+  static_classification: selected_static_candidate
+  dynamic_classification: dynamic_candidate
+  excluded_classifications:
+    - additional_static_candidate
+    - provisionally_excluded_archive
+  require_complete_csv_inspection: true
+  revalidate_source_sha256: true
+  revalidate_header_and_row_count: true
+  reject_symbolic_links: true
+
+raw_value_contract:
+  arrow_type: string
+  empty_cell_representation: empty_string
+  absent_source_column_representation: parquet_null
+  infer_clinical_types: false
+  parse_clinical_values: false
+  apply_textual_missing_policy: false
+  rename_raw_columns: false
+  duplicate_physical_name_disambiguation: approved_rules_only
+
+duplicate_physical_names:
+  - rule_id: uk00_ards_diagnose_app_positional_storage_names
+    approval_status: approved_by_data_owner
+    hospital_folder: '00'
+    table: dynamic
+    raw_column_name: ARDS_Diagnose_App
+    expected_occurrences: 2
+    physical_names:
+      - occurrence: 1
+        name: ARDS_Diagnose_App_col1
+      - occurrence: 2
+        name: ARDS_Diagnose_App_col2
+    meaning: positional_source_occurrences_not_distinct_clinical_variables
+
+provenance_columns:
+  source_hospital_folder: __v3_source_hospital_folder
+  canonical_hospital_id: __v3_canonical_hospital_id
+  source_filename: __v3_source_filename
+  source_file_id: __v3_source_file_id
+  source_file_order: __v3_source_file_order
+  source_row_number: __v3_source_row_number
+  source_order: __v3_source_order
+  filename_stay_id: __v3_filename_stay_id
+  in_file_stay_id: __v3_in_file_stay_id
+  source_schema_variant_id: __v3_source_schema_variant_id
+
+parquet:
+  compression: zstd
+
+reporting:
+  ingestion_manifest_version: '0.2'

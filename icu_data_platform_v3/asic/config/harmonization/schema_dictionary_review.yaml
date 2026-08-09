@@ -1,0 +1,73 @@
+schema_dictionary_review_policy_version: '0.2'
+status: approved_for_report_only_freeze_review_from_immutable_evidence
+
+decision_sources:
+  consolidated_decisions: reviewed_consolidated_decisions_0_1.yaml
+  consolidated_decisions_sha256: 3b9d49d24461e97354851f53937e5335248301099d4a7068f88c162df6e5ceb3
+  categorical_decisions: reviewed_categorical_decisions_0_1.yaml
+  categorical_decisions_sha256: 013b6a01e07b947cb7ed56a1f0b0a24a7ab870b0cfcd0f5a56d34c28f8f9c53c
+
+required_evidence:
+  candidate_run_id: 20260806T074852Z
+  consolidated_audit_run_id: 20260806T092818Z
+  categorical_review_run_id: 20260806T100728Z
+  consolidated_private_artifact_version: '0.1'
+  categorical_private_artifact_version: '0.1'
+  consolidated_private_directory_name: consolidated_harmonization_audit
+  categorical_private_directory_name: categorical_contract_review
+
+operational_provenance_fields:
+  - {name: __v3_source_file_id, physical_type: string}
+  - {name: __v3_source_file_order, physical_type: int32}
+  - {name: __v3_source_row_number, physical_type: int64}
+  - {name: __v3_source_order, physical_type: int64}
+  - {name: __v3_source_schema_variant_id, physical_type: string}
+
+# These decisions predate the consolidated numeric-unit audit and must not be
+# lost merely because they were outside that audit's numeric review rows.
+reviewed_representation_overrides:
+  static:
+    height_cm:
+      unit: cm
+      analysis_eligibility: eligible
+      caveat: scalar_source_height_kept_separate_from_uk00_repeated_height_list
+    hospital_code_source:
+      unit: dimensionless_code
+      analysis_eligibility: eligible
+      caveat: source_hospital_code_not_the_canonical_hospital_identifier
+  dynamic:
+    hospital_code_source:
+      unit: dimensionless_code
+      analysis_eligibility: eligible
+      caveat: source_hospital_code_not_the_canonical_hospital_identifier
+
+# The raw-v3 export has relative minutes but no raw `timeidx` occurrence. Keep
+# the already reviewed artificial time representation as a deterministic
+# harmonized output rather than pretending that it was source-backed.
+reviewed_generated_outputs:
+  dynamic:
+    anchored_time_since_icu_admission:
+      insert_after: minutes_since_icu_admission
+      physical_type: timestamp[ns]
+      unit: artificial_anchored_timestamp
+      analysis_eligibility: eligible
+      definition: Artificial timestamp equal to 2020-01-01 00:00:00 plus minutes_since_icu_admission; it is not a real calendar event time.
+      caveat: artificial_anchor_preserves_relative_time_only_not_calendar_time
+      source_variable: minutes_since_icu_admission
+      operation: anchor_plus_minutes
+      anchor: '2020-01-01 00:00:00'
+
+review_boundary:
+  read_candidate_data: false
+  rescan_clinical_rows: false
+  modify_candidate_data: false
+  freeze_schema_automatically: false
+  freeze_dictionary_automatically: false
+  write_harmonized_data: false
+  publish_data: false
+
+reporting:
+  private_artifact_version: '0.2'
+  review_artifact_version: '0.2'
+  private_directory_name: schema_dictionary_review
+  review_directory_name: schema_dictionary_review
